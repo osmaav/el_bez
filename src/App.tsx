@@ -1,4 +1,5 @@
 import { AppProvider, useApp } from '@/context/AppContext';
+import { CookiesProvider } from 'react-cookie';
 import { Navigation } from '@/components/Navigation';
 import { LearningSection } from '@/sections/LearningSection';
 import { TheorySection } from '@/sections/TheorySection';
@@ -26,10 +27,12 @@ function AppContent() {
 
 function App() {
   return (
-    <AppProvider>
-      <AppContent />
-      <Toaster />
-    </AppProvider>
+    <CookiesProvider>
+      <AppProvider>
+        <AppContent />
+        <Toaster />
+      </AppProvider>
+    </CookiesProvider>
   );
 }
 
