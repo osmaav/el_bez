@@ -421,70 +421,70 @@ export function LearningSection() {
     <div className="min-h-screen bg-slate-50">
       <div className="max-w-6xl mx-auto px-4 py-8 pt-20">
       {/* Заголовок */}
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-slate-900 mb-2">
+      <div className="mb-6 sm:mb-8">
+        <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 mb-2">
           ЭБ 1258.20 Тесты Ростехнадзора
         </h1>
-        <p className="text-slate-600">
+        <p className="text-xs sm:text-sm text-slate-600">
           4 группа по электробезопасности до 1000 В • 304 вопроса
         </p>
       </div>
 
       {/* Прогресс-бар в шапке */}
       <Card className="mb-6 sticky top-16 z-10 bg-white/95 backdrop-blur shadow-lg">
-        <CardContent>
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center gap-4">
-              <div className="flex items-center gap-2">
-                <Target className="w-5 h-5 text-blue-600" />
-                <span className="text-sm font-medium">Всего: {QUESTIONS_PER_SESSION}</span>
+        <CardContent className="py-4">
+          <div className="flex flex-wrap items-center justify-between gap-3 mb-3">
+            <div className="flex items-center gap-2 sm:gap-4 flex-wrap">
+              <div className="flex items-center gap-1 sm:gap-2">
+                <Target className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600" />
+                <span className="text-xs sm:text-sm font-medium">Всего: {QUESTIONS_PER_SESSION}</span>
               </div>
-              <div className="flex items-center gap-2">
-                <CheckCircle2 className="w-5 h-5 text-green-600" />
-                <span className="text-sm font-medium text-green-600">{stats.correct}</span>
+              <div className="flex items-center gap-1 sm:gap-2">
+                <CheckCircle2 className="w-4 h-4 sm:w-5 sm:h-5 text-green-600" />
+                <span className="text-xs sm:text-sm font-medium text-green-600">{stats.correct}</span>
               </div>
-              <div className="flex items-center gap-2">
-                <XCircle className="w-5 h-5 text-red-600" />
-                <span className="text-sm font-medium text-red-600">{stats.incorrect}</span>
+              <div className="flex items-center gap-1 sm:gap-2">
+                <XCircle className="w-4 h-4 sm:w-5 sm:h-5 text-red-600" />
+                <span className="text-xs sm:text-sm font-medium text-red-600">{stats.incorrect}</span>
               </div>
-              <div className="flex items-center gap-2">
-                <AlertCircle className="w-5 h-5 text-orange-600" />
-                <span className="text-sm font-medium text-orange-600">{stats.remaining}</span>
+              <div className="flex items-center gap-1 sm:gap-2">
+                <AlertCircle className="w-4 h-4 sm:w-5 sm:h-5 text-orange-600" />
+                <span className="text-xs sm:text-sm font-medium text-orange-600">{stats.remaining}</span>
               </div>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1 sm:gap-2 flex-wrap">
               {/* Пагинация */}
-              <div className="flex items-center gap-1 mr-4">
+              <div className="flex items-center gap-1">
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={prevPage}
                   disabled={currentPage === 1}
-                  className="h-8 w-8 p-0"
+                  className="h-8 w-8 p-0 text-xs"
                 >
-                  <ChevronLeft className="w-4 h-4" />
+                  <ChevronLeft className="w-3 h-3 sm:w-4 sm:h-4" />
                 </Button>
-                <span className="text-sm font-medium min-w-[80px] text-center">
-                  Стр. {currentPage} из {TOTAL_PAGES}
+                <span className="text-xs font-medium min-w-[70px] sm:min-w-[80px] text-center px-1">
+                  Стр. {currentPage}<span className="hidden sm:inline"> из {TOTAL_PAGES}</span>
                 </span>
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={nextPage}
                   disabled={currentPage === TOTAL_PAGES}
-                  className="h-8 w-8 p-0"
+                  className="h-8 w-8 p-0 text-xs"
                 >
-                  <ChevronRight className="w-4 h-4" />
+                  <ChevronRight className="w-3 h-3 sm:w-4 sm:h-4" />
                 </Button>
               </div>
               <Button
                 variant="outline"
                 size="sm"
                 onClick={handleReset}
-                className="gap-2 text-red-600 hover:text-red-700"
+                className="gap-1 sm:gap-2 text-red-600 hover:text-red-700 text-xs px-2 sm:px-3"
               >
-                <RotateCcw className="w-4 h-4" />
-                Сброс
+                <RotateCcw className="w-3 h-3 sm:w-4 sm:h-4" />
+                <span className="hidden sm:inline">Сброс</span>
               </Button>
             </div>
           </div>
@@ -492,14 +492,15 @@ export function LearningSection() {
           <div className="mb-2">
             <div className="flex items-center justify-between text-xs text-slate-500 mb-1">
               <span>Глобальный прогресс</span>
-              <span>{globalProgress.answered} из {TOTAL_QUESTIONS} ({globalProgress.percentage}%)</span>
+              <span className="hidden sm:inline">{globalProgress.answered} из {TOTAL_QUESTIONS} ({globalProgress.percentage}%)</span>
+              <span className="sm:hidden">{globalProgress.percentage}%</span>
             </div>
             <Progress value={globalProgress.percentage} className="h-2" />
           </div>
           {/* Прогресс текущей страницы */}
           <Progress value={progress} className="h-2" />
           <p className="text-xs text-slate-500 mt-2">
-            Страница: {progress}% • Вопросы {((currentPage - 1) * QUESTIONS_PER_SESSION) + 1}-{Math.min(currentPage * QUESTIONS_PER_SESSION, TOTAL_QUESTIONS)} из {TOTAL_QUESTIONS}
+            <span className="hidden sm:inline">Страница: </span>{progress}% • <span className="hidden sm:inline">Вопросы </span>{((currentPage - 1) * QUESTIONS_PER_SESSION) + 1}-{Math.min(currentPage * QUESTIONS_PER_SESSION, TOTAL_QUESTIONS)} из {TOTAL_QUESTIONS}
           </p>
         </CardContent>
       </Card>
