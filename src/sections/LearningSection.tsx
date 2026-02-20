@@ -70,8 +70,10 @@ const loadCurrentPage = (): number => {
   const saved = localStorage.getItem(STORAGE_PAGE_KEY);
   if (saved) {
     const page = parseInt(saved, 10);
-    console.log(`📄 Найдена сохранённая страница: ${page}`);
-    return page;
+    if (!isNaN(page) && page >= 1 && page <= TOTAL_PAGES) {
+      console.log(`📄 Найдена сохранённая страница: ${page}`);
+      return page;
+    }
   }
   console.log('📭 Сохранённая страница не найдена');
   return 1;
