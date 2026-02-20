@@ -118,6 +118,27 @@ export function LearningSection() {
     }
   }, [quizState]);
 
+  // Вычисление глобального прогресса
+  const getGlobalProgress = () => {
+    let totalAnswered = 0;
+    
+    Object.values(savedStates).forEach((state) => {
+      state.userAnswers.forEach((answer: number | null) => {
+        if (answer !== null) {
+          totalAnswered++;
+        }
+      });
+    });
+    
+    return {
+      answered: totalAnswered,
+      total: TOTAL_QUESTIONS,
+      percentage: Math.round((totalAnswered / TOTAL_QUESTIONS) * 100)
+    };
+  };
+
+  const globalProgress = getGlobalProgress();
+
   // Сохранение прогресса при изменении quizState
   useEffect(() => {
     if (quizState.currentQuestions.length > 0) {
@@ -410,9 +431,18 @@ export function LearningSection() {
               </Button>
             </div>
           </div>
+          {/* Глобальный прогресс */}
+          <div className="mb-2">
+            <div className="flex items-center justify-between text-xs text-slate-500 mb-1">
+              <span>Глобальный прогресс</span>
+              <span>{globalProgress.answered} из {TOTAL_QUESTIONS} ({globalProgress.percentage}%)</span>
+            </div>
+            <Progress value={globalProgress.percentage} className="h-2" />
+          </div>
+          {/* Прогресс текущей страницы */}
           <Progress value={progress} className="h-2" />
           <p className="text-xs text-slate-500 mt-2">
-            Прогресс: {Math.round(progress)}% • Вопросы {((currentPage - 1) * QUESTIONS_PER_SESSION) + 1}-{Math.min(currentPage * QUESTIONS_PER_SESSION, TOTAL_QUESTIONS)} из {TOTAL_QUESTIONS}
+            Страница: {progress}% • Вопросы {((currentPage - 1) * QUESTIONS_PER_SESSION) + 1}-{Math.min(currentPage * QUESTIONS_PER_SESSION, TOTAL_QUESTIONS)} из {TOTAL_QUESTIONS}
           </p>
         </CardContent>
       </Card>
