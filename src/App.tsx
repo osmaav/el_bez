@@ -14,7 +14,12 @@ function AppContent() {
 
   // Плавная прокрутка вверх при изменении страницы
   useEffect(() => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    // Небольшая задержка для корректной работы с компонентами, имеющими состояние загрузки
+    const timeoutId = setTimeout(() => {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }, 50);
+    
+    return () => clearTimeout(timeoutId);
   }, [currentPage]);
 
   return (
