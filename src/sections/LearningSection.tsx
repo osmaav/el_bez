@@ -433,74 +433,69 @@ export function LearningSection() {
       {/* Прогресс-бар в шапке */}
       <Card className="mb-6 sticky top-16 z-10 bg-white/95 backdrop-blur shadow-lg">
         <CardContent className="py-2">
-          <div className="flex flex-wrap items-center justify-between gap-3 mb-3">
-            <div className="flex items-center gap-2 sm:gap-4 flex-wrap">
-              <div className="flex items-center gap-1 sm:gap-2">
-                <Target className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600" />
-                <span className="text-xs sm:text-sm font-medium">Всего: {QUESTIONS_PER_SESSION}</span>
-              </div>
-              <div className="flex items-center gap-1 sm:gap-2">
-                <CheckCircle2 className="w-4 h-4 sm:w-5 sm:h-5 text-green-600" />
-                <span className="text-xs sm:text-sm font-medium text-green-600">{stats.correct}</span>
-              </div>
-              <div className="flex items-center gap-1 sm:gap-2">
-                <XCircle className="w-4 h-4 sm:w-5 sm:h-5 text-red-600" />
-                <span className="text-xs sm:text-sm font-medium text-red-600">{stats.incorrect}</span>
-              </div>
-              <div className="flex items-center gap-1 sm:gap-2">
-                <AlertCircle className="w-4 h-4 sm:w-5 sm:h-5 text-orange-600" />
-                <span className="text-xs sm:text-sm font-medium text-orange-600">{stats.remaining}</span>
-              </div>
+          <div className="flex items-center gap-2 md:gap-3 mb-3 overflow-hidden">
+            <div className="flex items-center gap-1 md:gap-2 flex-shrink-0">
+              <Target className="w-3.5 h-3.5 md:w-4 md:h-4 lg:w-5 lg:h-5 text-blue-600" />
+              <span className="text-xs md:text-sm font-medium whitespace-nowrap">Всего: {QUESTIONS_PER_SESSION}</span>
             </div>
-            <div className="flex items-center gap-1 sm:gap-2 flex-wrap">
-              {/* Пагинация */}
-              <div className="flex items-center gap-1">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={prevPage}
-                  disabled={currentPage === 1}
-                  className="h-8 w-8 p-0 text-xs"
-                >
-                  <ChevronLeft className="w-3 h-3 sm:w-4 sm:h-4" />
-                </Button>
-                <span className="text-xs font-medium min-w-[70px] sm:min-w-[80px] text-center px-1">
-                  Стр. {currentPage}<span className="hidden sm:inline"> из {TOTAL_PAGES}</span>
-                </span>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={nextPage}
-                  disabled={currentPage === TOTAL_PAGES}
-                  className="h-8 w-8 p-0 text-xs"
-                >
-                  <ChevronRight className="w-3 h-3 sm:w-4 sm:h-4" />
-                </Button>
-              </div>
+            <div className="flex items-center gap-1 md:gap-2 flex-shrink-0">
+              <CheckCircle2 className="w-3.5 h-3.5 md:w-4 md:h-4 lg:w-5 lg:h-5 text-green-600" />
+              <span className="text-xs md:text-sm font-medium text-green-600 whitespace-nowrap">{stats.correct}</span>
+            </div>
+            <div className="flex items-center gap-1 md:gap-2 flex-shrink-0">
+              <XCircle className="w-3.5 h-3.5 md:w-4 md:h-4 lg:w-5 lg:h-5 text-red-600" />
+              <span className="text-xs md:text-sm font-medium text-red-600 whitespace-nowrap">{stats.incorrect}</span>
+            </div>
+            <div className="flex items-center gap-1 md:gap-2 flex-shrink-0">
+              <AlertCircle className="w-3.5 h-3.5 md:w-4 md:h-4 lg:w-5 lg:h-5 text-orange-600" />
+              <span className="text-xs md:text-sm font-medium text-orange-600 whitespace-nowrap">{stats.remaining}</span>
+            </div>
+            <div className="flex-grow min-w-0"></div>
+            <div className="flex items-center gap-1 flex-shrink-0">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={prevPage}
+                disabled={currentPage === 1}
+                className="h-7 w-7 md:h-8 md:w-8 p-0 flex-shrink-0"
+              >
+                <ChevronLeft className="w-3 h-3 md:w-4 md:h-4" />
+              </Button>
+              <span className="text-xs font-medium text-center px-1 min-w-0 whitespace-nowrap">
+                {currentPage}/{TOTAL_PAGES}
+              </span>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={nextPage}
+                disabled={currentPage === TOTAL_PAGES}
+                className="h-7 w-7 md:h-8 md:w-8 p-0 flex-shrink-0"
+              >
+                <ChevronRight className="w-3 h-3 md:w-4 md:h-4" />
+              </Button>
               <Button
                 variant="outline"
                 size="sm"
                 onClick={handleReset}
-                className="gap-1 sm:gap-2 text-red-600 hover:text-red-700 text-xs px-2 sm:px-3"
+                className="text-red-600 hover:text-red-700 px-2 md:px-3 flex-shrink-0"
               >
-                <RotateCcw className="w-3 h-3 sm:w-4 sm:h-4" />
-                <span className="hidden sm:inline">Сброс</span>
+                <RotateCcw className="w-3 h-3 md:w-4 md:h-4" />
+                <span className="hidden md:inline ml-1">Сброс</span>
               </Button>
             </div>
           </div>
           {/* Глобальный прогресс */}
           <div className="mb-2">
             <div className="flex items-center justify-between text-xs text-slate-500 mb-1">
-              <span>Глобальный прогресс</span>
-              <span className="hidden sm:inline">{globalProgress.answered} из {TOTAL_QUESTIONS} ({globalProgress.percentage}%)</span>
-              <span className="sm:hidden">{globalProgress.percentage}%</span>
+              <span>Глобальный</span>
+              <span>{globalProgress.answered}/{TOTAL_QUESTIONS} ({globalProgress.percentage}%)</span>
             </div>
             <Progress value={globalProgress.percentage} className="h-2" />
           </div>
           {/* Прогресс текущей страницы */}
           <Progress value={progress} className="h-2" />
-          <p className="text-xs text-slate-500 mt-2">
-            <span className="hidden sm:inline">Страница: </span>{progress}% • <span className="hidden sm:inline">Вопросы </span>{((currentPage - 1) * QUESTIONS_PER_SESSION) + 1}-{Math.min(currentPage * QUESTIONS_PER_SESSION, TOTAL_QUESTIONS)} из {TOTAL_QUESTIONS}
+          <p className="text-xs text-slate-500 mt-2 text-right">
+            {((currentPage - 1) * QUESTIONS_PER_SESSION) + 1}-{Math.min(currentPage * QUESTIONS_PER_SESSION, TOTAL_QUESTIONS)} из {TOTAL_QUESTIONS} • {progress}%
           </p>
         </CardContent>
       </Card>
