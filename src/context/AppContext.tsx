@@ -40,7 +40,7 @@ interface AppContextType {
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
 const QUESTIONS_PER_TICKET = 20;
-const TOTAL_TICKETS = 20;
+const TOTAL_TICKETS = 31;
 const STORAGE_KEY = 'electrospa_current_page';
 
 export function AppProvider({ children }: { children: React.ReactNode }) {
