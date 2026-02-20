@@ -442,7 +442,7 @@ export function LearningSection() {
       </div>
 
       {/* Прогресс-бар в шапке */}
-      <Card className="mb-6 sticky z-10 bg-white/95 backdrop-blur shadow-lg">
+      <Card className="mb-6 sticky top-0 z-50 bg-white/95 backdrop-blur shadow-lg">
         <CardContent>
           <div className="flex items-center justify-between gap-2 md:gap-4 mb-3">
             <div className="flex items-center gap-2 md:gap-4">
