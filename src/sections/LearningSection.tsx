@@ -349,7 +349,7 @@ export function LearningSection() {
         ...prev,
         [currentPage]: {
           userAnswers: newAnswers,
-          shuffledAnswers: shuffledAnswers,
+          shuffledAnswers: quizState.shuffledAnswers,
           isComplete: true
         }
       }));

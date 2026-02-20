@@ -1,0 +1,4 @@
+Build
+Process completed with exit code 2.
+Build: src/sections/LearningSection.tsx#L352
+Cannot find name 'shuffledAnswers'.
