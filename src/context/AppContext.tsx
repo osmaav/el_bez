@@ -91,17 +91,26 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
           throw new Error('Не удалось загрузить вопросы');
         }
         const data = await response.json();
-        setQuestions(data);
         
+        // Преобразуем данные из формата JSON в формат Question
+        const transformedQuestions: Question[] = (data.questions || []).map((q: any) => ({
+          id: q.id,
+          text: q.question,
+          options: q.answers,
+          correct_index: q.correct
+        }));
+        
+        setQuestions(transformedQuestions);
+
         // Генерируем билеты
-        generateTickets(data);
+        generateTickets(transformedQuestions);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Ошибка загрузки');
       } finally {
         setIsLoading(false);
       }
     };
-    
+
     loadQuestions();
   }, []);
 
