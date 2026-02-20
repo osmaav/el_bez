@@ -15,8 +15,10 @@ export function Navigation() {
 
   const handlePageChange = (page: PageType) => {
     setCurrentPage(page);
-    // Плавная прокрутка с кастомной анимацией
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    // Плавная прокрутка после рендеринга нового компонента
+    requestAnimationFrame(() => {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
   };
 
   return (
