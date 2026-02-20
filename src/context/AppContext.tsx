@@ -136,8 +136,15 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
   // Тренажер функции
   const startTrainer = useCallback((questionCount: number = 50) => {
+    console.log('🔵 startTrainer вызван, вопросов:', questions.length);
+    if (questions.length === 0) {
+      console.error('❌ Вопросы ещё не загружены');
+      return;
+    }
     const shuffled = [...questions].sort(() => Math.random() - 0.5);
-    setTrainerQuestions(shuffled.slice(0, Math.min(questionCount, shuffled.length)));
+    const selected = shuffled.slice(0, Math.min(questionCount, shuffled.length));
+    console.log('✅ Тренажер запущен, выбрано вопросов:', selected.length);
+    setTrainerQuestions(selected);
     setTrainerCurrentIndex(0);
     setTrainerAnswers({});
     setIsTrainerFinished(false);
