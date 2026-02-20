@@ -32,6 +32,7 @@ interface SavedState {
 
 const QUESTIONS_PER_SESSION = 10;
 const STORAGE_KEY = 'electrospa_quiz_progress';
+const STORAGE_PAGE_KEY = 'electrospa_current_page';
 const TOTAL_QUESTIONS = questionsData?.questions?.length || 304;
 const TOTAL_PAGES = Math.ceil(TOTAL_QUESTIONS / QUESTIONS_PER_SESSION);
 
@@ -58,9 +59,28 @@ const loadProgress = (): SavedState | null => {
   return null;
 };
 
+const saveCurrentPage = (page: number) => {
+  if (typeof window === 'undefined') return;
+  localStorage.setItem(STORAGE_PAGE_KEY, page.toString());
+  console.log(`📄 Страница ${page} сохранена в localStorage`);
+};
+
+const loadCurrentPage = (): number => {
+  if (typeof window === 'undefined') return 1;
+  const saved = localStorage.getItem(STORAGE_PAGE_KEY);
+  if (saved) {
+    const page = parseInt(saved, 10);
+    console.log(`📄 Найдена сохранённая страница: ${page}`);
+    return page;
+  }
+  console.log('📭 Сохранённая страница не найдена');
+  return 1;
+};
+
 const clearProgress = () => {
   if (typeof window === 'undefined') return;
   localStorage.removeItem(STORAGE_KEY);
+  localStorage.removeItem(STORAGE_PAGE_KEY);
   console.log('🗑️ Прогресс очищен из localStorage');
 };
 
@@ -75,6 +95,7 @@ export function LearningSection() {
   const [stats, setStats] = useState({ correct: 0, incorrect: 0, remaining: 0 });
   const [savedStates, setSavedStates] = useState<SavedState>({});
   const [showSources, setShowSources] = useState<{[key: number]: boolean}>({});
+  const [isInitialized, setIsInitialized] = useState(false);
 
   // Инициализация сессии
   useEffect(() => {
@@ -86,9 +107,16 @@ export function LearningSection() {
     const saved = loadProgress();
     console.log('🔍 Saved states:', saved);
     
+    // Восстанавливаем текущую страницу
+    const savedPage = loadCurrentPage();
+    console.log('🔍 Saved page:', savedPage);
+    
     if (saved) {
       setSavedStates(saved);
     }
+    
+    // Устанавливаем страницу
+    setCurrentPage(savedPage);
 
     const allQuestions = questionsData?.questions || [];
     if (allQuestions.length === 0) {
@@ -96,20 +124,39 @@ export function LearningSection() {
       return;
     }
 
-    // Начинаем новую сессию с первой страницы
-    console.log('🆕 Начинаем новую сессию');
-    const startIndex = 0;
+    // Загружаем вопросы для сохранённой страницы
+    console.log(`🆕 Загрузка страницы ${savedPage}`);
+    const startIndex = (savedPage - 1) * QUESTIONS_PER_SESSION;
     const selected = allQuestions.slice(startIndex, startIndex + QUESTIONS_PER_SESSION);
-    const shuffledAnswers = selected.map((q) =>
-      shuffleArray([...Array(q.answers?.length || 4).keys()])
-    );
     
-    setQuizState({
-      currentQuestions: selected,
-      shuffledAnswers,
-      userAnswers: new Array(selected.length).fill(null),
-      isComplete: false,
-    });
+    // Проверяем, есть ли сохранённое состояние для этой страницы
+    const savedState = saved ? saved[savedPage] : null;
+    
+    if (savedState) {
+      // Восстанавливаем сохранённое состояние
+      console.log(`♻️ Восстановление состояния для страницы ${savedPage}`);
+      setQuizState({
+        currentQuestions: selected,
+        shuffledAnswers: savedState.shuffledAnswers,
+        userAnswers: savedState.userAnswers,
+        isComplete: savedState.isComplete,
+      });
+    } else {
+      // Создаём новое состояние
+      console.log(`🆕 Новое состояние для страницы ${savedPage}`);
+      const shuffledAnswers = selected.map((q) =>
+        shuffleArray([...Array(q.answers?.length || 4).keys()])
+      );
+      
+      setQuizState({
+        currentQuestions: selected,
+        shuffledAnswers,
+        userAnswers: new Array(selected.length).fill(null),
+        isComplete: false,
+      });
+    }
+    
+    setIsInitialized(true);
   }, []);
 
   // Обновление статистики при изменении quizState
@@ -159,7 +206,7 @@ export function LearningSection() {
 
   // Подгрузка вопросов при изменении страницы
   useEffect(() => {
-    if (currentPage > 0) {
+    if (currentPage > 0 && isInitialized) {
       const questions = questionsData?.questions || [];
       const startIndex = (currentPage - 1) * QUESTIONS_PER_SESSION;
       const selected = questions.slice(startIndex, startIndex + QUESTIONS_PER_SESSION);
@@ -191,7 +238,7 @@ export function LearningSection() {
         });
       }
     }
-  }, [currentPage]);
+  }, [currentPage, isInitialized]);
 
   const updateStats = (state: QuizState) => {
     let correct = 0;
@@ -260,6 +307,7 @@ export function LearningSection() {
   const goToPage = useCallback((page: number) => {
     const newPage = Math.max(1, Math.min(page, TOTAL_PAGES));
     setCurrentPage(newPage);
+    saveCurrentPage(newPage);
   }, []);
 
   // Следующая страница
