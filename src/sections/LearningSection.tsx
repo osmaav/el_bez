@@ -339,11 +339,20 @@ export function LearningSection() {
     setQuizState(newState);
     updateStats(newState);
 
-    // Проверка завершения
+    // Проверка завершения страницы
     if (newAnswers.every(a => a !== null)) {
       const newStateWithComplete = { ...newState, isComplete: true };
       setQuizState(newStateWithComplete);
       updateStats(newStateWithComplete);
+      // Сохраняем состояние страницы
+      setSavedStates(prev => ({
+        ...prev,
+        [currentPage]: {
+          userAnswers: newAnswers,
+          shuffledAnswers: shuffledAnswers,
+          isComplete: true
+        }
+      }));
     }
   };
 
@@ -590,20 +599,29 @@ export function LearningSection() {
             <div className="text-center">
               <Trophy className="w-16 h-16 text-yellow-500 mx-auto mb-4" />
               <h2 className="text-2xl font-bold text-slate-900 mb-2">
-                Сессия завершена!
+                {currentPage === TOTAL_PAGES ? "Сессия завершена!" : "Вы ответили на все вопросы текущей страницы."}
               </h2>
               <p className="text-slate-600 mb-6">
                 Правильных ответов: {stats.correct} из {QUESTIONS_PER_SESSION}
               </p>
               <div className="flex justify-center gap-4">
-                <Button onClick={(e) => {
-                  e.preventDefault();
-                  setCurrentPage(1);
-                  startNewSession(1);
-                }} size="lg" className="gap-2">
-                  <Shuffle className="w-5 h-5" />
-                  Новая сессия
-                </Button>
+                {currentPage === TOTAL_PAGES ? (
+                  <Button onClick={(e) => {
+                    e.preventDefault();
+                    handleReset();
+                  }} size="lg" className="gap-2">
+                    <Shuffle className="w-5 h-5" />
+                    Новая сессия
+                  </Button>
+                ) : (
+                  <Button onClick={(e) => {
+                    e.preventDefault();
+                    nextPage();
+                  }} size="lg" className="gap-2">
+                    Далее...
+                    <ChevronRight className="w-5 h-5" />
+                  </Button>
+                )}
               </div>
             </div>
           </CardContent>
