@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
 import type { Question, Ticket, TestStats, PageType } from '@/types';
+import questionsData from '@/data/questions.json';
 
 interface AppContextType {
   // Навигация
@@ -85,17 +86,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     const loadQuestions = async () => {
       try {
         console.log('🔵 Загрузка вопросов...');
-        const response = await fetch('/questions.json');
-        console.log('🔵 Status:', response.status);
-        if (!response.ok) {
-          throw new Error('Не удалось загрузить вопросы');
-        }
-        const data = await response.json();
-        console.log('🔵 Получено данных:', data);
-        console.log('🔵 Количество вопросов в JSON:', data.questions?.length);
-
+        
         // Преобразуем данные из формата JSON в формат Question
-        const transformedQuestions: Question[] = (data.questions || []).map((q: any) => ({
+        const transformedQuestions: Question[] = (questionsData.questions || []).map((q: any) => ({
           id: q.id,
           text: q.question,
           options: q.answers,
@@ -106,7 +99,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         setQuestions(transformedQuestions);
 
         // Генерируем билеты на основе поля ticket из JSON
-        generateTicketsFromData(transformedQuestions, data.questions || []);
+        generateTicketsFromData(transformedQuestions, questionsData.questions || []);
       } catch (err) {
         console.error('❌ Ошибка загрузки:', err);
         setError(err instanceof Error ? err.message : 'Ошибка загрузки');
