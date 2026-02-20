@@ -419,7 +419,7 @@ export function LearningSection() {
 
   return (
     <div className="min-h-screen bg-slate-50">
-      <div className="max-w-6xl mx-auto px-4 py-8 pt-20">
+      <div className="max-w-6xl mx-auto px-4 py-3">
       {/* Заголовок */}
       <div className="mb-6 sm:mb-8">
         <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 mb-2">
@@ -431,13 +431,13 @@ export function LearningSection() {
       </div>
 
       {/* Прогресс-бар в шапке */}
-      <Card className="mb-6 sticky top-16 z-10 bg-white/95 backdrop-blur shadow-lg">
-        <CardContent className="py-2">
+      <Card className="mb-6 sticky z-10 bg-white/95 backdrop-blur shadow-lg">
+        <CardContent>
           <div className="flex items-center justify-between gap-2 md:gap-4 mb-3">
             <div className="flex items-center gap-2 md:gap-4">
               <div className="flex items-center gap-2">
                 <Target className="w-5 h-5 text-blue-600" />
-                <span className="text-sm font-medium">Всего: {QUESTIONS_PER_SESSION}</span>
+                <span className="text-sm font-medium min-w-[70px]">Всего: {QUESTIONS_PER_SESSION}</span>
               </div>
               <div className="flex items-center gap-2">
                 <CheckCircle2 className="w-5 h-5 text-green-600" />
@@ -462,8 +462,12 @@ export function LearningSection() {
               >
                 <ChevronLeft className="w-4 h-4" />
               </Button>
-              <span className="text-xs font-medium text-center px-1 min-w-[60px]">
-                {currentPage}/{TOTAL_PAGES}
+              <span className="text-xs font-medium text-center px-1">
+                <span className="hidden md:inline">стр. </span>
+		{currentPage}
+		<span className="hidden md:inline"> из </span>
+		<span className="md:hidden">/</span>
+   		{TOTAL_PAGES}
               </span>
               <Button
                 variant="outline"
@@ -504,14 +508,14 @@ export function LearningSection() {
       {/* Вопросы */}
       <div className="space-y-6">
         {quizState.currentQuestions.map((question, qIdx) => (
-          <Card key={question.id} className="overflow-hidden">
+          <Card key={question.id} className="overflow-hidden py-2">
             <CardHeader className="bg-slate-50 border-b">
               <div className="flex items-start justify-between">
-                <CardTitle className="text-lg font-medium">
-                  Вопрос #{question.id}
+                <CardTitle className="font-medium">
+                  Вопрос {question.id}
                 </CardTitle>
                 <div className="flex items-center gap-2">
-                  <Badge variant="outline" className="border-0 bg-transparent text-slate-500">Билет {question.ticket}</Badge>
+                  <Badge variant="outline" className="border-0">Билет №{question.ticket}</Badge>
                   {quizState.userAnswers[qIdx] !== null && (
                     quizState.userAnswers[qIdx] === 
                     quizState.shuffledAnswers[qIdx].findIndex(
