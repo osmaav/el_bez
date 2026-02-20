@@ -1,5 +1,6 @@
 import { AppProvider, useApp } from '@/context/AppContext';
 import { Navigation } from '@/components/Navigation';
+import { LearningSection } from '@/sections/LearningSection';
 import { TheorySection } from '@/sections/TheorySection';
 import { ExamplesSection } from '@/sections/ExamplesSection';
 import { TrainerSection } from '@/sections/TrainerSection';
@@ -13,6 +14,7 @@ function AppContent() {
     <div className="min-h-screen bg-slate-50">
       <Navigation />
       <main className="pb-12">
+        {currentPage === 'learning' && <LearningSection />}
         {currentPage === 'theory' && <TheorySection />}
         {currentPage === 'examples' && <ExamplesSection />}
         {currentPage === 'trainer' && <TrainerSection />}

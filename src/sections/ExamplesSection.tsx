@@ -2,12 +2,14 @@ import { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { 
-  ChevronDown, 
-  ChevronUp, 
-  CheckCircle2, 
+import {
+  ChevronDown,
+  ChevronUp,
+  CheckCircle2,
   AlertCircle,
-  ClipboardCheck
+  ClipboardCheck,
+  FileText,
+  ExternalLink
 } from 'lucide-react';
 
 interface Example {
@@ -16,6 +18,16 @@ interface Example {
   category: string;
   situation: string;
   solution: string;
+  keyPoints: string[];
+}
+
+interface Document {
+  id: number;
+  title: string;
+  category: string;
+  description: string;
+  details: string;
+  link?: string;
   keyPoints: string[];
 }
 
@@ -209,23 +221,389 @@ const examples: Example[] = [
   }
 ];
 
+const documents: Document[] = [
+  {
+    id: 1,
+    title: 'Приказ Минтруда России от 15.12.2020 № 903н',
+    category: 'Нормативные',
+    description: 'Правила по охране труда при эксплуатации электроустановок',
+    details: `
+      <div class="space-y-3">
+        <p><strong>Дата принятия:</strong> 15 декабря 2020 г.</p>
+        <p><strong>Регистрация в Минюсте:</strong> 30.12.2020, № 61957</p>
+        <p><strong>Дата начала действия:</strong> 01.01.2021</p>
+        <p><strong>Действует до:</strong> 01.09.2031</p>
+        <p><strong>Последняя редакция:</strong> 29.04.2025 (Приказ № 287н)</p>
+        
+        <h4 class="font-semibold mt-4 mb-2">Структура документа:</h4>
+        <ul class="list-disc pl-5 space-y-1">
+          <li>Раздел I — Общие положения</li>
+          <li>Раздел II — Требования к работникам, допускаемым к выполнению работ</li>
+          <li>Раздел III — Охрана труда при осмотрах, оперативном обслуживании</li>
+          <li>Раздел IV — Охрана труда при производстве работ в действующих электроустановках</li>
+          <li>Раздел V — Организационные мероприятия по обеспечению безопасного проведения работ</li>
+          <li>Раздел VI — Организация работ с оформлением наряда-допуска</li>
+          <li>Раздел VII — Организация работ по распоряжению</li>
+          <li>Раздел VIII — Работы в порядке текущей эксплуатации</li>
+        </ul>
+        
+        <p class="mt-3"><strong>Приложения:</strong> образцы удостоверений, протоколов, журналов, наряда-допуска</p>
+      </div>
+    `,
+    link: 'https://normativ.kontur.ru/document?moduleId=1&documentId=501479',
+    keyPoints: [
+      'Устанавливает государственные нормативные требования охраны труда',
+      'Распространяется на всех работодателей и работников',
+      'Обязателен для исполнения всеми организациями'
+    ]
+  },
+  {
+    id: 2,
+    title: 'Приказ Минэнерго России от 12.08.2022 № 811',
+    category: 'Нормативные',
+    description: 'Правила технической эксплуатации электроустановок потребителей (ПТЭЭП)',
+    details: `
+      <div class="space-y-3">
+        <p><strong>Дата принятия:</strong> 12 августа 2022 г.</p>
+        <p><strong>Дата начала действия:</strong> 7 января 2023 г.</p>
+        
+        <h4 class="font-semibold mt-4 mb-2">Основные разделы:</h4>
+        <ul class="list-disc pl-5 space-y-1">
+          <li>Требования к организации эксплуатации электроустановок</li>
+          <li>Техническое обслуживание и ремонт оборудования</li>
+          <li>Управление режимами работы энергосистем</li>
+          <li>Подготовка и аттестация персонала</li>
+          <li>Учёт электроэнергии и контроль качества</li>
+          <li>Расследование аварий и инцидентов</li>
+        </ul>
+        
+        <h4 class="font-semibold mt-4 mb-2">Изменения в новой редакции:</h4>
+        <ul class="list-disc pl-5 space-y-1">
+          <li>Упрощены требования к документации</li>
+          <li>Актуализированы требования к персоналу</li>
+          <li>Добавлены положения о цифровизации учёта</li>
+        </ul>
+      </div>
+    `,
+    link: 'https://docs.cntd.ru/document/351621634',
+    keyPoints: [
+      'Регламентирует техническую эксплуатацию электроустановок',
+      'Обязателен для всех потребителей электроэнергии',
+      'Содержит требования к обслуживанию и ремонту'
+    ]
+  },
+  {
+    id: 3,
+    title: 'Инструкция по применению и испытанию средств защиты (Приказ Минэнерго № 261)',
+    category: 'Инструкции',
+    description: 'Классификация, сроки испытаний и требования к средствам защиты',
+    details: `
+      <div class="space-y-3">
+        <h4 class="font-semibold">Классификация средств защиты:</h4>
+        
+        <h5 class="font-medium mt-2">Для электроустановок ВЫШЕ 1000 В:</h5>
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <p class="font-medium">Основные:</p>
+            <ul class="list-disc pl-4 text-sm">
+              <li>Изолирующие штанги</li>
+              <li>Изолирующие клещи</li>
+              <li>Указатели напряжения</li>
+              <li>Устройства для измерений</li>
+            </ul>
+          </div>
+          <div>
+            <p class="font-medium">Дополнительные:</p>
+            <ul class="list-disc pl-4 text-sm">
+              <li>Диэлектрические перчатки</li>
+              <li>Диэлектрические боты</li>
+              <li>Диэлектрические ковры</li>
+              <li>Изолирующие подставки</li>
+            </ul>
+          </div>
+        </div>
+        
+        <h5 class="font-medium mt-3">Для электроустановок ДО 1000 В:</h5>
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <p class="font-medium">Основные:</p>
+            <ul class="list-disc pl-4 text-sm">
+              <li>Изолирующие штанги</li>
+              <li>Указатели напряжения</li>
+              <li>Электроизмерительные клещи</li>
+              <li>Диэлектрические перчатки</li>
+              <li>Ручной изолирующий инструмент</li>
+            </ul>
+          </div>
+          <div>
+            <p class="font-medium">Дополнительные:</p>
+            <ul class="list-disc pl-4 text-sm">
+              <li>Диэлектрические галоши</li>
+              <li>Диэлектрические ковры</li>
+              <li>Изолирующие подставки</li>
+            </ul>
+          </div>
+        </div>
+        
+        <h4 class="font-semibold mt-4 mb-2">Сроки испытаний и проверок:</h4>
+        <table class="w-full border-collapse border border-slate-300 text-sm">
+          <thead>
+            <tr class="bg-slate-100">
+              <th class="border border-slate-300 px-2 py-1 text-left">Вид проверки</th>
+              <th class="border border-slate-300 px-2 py-1 text-left">Периодичность</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="border border-slate-300 px-2 py-1">Периодический осмотр</td>
+              <td class="border border-slate-300 px-2 py-1">Не реже 1 раза в 6 мес.</td>
+            </tr>
+            <tr>
+              <td class="border border-slate-300 px-2 py-1">Осмотр заземлений</td>
+              <td class="border border-slate-300 px-2 py-1">Не реже 1 раза в 3 мес.</td>
+            </tr>
+            <tr>
+              <td class="border border-slate-300 px-2 py-1">Осмотр перед применением</td>
+              <td class="border border-slate-300 px-2 py-1">Перед каждым использованием</td>
+            </tr>
+          </tbody>
+        </table>
+        
+        <div class="mt-3 p-3 bg-yellow-50 rounded border border-yellow-200">
+          <p class="text-sm"><strong>⚠️ Важно:</strong> Запрещается пользоваться средствами защиты с истекшим сроком годности!</p>
+        </div>
+      </div>
+    `,
+    keyPoints: [
+      'Все средства защиты должны быть пронумерованы',
+      'Осмотр проводится не реже 1 раза в 6 месяцев',
+      'Перед каждым применением проверять срок годности по штампу'
+    ]
+  },
+  {
+    id: 4,
+    title: 'Инструкция по охране труда для электромонтера (РД 153-34.0-03.150-00)',
+    category: 'Инструкции',
+    description: 'Типовая инструкция по охране труда для электромонтера',
+    details: `
+      <div class="space-y-3">
+        <h4 class="font-semibold">Требования к работникам:</h4>
+        <ul class="list-disc pl-5 space-y-1">
+          <li>Возраст не моложе 18 лет</li>
+          <li>Прохождение медицинского осмотра</li>
+          <li>Обучение и проверка знаний по охране труда</li>
+          <li>Наличие соответствующей группы по электробезопасности</li>
+        </ul>
+        
+        <h4 class="font-semibold mt-3">Группы по электробезопасности и стаж:</h4>
+        <table class="w-full border-collapse border border-slate-300 text-sm">
+          <thead>
+            <tr class="bg-slate-100">
+              <th class="border border-slate-300 px-2 py-1 text-left">Должность</th>
+              <th class="border border-slate-300 px-2 py-1 text-left">До 1000 В</th>
+              <th class="border border-slate-300 px-2 py-1 text-left">Выше 1000 В</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="border border-slate-300 px-2 py-1">Электромонтер</td>
+              <td class="border border-slate-300 px-2 py-1">0,6 мес.</td>
+              <td class="border border-slate-300 px-2 py-1">1,0 мес.</td>
+            </tr>
+            <tr>
+              <td class="border border-slate-300 px-2 py-1">1-35 кВ</td>
+              <td class="border border-slate-300 px-2 py-1">0,6 мес.</td>
+              <td class="border border-slate-300 px-2 py-1">1,0 мес.</td>
+            </tr>
+            <tr>
+              <td class="border border-slate-300 px-2 py-1">60-110 кВ</td>
+              <td class="border border-slate-300 px-2 py-1">1,0 мес.</td>
+              <td class="border border-slate-300 px-2 py-1">1,5 мес.</td>
+            </tr>
+          </tbody>
+        </table>
+        
+        <h4 class="font-semibold mt-3">Обязанности работника:</h4>
+        <ul class="list-disc pl-5 space-y-1">
+          <li><strong>Перед началом работы:</strong> получить задание и инструктаж, проверить инструмент и СИЗ</li>
+          <li><strong>Во время работы:</strong> соблюдать технологические карты, использовать СИЗ</li>
+          <li><strong>По окончании работы:</strong> отключить оборудование, привести в порядок рабочее место</li>
+          <li><strong>В аварийной ситуации:</strong> прекратить работу, отключить напряжение, оказать первую помощь</li>
+        </ul>
+      </div>
+    `,
+    keyPoints: [
+      'К работе допускаются лица не моложе 18 лет',
+      'Требуется регулярная проверка знаний',
+      'Запрещается работа без СИЗ и неисправным инструментом'
+    ]
+  },
+  {
+    id: 5,
+    title: 'Первая помощь при поражении электрическим током',
+    category: 'Первая помощь',
+    description: 'Алгоритм действий при поражении электрическим током',
+    details: `
+      <div class="space-y-3">
+        <div class="p-4 bg-red-50 rounded border border-red-200">
+          <p class="font-semibold text-red-800">⚠️ Главное правило: напряжение должно быть снято НЕМЕДЛЕННО!</p>
+          <p class="text-sm text-red-700 mt-1">Предварительного разрешения оперативного персонала не требуется</p>
+        </div>
+        
+        <h4 class="font-semibold">Алгоритм действий:</h4>
+        <ol class="list-decimal pl-5 space-y-2">
+          <li><strong>Устранить воздействие тока:</strong>
+            <ul class="list-disc pl-5 mt-1">
+              <li>Отключить напряжение (выключатель, рубильник)</li>
+              <li>Если невозможно — оттащить за сухую одежду</li>
+              <li>Использовать сухой деревянный предмет</li>
+              <li>Перерезать провод изолированными клещами</li>
+            </ul>
+          </li>
+          <li><strong>Оценить состояние:</strong>
+            <ul class="list-disc pl-5 mt-1">
+              <li>Проверить сознание</li>
+              <li>Проверить дыхание и пульс</li>
+            </ul>
+          </li>
+          <li><strong>Вызвать скорую помощь (103)</strong></li>
+          <li><strong>При отсутствии дыхания — начать СЛР:</strong>
+            <ul class="list-disc pl-5 mt-1">
+              <li>30 нажатий на грудную клетку</li>
+              <li>2 искусственных вдоха</li>
+              <li>Частота 100-120 нажатий в минуту</li>
+            </ul>
+          </li>
+          <li><strong>Продолжать реанимацию до прибытия медиков</strong></li>
+        </ol>
+        
+        <h4 class="font-semibold mt-4">Что НЕЛЬЗЯ делать:</h4>
+        <ul class="list-disc pl-5 space-y-1 text-red-700">
+          <li>Прикасаться к пострадавшему без отключения напряжения</li>
+          <li>Использовать мокрые или металлические предметы</li>
+          <li>Оставлять пострадавшего одного</li>
+          <li>Прекращать реанимацию без признаков жизни</li>
+        </ul>
+        
+        <div class="mt-3 p-3 bg-blue-50 rounded border border-blue-200">
+          <p class="text-sm"><strong>💡 Важно:</strong> Если поражение произошло на высоте — после отключения тока необходимо как можно быстрее спустить пострадавшего с высоты.</p>
+        </div>
+      </div>
+    `,
+    keyPoints: [
+      'Напряжение отключается немедленно без разрешения',
+      'Прикасаться к пострадавшему только после отключения тока',
+      'СЛР: 30 нажатий / 2 вдоха, частота 100-120 в минуту'
+    ]
+  },
+  {
+    id: 6,
+    title: 'Средства индивидуальной защиты в электроустановках',
+    category: 'СИЗ',
+    description: 'Требования к применению и хранению средств защиты',
+    details: `
+      <div class="space-y-3">
+        <h4 class="font-semibold">Основные требования к применению:</h4>
+        <ul class="list-disc pl-5 space-y-1">
+          <li>Использовать только по прямому назначению</li>
+          <li>Не превышать расчетное напряжение электроустановки</li>
+          <li>В сухую погоду (в открытых электроустановках)</li>
+          <li>Перед каждым применением проверять исправность и срок годности</li>
+        </ul>
+        
+        <h4 class="font-semibold mt-3">Требования к конкретным средствам:</h4>
+        
+        <h5 class="font-medium">Диэлектрические перчатки:</h5>
+        <ul class="list-disc pl-5 space-y-1 text-sm">
+          <li>Длина — не менее 350 мм</li>
+          <li>До 1000 В — основное средство, выше 1000 В — дополнительное</li>
+          <li>Перед применением проверять на проколы (скручиванием)</li>
+          <li>Края не допускается подвертывать</li>
+        </ul>
+        
+        <h5 class="font-medium">Диэлектрическая обувь:</h5>
+        <ul class="list-disc pl-5 space-y-1 text-sm">
+          <li>Галоши — до 1000 В</li>
+          <li>Боты — при всех напряжениях</li>
+          <li>Высота бот — не менее 160 мм</li>
+          <li>Защищают от напряжения шага</li>
+        </ul>
+        
+        <h5 class="font-medium">Указатели напряжения до 1000 В:</h5>
+        <ul class="list-disc pl-5 space-y-1 text-sm">
+          <li>Предпочтительны двухполюсные указатели</li>
+          <li>Применение контрольных ламп ЗАПРЕЩАЕТСЯ</li>
+          <li>Время контакта — не менее 5 секунд</li>
+          <li>Для однополюсных — обязательный контакт руки с электродом</li>
+        </ul>
+        
+        <h4 class="font-semibold mt-3">Требования к хранению:</h4>
+        <ul class="list-disc pl-5 space-y-1">
+          <li>В закрытых помещениях</li>
+          <li>Защита от механических повреждений, загрязнения и увлажнения</li>
+          <li>Экранирующие средства — отдельно от электрозащитных</li>
+          <li>У входа в помещение или на щитах управления</li>
+        </ul>
+      </div>
+    `,
+    keyPoints: [
+      'Все средства должны быть пронумерованы и иметь штамп испытаний',
+      'Запрещено использовать средства с истекшим сроком годности',
+      'Периодический осмотр — не реже 1 раза в 6 месяцев'
+    ]
+  }
+];
+
 export function ExamplesSection() {
   const [expandedId, setExpandedId] = useState<number | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<'examples' | 'documents'>('examples');
 
-  const categories = Array.from(new Set(examples.map(e => e.category)));
-  
-  const filteredExamples = selectedCategory 
+  const exampleCategories = Array.from(new Set(examples.map(e => e.category)));
+  const documentCategories = Array.from(new Set(documents.map(d => d.category)));
+  const allCategories = activeTab === 'examples' ? exampleCategories : documentCategories;
+
+  const filteredExamples = selectedCategory
     ? examples.filter(e => e.category === selectedCategory)
     : examples;
+
+  const filteredDocuments = selectedCategory
+    ? documents.filter(d => d.category === selectedCategory)
+    : documents;
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
       <div className="mb-6">
-        <h2 className="text-3xl font-bold text-slate-900">Примеры решения задач</h2>
+        <h2 className="text-3xl font-bold text-slate-900">Примеры и документы</h2>
         <p className="text-slate-600 mt-2">
-          Разбор типовых ситуаций и порядок действий в соответствии с правилами
+          Разбор типовых ситуаций и нормативные документы по электробезопасности
         </p>
+      </div>
+
+      {/* Вкладки */}
+      <div className="flex gap-2 mb-6">
+        <Button
+          variant={activeTab === 'examples' ? 'default' : 'outline'}
+          onClick={() => {
+            setActiveTab('examples');
+            setSelectedCategory(null);
+          }}
+          className={activeTab === 'examples' ? 'bg-yellow-500 hover:bg-yellow-600' : ''}
+        >
+          <ClipboardCheck className="w-4 h-4 mr-2" />
+          Примеры решений
+        </Button>
+        <Button
+          variant={activeTab === 'documents' ? 'default' : 'outline'}
+          onClick={() => {
+            setActiveTab('documents');
+            setSelectedCategory(null);
+          }}
+          className={activeTab === 'documents' ? 'bg-yellow-500 hover:bg-yellow-600' : ''}
+        >
+          <FileText className="w-4 h-4 mr-2" />
+          Нормативные документы
+        </Button>
       </div>
 
       {/* Фильтры по категориям */}
@@ -237,7 +615,7 @@ export function ExamplesSection() {
         >
           Все
         </Button>
-        {categories.map(cat => (
+        {allCategories.map(cat => (
           <Button
             key={cat}
             variant={selectedCategory === cat ? 'default' : 'outline'}
@@ -249,85 +627,165 @@ export function ExamplesSection() {
         ))}
       </div>
 
-      {/* Список примеров */}
-      <div className="space-y-4">
-        {filteredExamples.map((example) => {
-          const isExpanded = expandedId === example.id;
-          
-          return (
-            <Card key={example.id} className="overflow-hidden">
-              <div 
-                className="p-4 cursor-pointer hover:bg-slate-50 transition-colors"
-                onClick={() => setExpandedId(isExpanded ? null : example.id)}
-              >
-                <div className="flex items-start justify-between">
-                  <div className="flex items-start space-x-3">
-                    <div className="w-10 h-10 bg-yellow-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                      <ClipboardCheck className="w-5 h-5 text-yellow-600" />
-                    </div>
-                    <div>
-                      <div className="flex items-center space-x-2 mb-1">
-                        <Badge variant="secondary">{example.category}</Badge>
-                      </div>
-                      <h3 className="font-semibold text-slate-900">{example.title}</h3>
-                    </div>
-                  </div>
-                  {isExpanded ? (
-                    <ChevronUp className="w-5 h-5 text-slate-400" />
-                  ) : (
-                    <ChevronDown className="w-5 h-5 text-slate-400" />
-                  )}
-                </div>
-              </div>
+      {/* Примеры решений */}
+      {activeTab === 'examples' && (
+        <div className="space-y-4">
+          {filteredExamples.map((example) => {
+            const isExpanded = expandedId === example.id;
 
-              {isExpanded && (
-                <CardContent className="border-t bg-slate-50">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {/* Ситуация */}
-                    <div>
-                      <div className="flex items-center space-x-2 mb-3">
-                        <AlertCircle className="w-5 h-5 text-amber-600" />
-                        <h4 className="font-semibold text-slate-900">Ситуация</h4>
+            return (
+              <Card key={example.id} className="overflow-hidden">
+                <div
+                  className="p-4 cursor-pointer hover:bg-slate-50 transition-colors"
+                  onClick={() => setExpandedId(isExpanded ? null : example.id)}
+                >
+                  <div className="flex items-start justify-between">
+                    <div className="flex items-start space-x-3">
+                      <div className="w-10 h-10 bg-yellow-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                        <ClipboardCheck className="w-5 h-5 text-yellow-600" />
                       </div>
-                      <p className="text-slate-700 text-sm leading-relaxed">
-                        {example.situation}
-                      </p>
-                    </div>
-
-                    {/* Решение */}
-                    <div>
-                      <div className="flex items-center space-x-2 mb-3">
-                        <CheckCircle2 className="w-5 h-5 text-green-600" />
-                        <h4 className="font-semibold text-slate-900">Порядок действий</h4>
-                      </div>
-                      <div 
-                        className="text-slate-700 text-sm leading-relaxed"
-                        dangerouslySetInnerHTML={{ __html: example.solution }}
-                      />
-                    </div>
-                  </div>
-
-                  {/* Ключевые моменты */}
-                  <div className="mt-6 pt-4 border-t">
-                    <h4 className="font-semibold text-slate-900 mb-3">Ключевые моменты</h4>
-                    <div className="flex flex-wrap gap-2">
-                      {example.keyPoints.map((point, idx) => (
-                        <div 
-                          key={idx}
-                          className="flex items-center space-x-2 bg-white px-3 py-2 rounded-lg border text-sm"
-                        >
-                          <CheckCircle2 className="w-4 h-4 text-green-500" />
-                          <span>{point}</span>
+                      <div>
+                        <div className="flex items-center space-x-2 mb-1">
+                          <Badge variant="secondary">{example.category}</Badge>
                         </div>
-                      ))}
+                        <h3 className="font-semibold text-slate-900">{example.title}</h3>
+                      </div>
                     </div>
+                    {isExpanded ? (
+                      <ChevronUp className="w-5 h-5 text-slate-400" />
+                    ) : (
+                      <ChevronDown className="w-5 h-5 text-slate-400" />
+                    )}
                   </div>
-                </CardContent>
-              )}
-            </Card>
-          );
-        })}
-      </div>
+                </div>
+
+                {isExpanded && (
+                  <CardContent className="border-t bg-slate-50">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      {/* Ситуация */}
+                      <div>
+                        <div className="flex items-center space-x-2 mb-3">
+                          <AlertCircle className="w-5 h-5 text-amber-600" />
+                          <h4 className="font-semibold text-slate-900">Ситуация</h4>
+                        </div>
+                        <p className="text-slate-700 text-sm leading-relaxed">
+                          {example.situation}
+                        </p>
+                      </div>
+
+                      {/* Решение */}
+                      <div>
+                        <div className="flex items-center space-x-2 mb-3">
+                          <CheckCircle2 className="w-5 h-5 text-green-600" />
+                          <h4 className="font-semibold text-slate-900">Порядок действий</h4>
+                        </div>
+                        <div
+                          className="text-slate-700 text-sm leading-relaxed"
+                          dangerouslySetInnerHTML={{ __html: example.solution }}
+                        />
+                      </div>
+                    </div>
+
+                    {/* Ключевые моменты */}
+                    <div className="mt-6 pt-4 border-t">
+                      <h4 className="font-semibold text-slate-900 mb-3">Ключевые моменты</h4>
+                      <div className="flex flex-wrap gap-2">
+                        {example.keyPoints.map((point, idx) => (
+                          <div
+                            key={idx}
+                            className="flex items-center space-x-2 bg-white px-3 py-2 rounded-lg border text-sm"
+                          >
+                            <CheckCircle2 className="w-4 h-4 text-green-500" />
+                            <span>{point}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </CardContent>
+                )}
+              </Card>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Нормативные документы */}
+      {activeTab === 'documents' && (
+        <div className="space-y-4">
+          {filteredDocuments.map((doc) => {
+            const isExpanded = expandedId === doc.id;
+
+            return (
+              <Card key={doc.id} className="overflow-hidden">
+                <div
+                  className="p-4 cursor-pointer hover:bg-slate-50 transition-colors"
+                  onClick={() => setExpandedId(isExpanded ? null : doc.id)}
+                >
+                  <div className="flex items-start justify-between">
+                    <div className="flex items-start space-x-3">
+                      <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                        <FileText className="w-5 h-5 text-blue-600" />
+                      </div>
+                      <div>
+                        <div className="flex items-center space-x-2 mb-1">
+                          <Badge variant="secondary">{doc.category}</Badge>
+                        </div>
+                        <h3 className="font-semibold text-slate-900">{doc.title}</h3>
+                        <p className="text-sm text-slate-500">{doc.description}</p>
+                      </div>
+                    </div>
+                    {isExpanded ? (
+                      <ChevronUp className="w-5 h-5 text-slate-400" />
+                    ) : (
+                      <ChevronDown className="w-5 h-5 text-slate-400" />
+                    )}
+                  </div>
+                </div>
+
+                {isExpanded && (
+                  <CardContent className="border-t bg-slate-50">
+                    <div
+                      className="text-slate-700 text-sm leading-relaxed prose prose-slate max-w-none"
+                      dangerouslySetInnerHTML={{ __html: doc.details }}
+                    />
+
+                    {/* Ключевые моменты */}
+                    <div className="mt-6 pt-4 border-t">
+                      <h4 className="font-semibold text-slate-900 mb-3">Ключевые моменты</h4>
+                      <div className="flex flex-wrap gap-2">
+                        {doc.keyPoints.map((point, idx) => (
+                          <div
+                            key={idx}
+                            className="flex items-center space-x-2 bg-white px-3 py-2 rounded-lg border text-sm"
+                          >
+                            <CheckCircle2 className="w-4 h-4 text-green-500" />
+                            <span>{point}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Ссылка на документ */}
+                    {doc.link && (
+                      <div className="mt-4 pt-4 border-t">
+                        <a
+                          href={doc.link}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center text-blue-600 hover:text-blue-800 text-sm"
+                        >
+                          <ExternalLink className="w-4 h-4 mr-2" />
+                          Открыть документ в источнике
+                        </a>
+                      </div>
+                    )}
+                  </CardContent>
+                )}
+              </Card>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }

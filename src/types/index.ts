@@ -24,7 +24,7 @@ export interface Ticket {
   questions: Question[];
 }
 
-export type PageType = 'theory' | 'examples' | 'trainer' | 'exam';
+export type PageType = 'learning' | 'theory' | 'examples' | 'trainer' | 'exam';
 
 export interface TrainerState {
   questions: QuestionWithAnswer[];
