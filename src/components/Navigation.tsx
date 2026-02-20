@@ -15,10 +15,6 @@ export function Navigation() {
 
   const handlePageChange = (page: PageType) => {
     setCurrentPage(page);
-    // Плавная прокрутка после рендеринга нового компонента
-    requestAnimationFrame(() => {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    });
   };
 
   return (

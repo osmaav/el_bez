@@ -7,9 +7,15 @@ import { ExamplesSection } from '@/sections/ExamplesSection';
 import { TrainerSection } from '@/sections/TrainerSection';
 import { ExamSection } from '@/sections/ExamSection';
 import { Toaster } from '@/components/ui/sonner';
+import { useEffect } from 'react';
 
 function AppContent() {
   const { currentPage } = useApp();
+
+  // Плавная прокрутка вверх при изменении страницы
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [currentPage]);
 
   return (
     <div className="min-h-screen bg-slate-50">
