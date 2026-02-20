@@ -35,9 +35,8 @@ export function LearningSection() {
     isComplete: false,
   });
   const [stats, setStats] = useState({ correct: 0, incorrect: 0, remaining: 0 });
-  const [isLoading, setIsLoading] = useState(true);
 
-  // Загрузка сохраненного прогресса
+  // Инициализация сессии
   useEffect(() => {
     console.log('LearningSection mounted');
     console.log('Questions data:', questionsData);
@@ -46,7 +45,6 @@ export function LearningSection() {
     const allQuestions = questionsData?.questions || [];
     if (allQuestions.length === 0) {
       console.error('No questions loaded!');
-      setIsLoading(false);
       return;
     }
 
@@ -63,7 +61,6 @@ export function LearningSection() {
     } else {
       startNewSession(allQuestions);
     }
-    setIsLoading(false);
   }, []);
 
   // Сохранение прогресса
@@ -195,22 +192,10 @@ export function LearningSection() {
     ? ((QUESTIONS_PER_SESSION - stats.remaining) / QUESTIONS_PER_SESSION) * 100
     : 0;
 
-  if (isLoading) {
-    return (
-      <div className="max-w-6xl mx-auto px-4 py-8">
-        <div className="text-center">
-          <h1 className="text-3xl font-bold text-slate-900 mb-2">
-            ЭБ 1258.20 Тесты Ростехнадзора
-          </h1>
-          <p className="text-slate-600">Загрузка вопросов...</p>
-        </div>
-      </div>
-    );
-  }
-
   if (quizState.currentQuestions.length === 0) {
     return (
-      <div className="max-w-6xl mx-auto px-4 py-8">
+      <div className="min-h-screen bg-slate-50">
+        <div className="max-w-6xl mx-auto px-4 py-8 pt-20">
         <div className="text-center">
           <h1 className="text-3xl font-bold text-slate-900 mb-2">
             ЭБ 1258.20 Тесты Ростехнадзора
@@ -223,6 +208,7 @@ export function LearningSection() {
           }}>
             Загрузить вопросы
           </Button>
+        </div>
         </div>
       </div>
     );
