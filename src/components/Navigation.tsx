@@ -1,6 +1,6 @@
 import { useApp } from '@/context/AppContext';
 import type { PageType } from '@/types';
-import { BookOpen, ClipboardList, GraduationCap, Dumbbell, School } from 'lucide-react';
+import { BookOpen, GraduationCap, Dumbbell, School } from 'lucide-react';
 
 const navItems: { id: PageType; label: string; icon: React.ElementType }[] = [
   { id: 'theory', label: 'Теория', icon: BookOpen },
