@@ -35,9 +35,21 @@ export function LearningSection() {
     isComplete: false,
   });
   const [stats, setStats] = useState({ correct: 0, incorrect: 0, remaining: 0 });
+  const [isLoading, setIsLoading] = useState(true);
 
   // Загрузка сохраненного прогресса
   useEffect(() => {
+    console.log('LearningSection mounted');
+    console.log('Questions data:', questionsData);
+    console.log('Questions count:', questionsData?.questions?.length);
+    
+    const allQuestions = questionsData?.questions || [];
+    if (allQuestions.length === 0) {
+      console.error('No questions loaded!');
+      setIsLoading(false);
+      return;
+    }
+
     const savedProgress = cookies[COOKIE_NAME];
     if (savedProgress) {
       try {
@@ -46,11 +58,12 @@ export function LearningSection() {
         updateStats(parsed);
       } catch (e) {
         console.error('Ошибка загрузки прогресса:', e);
-        startNewSession();
+        startNewSession(allQuestions);
       }
     } else {
-      startNewSession();
+      startNewSession(allQuestions);
     }
+    setIsLoading(false);
   }, []);
 
   // Сохранение прогресса
@@ -87,13 +100,19 @@ export function LearningSection() {
   }, []);
 
   // Начало новой сессии
-  const startNewSession = useCallback(() => {
-    const allQuestions = questionsData.questions || [];
-    const shuffled = [...allQuestions].sort(() => Math.random() - 0.5);
-    const selected = shuffled.slice(0, QUESTIONS_PER_SESSION);
+  const startNewSession = useCallback((allQuestions?: Question[]) => {
+    const questions = allQuestions || questionsData?.questions || [];
+    if (questions.length === 0) {
+      console.error('No questions available');
+      return;
+    }
+    
+    const shuffled = [...questions].sort(() => Math.random() - 0.5);
+    const selected = shuffled.slice(0, Math.min(QUESTIONS_PER_SESSION, questions.length));
 
+    const maxAnswers = Math.max(...questions.map(q => q.answers?.length || 4));
     const shuffledAnswers = selected.map(() => 
-      shuffleArray([0, 1, 2, 3].slice(0, allQuestions[0]?.answers.length || 4))
+      shuffleArray([...Array(maxAnswers).keys()])
     );
 
     const newState: QuizState = {
@@ -129,7 +148,8 @@ export function LearningSection() {
   // Сброс прогресса
   const handleReset = () => {
     removeCookie(COOKIE_NAME);
-    startNewSession();
+    const allQuestions = questionsData?.questions || [];
+    startNewSession(allQuestions);
   };
 
   // Получение цвета для ответа
@@ -159,6 +179,39 @@ export function LearningSection() {
   const progress = quizState.currentQuestions.length > 0
     ? ((QUESTIONS_PER_SESSION - stats.remaining) / QUESTIONS_PER_SESSION) * 100
     : 0;
+
+  if (isLoading) {
+    return (
+      <div className="max-w-6xl mx-auto px-4 py-8">
+        <div className="text-center">
+          <h1 className="text-3xl font-bold text-slate-900 mb-2">
+            ЭБ 1258.20 Тесты Ростехнадзора
+          </h1>
+          <p className="text-slate-600">Загрузка вопросов...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (quizState.currentQuestions.length === 0) {
+    return (
+      <div className="max-w-6xl mx-auto px-4 py-8">
+        <div className="text-center">
+          <h1 className="text-3xl font-bold text-slate-900 mb-2">
+            ЭБ 1258.20 Тесты Ростехнадзора
+          </h1>
+          <p className="text-slate-600 mb-4">Вопросы не загружены</p>
+          <Button onClick={(e) => {
+            e.preventDefault();
+            const allQuestions = questionsData?.questions || [];
+            startNewSession(allQuestions);
+          }}>
+            Загрузить вопросы
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-8">
@@ -198,7 +251,10 @@ export function LearningSection() {
               <Button
                 variant="outline"
                 size="sm"
-                onClick={startNewSession}
+                onClick={() => {
+                  const allQuestions = questionsData?.questions || [];
+                  startNewSession(allQuestions);
+                }}
                 className="gap-2"
               >
                 <Shuffle className="w-4 h-4" />
@@ -292,7 +348,11 @@ export function LearningSection() {
                 Правильных ответов: {stats.correct} из {QUESTIONS_PER_SESSION}
               </p>
               <div className="flex justify-center gap-4">
-                <Button onClick={startNewSession} size="lg" className="gap-2">
+                <Button onClick={(e) => {
+                  e.preventDefault();
+                  const allQuestions = questionsData?.questions || [];
+                  startNewSession(allQuestions);
+                }} size="lg" className="gap-2">
                   <Shuffle className="w-5 h-5" />
                   Новая сессия
                 </Button>
