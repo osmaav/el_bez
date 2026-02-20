@@ -40,7 +40,7 @@ interface AppContextType {
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
 const QUESTIONS_PER_TICKET = 20;
-const TOTAL_TICKETS = 31;
+const TOTAL_TICKETS = 15;
 const STORAGE_KEY = 'electrospa_current_page';
 
 export function AppProvider({ children }: { children: React.ReactNode }) {
@@ -116,12 +116,12 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
   // Генерация билетов
   const generateTickets = (allQuestions: Question[]) => {
+    const shuffled = [...allQuestions].sort(() => Math.random() - 0.5);
     const newTickets: Ticket[] = [];
 
     for (let i = 0; i < TOTAL_TICKETS; i++) {
-      // Перемешиваем вопросы для каждого билета отдельно
-      const shuffled = [...allQuestions].sort(() => Math.random() - 0.5);
-      const ticketQuestions = shuffled.slice(0, QUESTIONS_PER_TICKET);
+      const startIdx = i * QUESTIONS_PER_TICKET;
+      const ticketQuestions = shuffled.slice(startIdx, startIdx + QUESTIONS_PER_TICKET);
 
       if (ticketQuestions.length === QUESTIONS_PER_TICKET) {
         newTickets.push({
