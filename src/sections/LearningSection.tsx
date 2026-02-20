@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Shuffle, RotateCcw, CheckCircle2, XCircle, Trophy, Target, AlertCircle } from 'lucide-react';
+import { Shuffle, RotateCcw, CheckCircle2, XCircle, Trophy, Target, AlertCircle, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
@@ -24,6 +24,8 @@ interface QuizState {
 
 const QUESTIONS_PER_SESSION = 10;
 const STORAGE_KEY = 'electrospa_quiz_progress';
+const TOTAL_QUESTIONS = questionsData?.questions?.length || 304;
+const TOTAL_PAGES = Math.ceil(TOTAL_QUESTIONS / QUESTIONS_PER_SESSION);
 
 // Функции для работы с localStorage
 const saveProgress = (state: QuizState) => {
@@ -62,6 +64,7 @@ export function LearningSection() {
     isComplete: false,
   });
   const [stats, setStats] = useState({ correct: 0, incorrect: 0, remaining: 0 });
+  const [currentPage, setCurrentPage] = useState(1);
 
   // Инициализация сессии
   useEffect(() => {
@@ -156,15 +159,16 @@ export function LearningSection() {
   }, []);
 
   // Начало новой сессии
-  const startNewSession = useCallback((allQuestions?: Question[]) => {
+  const startNewSession = useCallback((allQuestions?: Question[], page: number = 1) => {
     const questions = allQuestions || questionsData?.questions || [];
     if (questions.length === 0) {
       console.error('No questions available');
       return;
     }
 
-    const shuffled = [...questions].sort(() => Math.random() - 0.5);
-    const selected = shuffled.slice(0, Math.min(QUESTIONS_PER_SESSION, questions.length));
+    // Выбираем вопросы для текущей страницы
+    const startIndex = (page - 1) * QUESTIONS_PER_SESSION;
+    const selected = questions.slice(startIndex, startIndex + QUESTIONS_PER_SESSION);
 
     // Создаём перемешанные индексы для каждого вопроса индивидуально
     const shuffledAnswers = selected.map((q) =>
@@ -181,6 +185,23 @@ export function LearningSection() {
     setQuizState(newState);
     updateStats(newState);
   }, [shuffleArray]);
+
+  // Переход на страницу
+  const goToPage = useCallback((page: number) => {
+    const newPage = Math.max(1, Math.min(page, TOTAL_PAGES));
+    setCurrentPage(newPage);
+    startNewSession(undefined, newPage);
+  }, [startNewSession]);
+
+  // Следующая страница
+  const nextPage = useCallback(() => {
+    goToPage(currentPage + 1);
+  }, [currentPage, goToPage]);
+
+  // Предыдущая страница
+  const prevPage = useCallback(() => {
+    goToPage(currentPage - 1);
+  }, [currentPage, goToPage]);
 
   // Обработка выбора ответа
   const handleAnswerSelect = (questionIndex: number, answerIndex: number) => {
@@ -205,7 +226,8 @@ export function LearningSection() {
   const handleReset = () => {
     clearProgress();
     const allQuestions = questionsData?.questions || [];
-    startNewSession(allQuestions);
+    setCurrentPage(1);
+    startNewSession(allQuestions, 1);
   };
 
   // Получение цвета для ответа
@@ -297,13 +319,34 @@ export function LearningSection() {
               </div>
             </div>
             <div className="flex items-center gap-2">
+              {/* Пагинация */}
+              <div className="flex items-center gap-1 mr-4">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={prevPage}
+                  disabled={currentPage === 1}
+                  className="h-8 w-8 p-0"
+                >
+                  <ChevronLeft className="w-4 h-4" />
+                </Button>
+                <span className="text-sm font-medium min-w-[80px] text-center">
+                  Стр. {currentPage} из {TOTAL_PAGES}
+                </span>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={nextPage}
+                  disabled={currentPage === TOTAL_PAGES}
+                  className="h-8 w-8 p-0"
+                >
+                  <ChevronRight className="w-4 h-4" />
+                </Button>
+              </div>
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => {
-                  const allQuestions = questionsData?.questions || [];
-                  startNewSession(allQuestions);
-                }}
+                onClick={() => goToPage(1)}
                 className="gap-2"
               >
                 <Shuffle className="w-4 h-4" />
@@ -322,7 +365,7 @@ export function LearningSection() {
           </div>
           <Progress value={progress} className="h-2" />
           <p className="text-xs text-slate-500 mt-2">
-            Прогресс: {Math.round(progress)}%
+            Прогресс: {Math.round(progress)}% • Вопросы {((currentPage - 1) * QUESTIONS_PER_SESSION) + 1}-{Math.min(currentPage * QUESTIONS_PER_SESSION, TOTAL_QUESTIONS)} из {TOTAL_QUESTIONS}
           </p>
         </CardContent>
       </Card>
