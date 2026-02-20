@@ -1,5 +1,4 @@
 import { useState, useEffect, useCallback } from 'react';
-import { useCookies } from 'react-cookie';
 import { Shuffle, RotateCcw, CheckCircle2, XCircle, Trophy, Target, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -26,8 +25,32 @@ interface QuizState {
 const QUESTIONS_PER_SESSION = 10;
 const COOKIE_NAME = 'electrospa_quiz_progress';
 
+// Функции для работы с cookies напрямую
+const setCookie = (name: string, value: string, days: number = 30) => {
+  const expires = new Date(Date.now() + days * 24 * 60 * 60 * 1000).toUTCString();
+  document.cookie = `${name}=${encodeURIComponent(value)}; expires=${expires}; path=/; SameSite=Lax`;
+  console.log(`🍪 Cookie записан: ${name}`);
+};
+
+const getCookie = (name: string): string | null => {
+  if (typeof document === 'undefined') return null;
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; ${name}=`);
+  if (parts.length === 2) {
+    const cookieValue = parts.pop()?.split(';').shift();
+    console.log(`🍪 Cookie прочитан: ${name} =`, cookieValue);
+    return cookieValue || null;
+  }
+  console.log(`🍪 Cookie не найден: ${name}`);
+  return null;
+};
+
+const removeCookie = (name: string) => {
+  document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/`;
+  console.log(`🗑️ Cookie удалён: ${name}`);
+};
+
 export function LearningSection() {
-  const [cookies, setCookie, removeCookie] = useCookies([COOKIE_NAME]);
   const [quizState, setQuizState] = useState<QuizState>({
     currentQuestions: [],
     shuffledAnswers: [],
@@ -41,8 +64,10 @@ export function LearningSection() {
     console.log('📖 LearningSection mounted');
     console.log('📦 Questions data:', questionsData);
     console.log('📊 Questions count:', questionsData?.questions?.length);
-    console.log('🍪 Cookies:', cookies);
-    console.log('🔍 Saved progress:', cookies[COOKIE_NAME]);
+    
+    // Читаем cookie напрямую
+    const savedProgress = getCookie(COOKIE_NAME);
+    console.log('🔍 Saved progress:', savedProgress);
 
     const allQuestions = questionsData?.questions || [];
     if (allQuestions.length === 0) {
@@ -51,10 +76,9 @@ export function LearningSection() {
     }
 
     // Пробуем загрузить из cookies
-    const savedProgress = cookies[COOKIE_NAME];
     if (savedProgress) {
       try {
-        const parsed = typeof savedProgress === 'string' ? JSON.parse(savedProgress) : savedProgress;
+        const parsed = JSON.parse(savedProgress);
         // Проверяем валидность сохранённого состояния
         if (parsed.currentQuestions && parsed.currentQuestions.length > 0) {
           console.log('✅ Загружено сохранённое состояние:', parsed);
@@ -90,14 +114,10 @@ export function LearningSection() {
         answers: quizState.userAnswers.filter(a => a !== null).length,
         isComplete: quizState.isComplete
       });
-      setCookie(COOKIE_NAME, cookieData, {
-        maxAge: 30 * 24 * 60 * 60, // 30 дней
-        path: '/',
-        sameSite: 'lax' as const,
-      });
+      setCookie(COOKIE_NAME, cookieData, 30);
       console.log('✅ Прогресс сохранён');
     }
-  }, [quizState, setCookie]);
+  }, [quizState]);
 
   const updateStats = (state: QuizState) => {
     let correct = 0;
