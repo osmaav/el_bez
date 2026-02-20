@@ -55,13 +55,13 @@ export function ExamSection() {
         <div className="mb-6">
           <h2 className="text-3xl font-bold text-slate-900">Экзамен</h2>
           <p className="text-slate-600 mt-2">
-            Выберите билет для прохождения экзамена. Каждый билет содержит 20 вопросов.
+            Выберите билет для прохождения экзамена. Каждый билет содержит 10 вопросов.
           </p>
         </div>
 
         <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 gap-4">
           {tickets.map((ticket) => (
-            <Card 
+            <Card
               key={ticket.id}
               className="cursor-pointer hover:shadow-lg transition-shadow"
               onClick={() => startExam(ticket.id)}
@@ -83,7 +83,7 @@ export function ExamSection() {
             <div>
               <h4 className="font-semibold text-blue-900">Информация об экзамене</h4>
               <ul className="text-sm text-blue-800 mt-2 space-y-1">
-                <li>• Для успешной сдачи необходимо правильно ответить на 80% вопросов (16 из 20)</li>
+                <li>• Для успешной сдачи необходимо правильно ответить на 80% вопросов (8 из 10)</li>
                 <li>• На каждый вопрос даётся один ответ</li>
                 <li>• После завершения экзамена вы увидите результаты</li>
                 <li>• Можно вернуться к предыдущим вопросам</li>

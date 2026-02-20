@@ -84,11 +84,15 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const loadQuestions = async () => {
       try {
+        console.log('🔵 Загрузка вопросов...');
         const response = await fetch('/questions.json');
+        console.log('🔵 Status:', response.status);
         if (!response.ok) {
           throw new Error('Не удалось загрузить вопросы');
         }
         const data = await response.json();
+        console.log('🔵 Получено данных:', data);
+        console.log('🔵 Количество вопросов в JSON:', data.questions?.length);
 
         // Преобразуем данные из формата JSON в формат Question
         const transformedQuestions: Question[] = (data.questions || []).map((q: any) => ({
@@ -98,14 +102,17 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
           correct_index: q.correct
         }));
 
+        console.log('🔵 Преобразовано вопросов:', transformedQuestions.length);
         setQuestions(transformedQuestions);
 
         // Генерируем билеты на основе поля ticket из JSON
         generateTicketsFromData(transformedQuestions, data.questions || []);
       } catch (err) {
+        console.error('❌ Ошибка загрузки:', err);
         setError(err instanceof Error ? err.message : 'Ошибка загрузки');
       } finally {
         setIsLoading(false);
+        console.log('🔵 Загрузка завершена, isLoading = false');
       }
     };
 
@@ -114,6 +121,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
   // Генерация билетов из данных с учётом поля ticket
   const generateTicketsFromData = (questions: Question[], rawQuestions: any[]) => {
+    console.log('🔵 Генерация билетов, вопросов:', questions.length, 'сырых:', rawQuestions.length);
     const ticketMap = new Map<number, Question[]>();
 
     // Группируем вопросы по номеру билета
@@ -128,6 +136,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       }
     });
 
+    console.log('🔵 Уникальных билетов:', ticketMap.size);
+
     // Преобразуем карту в массив билетов
     const newTickets: Ticket[] = [];
     ticketMap.forEach((questions, ticketId) => {
@@ -140,6 +150,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     // Сортируем билеты по ID
     newTickets.sort((a, b) => a.id - b.id);
 
+    console.log('🔵 Сгенерировано билетов:', newTickets.length);
+    console.log('🔵 Первый билет:', newTickets[0]?.questions.length, 'вопросов');
     setTickets(newTickets);
   };
 
