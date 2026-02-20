@@ -22,19 +22,27 @@ interface QuizState {
   isComplete: boolean;
 }
 
+interface SavedState {
+  [page: number]: {
+    userAnswers: (number | null)[];
+    shuffledAnswers: number[][];
+    isComplete: boolean;
+  };
+}
+
 const QUESTIONS_PER_SESSION = 10;
 const STORAGE_KEY = 'electrospa_quiz_progress';
 const TOTAL_QUESTIONS = questionsData?.questions?.length || 304;
 const TOTAL_PAGES = Math.ceil(TOTAL_QUESTIONS / QUESTIONS_PER_SESSION);
 
 // Функции для работы с localStorage
-const saveProgress = (state: QuizState) => {
+const saveProgress = (state: SavedState) => {
   if (typeof window === 'undefined') return;
   localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
   console.log('💾 Прогресс сохранён в localStorage');
 };
 
-const loadProgress = (): QuizState | null => {
+const loadProgress = (): SavedState | null => {
   if (typeof window === 'undefined') return null;
   const saved = localStorage.getItem(STORAGE_KEY);
   if (saved) {
@@ -57,6 +65,7 @@ const clearProgress = () => {
 };
 
 export function LearningSection() {
+  const [currentPage, setCurrentPage] = useState(1);
   const [quizState, setQuizState] = useState<QuizState>({
     currentQuestions: [],
     shuffledAnswers: [],
@@ -64,7 +73,7 @@ export function LearningSection() {
     isComplete: false,
   });
   const [stats, setStats] = useState({ correct: 0, incorrect: 0, remaining: 0 });
-  const [currentPage, setCurrentPage] = useState(1);
+  const [savedStates, setSavedStates] = useState<SavedState>({});
 
   // Инициализация сессии
   useEffect(() => {
@@ -72,9 +81,13 @@ export function LearningSection() {
     console.log('📦 Questions data:', questionsData);
     console.log('📊 Questions count:', questionsData?.questions?.length);
     
-    // Читаем из localStorage
-    const savedProgress = loadProgress();
-    console.log('🔍 Saved progress:', savedProgress);
+    // Читаем сохранённые состояния
+    const saved = loadProgress();
+    console.log('🔍 Saved states:', saved);
+    
+    if (saved) {
+      setSavedStates(saved);
+    }
 
     const allQuestions = questionsData?.questions || [];
     if (allQuestions.length === 0) {
@@ -82,26 +95,20 @@ export function LearningSection() {
       return;
     }
 
-    // Пробуем загрузить сохранённое состояние
-    if (savedProgress) {
-      try {
-        // Проверяем валидность сохранённого состояния
-        if (savedProgress.currentQuestions && savedProgress.currentQuestions.length > 0) {
-          console.log('✅ Загружено сохранённое состояние:', savedProgress);
-          setQuizState(savedProgress);
-          // Статистика обновится через useEffect
-          return;
-        } else {
-          console.log('⚠️ Сохранённое состояние невалидно');
-        }
-      } catch (e) {
-        console.error('❌ Ошибка загрузки прогресса:', e);
-      }
-    }
-    
-    // Если нет сохранённого состояния — начинаем новую сессию
+    // Начинаем новую сессию с первой страницы
     console.log('🆕 Начинаем новую сессию');
-    startNewSession(1);
+    const startIndex = 0;
+    const selected = allQuestions.slice(startIndex, startIndex + QUESTIONS_PER_SESSION);
+    const shuffledAnswers = selected.map((q) =>
+      shuffleArray([...Array(q.answers?.length || 4).keys()])
+    );
+    
+    setQuizState({
+      currentQuestions: selected,
+      shuffledAnswers,
+      userAnswers: new Array(selected.length).fill(null),
+      isComplete: false,
+    });
   }, []);
 
   // Обновление статистики при изменении quizState
@@ -111,17 +118,22 @@ export function LearningSection() {
     }
   }, [quizState]);
 
-  // Сохранение прогресса в localStorage
+  // Сохранение прогресса при изменении quizState
   useEffect(() => {
     if (quizState.currentQuestions.length > 0) {
-      console.log('💾 Сохранение прогресса в localStorage:', {
-        questions: quizState.currentQuestions.length,
-        answers: quizState.userAnswers.filter(a => a !== null).length,
-        isComplete: quizState.isComplete
-      });
-      saveProgress(quizState);
+      // Сохраняем состояние текущей страницы
+      const newSavedStates = {
+        ...savedStates,
+        [currentPage]: {
+          userAnswers: quizState.userAnswers,
+          shuffledAnswers: quizState.shuffledAnswers,
+          isComplete: quizState.isComplete,
+        },
+      };
+      setSavedStates(newSavedStates);
+      saveProgress(newSavedStates);
     }
-  }, [quizState]);
+  }, [quizState, currentPage]);
 
   // Подгрузка вопросов при изменении страницы
   useEffect(() => {
@@ -130,17 +142,32 @@ export function LearningSection() {
       const startIndex = (currentPage - 1) * QUESTIONS_PER_SESSION;
       const selected = questions.slice(startIndex, startIndex + QUESTIONS_PER_SESSION);
       
-      // Создаём перемешанные индексы для каждого вопроса
-      const shuffledAnswers = selected.map((q) =>
-        shuffleArray([...Array(q.answers?.length || 4).keys()])
-      );
+      // Проверяем, есть ли сохранённое состояние для этой страницы
+      const savedState = savedStates[currentPage];
       
-      setQuizState({
-        currentQuestions: selected,
-        shuffledAnswers,
-        userAnswers: new Array(selected.length).fill(null),
-        isComplete: false,
-      });
+      if (savedState) {
+        // Восстанавливаем сохранённое состояние
+        console.log(`♻️ Восстановление состояния для страницы ${currentPage}`);
+        setQuizState({
+          currentQuestions: selected,
+          shuffledAnswers: savedState.shuffledAnswers,
+          userAnswers: savedState.userAnswers,
+          isComplete: savedState.isComplete,
+        });
+      } else {
+        // Создаём новое состояние
+        console.log(`🆕 Новое состояние для страницы ${currentPage}`);
+        const shuffledAnswers = selected.map((q) =>
+          shuffleArray([...Array(q.answers?.length || 4).keys()])
+        );
+        
+        setQuizState({
+          currentQuestions: selected,
+          shuffledAnswers,
+          userAnswers: new Array(selected.length).fill(null),
+          isComplete: false,
+        });
+      }
     }
   }, [currentPage]);
 
@@ -245,8 +272,19 @@ export function LearningSection() {
   // Сброс прогресса
   const handleReset = () => {
     clearProgress();
+    setSavedStates({});
     setCurrentPage(1);
-    startNewSession(1);
+    const questions = questionsData?.questions || [];
+    const selected = questions.slice(0, QUESTIONS_PER_SESSION);
+    const shuffledAnswers = selected.map((q) =>
+      shuffleArray([...Array(q.answers?.length || 4).keys()])
+    );
+    setQuizState({
+      currentQuestions: selected,
+      shuffledAnswers,
+      userAnswers: new Array(selected.length).fill(null),
+      isComplete: false,
+    });
   };
 
   // Получение цвета для ответа
