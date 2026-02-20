@@ -516,7 +516,7 @@ export function LearningSection() {
                   Источник
                 </Button>
                 {showSources[qIdx] && (
-                  <Badge variant="secondary" className="animate-in fade-in border-0">
+                  <Badge className="animate-in fade-in border-0 bg-transparent text-slate-600">
                     {question.link}
                   </Badge>
                 )}
