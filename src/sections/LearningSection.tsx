@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Shuffle, RotateCcw, CheckCircle2, XCircle, Trophy, Target, AlertCircle, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Shuffle, RotateCcw, CheckCircle2, XCircle, Trophy, Target, AlertCircle, ChevronLeft, ChevronRight, BookOpen } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
@@ -74,6 +74,7 @@ export function LearningSection() {
   });
   const [stats, setStats] = useState({ correct: 0, incorrect: 0, remaining: 0 });
   const [savedStates, setSavedStates] = useState<SavedState>({});
+  const [showSources, setShowSources] = useState<{[key: number]: boolean}>({});
 
   // Инициализация сессии
   useEffect(() => {
@@ -495,9 +496,30 @@ export function LearningSection() {
                   </button>
                 ))}
               </div>
-              <div className="mt-4 flex items-center gap-2 text-sm text-slate-500">
-                <span>Источник:</span>
-                <Badge variant="outline">{question.link}</Badge>
+              {/* Кнопка Источник */}
+              <div className="mt-4 flex items-center justify-between">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowSources(prev => ({
+                    ...prev,
+                    [qIdx]: !prev[qIdx]
+                  }))}
+                  disabled={quizState.userAnswers[qIdx] === null}
+                  className={`gap-2 ${
+                    quizState.userAnswers[qIdx] === null
+                      ? 'opacity-50 cursor-not-allowed'
+                      : 'cursor-pointer'
+                  }`}
+                >
+                  <BookOpen className="w-4 h-4" />
+                  Источник
+                </Button>
+                {showSources[qIdx] && (
+                  <Badge variant="outline" className="animate-in fade-in">
+                    {question.link}
+                  </Badge>
+                )}
               </div>
             </CardContent>
           </Card>
