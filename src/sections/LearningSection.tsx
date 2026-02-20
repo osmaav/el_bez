@@ -514,7 +514,7 @@ export function LearningSection() {
                   Вопрос #{question.id}
                 </CardTitle>
                 <div className="flex items-center gap-2">
-                  <Badge variant="secondary">Билет {question.ticket}</Badge>
+                  <Badge variant="outline" className="border-0 bg-transparent text-slate-500">Билет {question.ticket}</Badge>
                   {quizState.userAnswers[qIdx] !== null && (
                     quizState.userAnswers[qIdx] === 
                     quizState.shuffledAnswers[qIdx].findIndex(
