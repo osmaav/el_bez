@@ -39,8 +39,6 @@ interface AppContextType {
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
-const QUESTIONS_PER_TICKET = 20;
-const TOTAL_TICKETS = 15;
 const STORAGE_KEY = 'electrospa_current_page';
 
 export function AppProvider({ children }: { children: React.ReactNode }) {
@@ -91,7 +89,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
           throw new Error('Не удалось загрузить вопросы');
         }
         const data = await response.json();
-        
+
         // Преобразуем данные из формата JSON в формат Question
         const transformedQuestions: Question[] = (data.questions || []).map((q: any) => ({
           id: q.id,
@@ -99,11 +97,11 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
           options: q.answers,
           correct_index: q.correct
         }));
-        
+
         setQuestions(transformedQuestions);
 
-        // Генерируем билеты
-        generateTickets(transformedQuestions);
+        // Генерируем билеты на основе поля ticket из JSON
+        generateTicketsFromData(transformedQuestions, data.questions || []);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Ошибка загрузки');
       } finally {
@@ -114,22 +112,33 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     loadQuestions();
   }, []);
 
-  // Генерация билетов
-  const generateTickets = (allQuestions: Question[]) => {
-    const shuffled = [...allQuestions].sort(() => Math.random() - 0.5);
-    const newTickets: Ticket[] = [];
+  // Генерация билетов из данных с учётом поля ticket
+  const generateTicketsFromData = (questions: Question[], rawQuestions: any[]) => {
+    const ticketMap = new Map<number, Question[]>();
 
-    for (let i = 0; i < TOTAL_TICKETS; i++) {
-      const startIdx = i * QUESTIONS_PER_TICKET;
-      const ticketQuestions = shuffled.slice(startIdx, startIdx + QUESTIONS_PER_TICKET);
-
-      if (ticketQuestions.length === QUESTIONS_PER_TICKET) {
-        newTickets.push({
-          id: i + 1,
-          questions: ticketQuestions
-        });
+    // Группируем вопросы по номеру билета
+    rawQuestions.forEach((rawQ: any, index: number) => {
+      const ticketId = rawQ.ticket;
+      if (ticketId) {
+        const question = questions[index];
+        if (!ticketMap.has(ticketId)) {
+          ticketMap.set(ticketId, []);
+        }
+        ticketMap.get(ticketId)!.push(question);
       }
-    }
+    });
+
+    // Преобразуем карту в массив билетов
+    const newTickets: Ticket[] = [];
+    ticketMap.forEach((questions, ticketId) => {
+      newTickets.push({
+        id: ticketId,
+        questions: questions.sort((a, b) => a.id - b.id)
+      });
+    });
+
+    // Сортируем билеты по ID
+    newTickets.sort((a, b) => a.id - b.id);
 
     setTickets(newTickets);
   };
