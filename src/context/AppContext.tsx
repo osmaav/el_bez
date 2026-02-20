@@ -5,12 +5,12 @@ interface AppContextType {
   // Навигация
   currentPage: PageType;
   setCurrentPage: (page: PageType) => void;
-  
+
   // Данные
   questions: Question[];
   isLoading: boolean;
   error: string | null;
-  
+
   // Тренажер
   trainerQuestions: Question[];
   trainerCurrentIndex: number;
@@ -23,7 +23,7 @@ interface AppContextType {
   prevTrainerQuestion: () => void;
   finishTrainer: () => void;
   resetTrainer: () => void;
-  
+
   // Экзамен
   tickets: Ticket[];
   currentTicketId: number | null;
@@ -41,10 +41,28 @@ const AppContext = createContext<AppContextType | undefined>(undefined);
 
 const QUESTIONS_PER_TICKET = 20;
 const TOTAL_TICKETS = 20;
+const STORAGE_KEY = 'electrospa_current_page';
 
 export function AppProvider({ children }: { children: React.ReactNode }) {
-  // Навигация
-  const [currentPage, setCurrentPage] = useState<PageType>('theory');
+  // Навигация - загружаем сохранённую страницу из localStorage
+  const [currentPage, setCurrentPageState] = useState<PageType>(() => {
+    // Восстанавливаем страницу при загрузке
+    if (typeof window !== 'undefined') {
+      const savedPage = localStorage.getItem(STORAGE_KEY) as PageType | null;
+      if (savedPage && ['learning', 'theory', 'examples', 'trainer', 'exam'].includes(savedPage)) {
+        return savedPage;
+      }
+    }
+    return 'theory';
+  });
+
+  // Обновляем setCurrentPage для сохранения в localStorage
+  const setCurrentPage = useCallback((page: PageType) => {
+    setCurrentPageState(page);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(STORAGE_KEY, page);
+    }
+  }, []);
   
   // Данные
   const [questions, setQuestions] = useState<Question[]>([]);
