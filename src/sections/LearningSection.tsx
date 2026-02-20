@@ -38,13 +38,15 @@ export function LearningSection() {
 
   // Инициализация сессии
   useEffect(() => {
-    console.log('LearningSection mounted');
-    console.log('Questions data:', questionsData);
-    console.log('Questions count:', questionsData?.questions?.length);
+    console.log('📖 LearningSection mounted');
+    console.log('📦 Questions data:', questionsData);
+    console.log('📊 Questions count:', questionsData?.questions?.length);
+    console.log('🍪 Cookies:', cookies);
+    console.log('🔍 Saved progress:', cookies[COOKIE_NAME]);
 
     const allQuestions = questionsData?.questions || [];
     if (allQuestions.length === 0) {
-      console.error('No questions loaded!');
+      console.error('❌ No questions loaded!');
       return;
     }
 
@@ -52,16 +54,18 @@ export function LearningSection() {
     const savedProgress = cookies[COOKIE_NAME];
     if (savedProgress) {
       try {
-        const parsed = JSON.parse(savedProgress);
+        const parsed = typeof savedProgress === 'string' ? JSON.parse(savedProgress) : savedProgress;
         // Проверяем валидность сохранённого состояния
         if (parsed.currentQuestions && parsed.currentQuestions.length > 0) {
           console.log('✅ Загружено сохранённое состояние:', parsed);
           setQuizState(parsed);
           // Статистика обновится через useEffect
           return;
+        } else {
+          console.log('⚠️ Сохранённое состояние невалидно');
         }
       } catch (e) {
-        console.error('Ошибка загрузки прогресса:', e);
+        console.error('❌ Ошибка загрузки прогресса:', e);
       }
     }
     
@@ -80,11 +84,18 @@ export function LearningSection() {
   // Сохранение прогресса в cookies
   useEffect(() => {
     if (quizState.currentQuestions.length > 0) {
-      setCookie(COOKIE_NAME, JSON.stringify(quizState), {
+      const cookieData = JSON.stringify(quizState);
+      console.log('💾 Сохранение прогресса в cookies:', {
+        questions: quizState.currentQuestions.length,
+        answers: quizState.userAnswers.filter(a => a !== null).length,
+        isComplete: quizState.isComplete
+      });
+      setCookie(COOKIE_NAME, cookieData, {
         maxAge: 30 * 24 * 60 * 60, // 30 дней
         path: '/',
         sameSite: 'lax' as const,
       });
+      console.log('✅ Прогресс сохранён');
     }
   }, [quizState, setCookie]);
 
