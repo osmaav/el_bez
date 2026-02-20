@@ -5,7 +5,7 @@ import { BookOpen, ClipboardList, GraduationCap, Dumbbell, School } from 'lucide
 const navItems: { id: PageType; label: string; icon: React.ElementType }[] = [
   { id: 'theory', label: 'Теория', icon: BookOpen },
   { id: 'learning', label: 'Обучение', icon: School },
-  { id: 'examples', label: 'Примеры', icon: ClipboardList },
+  // { id: 'examples', label: 'Примеры', icon: ClipboardList },
   { id: 'trainer', label: 'Тренажер', icon: Dumbbell },
   { id: 'exam', label: 'Экзамен', icon: GraduationCap },
 ];
