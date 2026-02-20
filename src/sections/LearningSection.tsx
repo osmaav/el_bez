@@ -309,8 +309,14 @@ export function LearningSection() {
   const goToPage = useCallback((page: number) => {
     const newPage = Math.max(1, Math.min(page, TOTAL_PAGES));
     setCurrentPage(newPage);
-    saveCurrentPage(newPage);
   }, []);
+
+  // Сохранение текущей страницы при изменении
+  useEffect(() => {
+    if (currentPage > 0 && isInitialized) {
+      saveCurrentPage(currentPage);
+    }
+  }, [currentPage, isInitialized]);
 
   // Следующая страница
   const nextPage = useCallback(() => {
