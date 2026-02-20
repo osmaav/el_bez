@@ -433,35 +433,36 @@ export function LearningSection() {
       {/* Прогресс-бар в шапке */}
       <Card className="mb-6 sticky top-16 z-10 bg-white/95 backdrop-blur shadow-lg">
         <CardContent className="py-2">
-          <div className="flex items-center gap-2 md:gap-3 mb-3 overflow-hidden">
-            <div className="flex items-center gap-1 md:gap-2 flex-shrink-0">
-              <Target className="w-3.5 h-3.5 md:w-4 md:h-4 lg:w-5 lg:h-5 text-blue-600" />
-              <span className="text-xs md:text-sm font-medium whitespace-nowrap">Всего: {QUESTIONS_PER_SESSION}</span>
+          <div className="flex items-center justify-between gap-2 md:gap-4 mb-3">
+            <div className="flex items-center gap-2 md:gap-4">
+              <div className="flex items-center gap-2">
+                <Target className="w-5 h-5 text-blue-600" />
+                <span className="text-sm font-medium">Всего: {QUESTIONS_PER_SESSION}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <CheckCircle2 className="w-5 h-5 text-green-600" />
+                <span className="text-sm font-medium text-green-600">{stats.correct}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <XCircle className="w-5 h-5 text-red-600" />
+                <span className="text-sm font-medium text-red-600">{stats.incorrect}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <AlertCircle className="w-5 h-5 text-orange-600" />
+                <span className="text-sm font-medium text-orange-600">{stats.remaining}</span>
+              </div>
             </div>
-            <div className="flex items-center gap-1 md:gap-2 flex-shrink-0">
-              <CheckCircle2 className="w-3.5 h-3.5 md:w-4 md:h-4 lg:w-5 lg:h-5 text-green-600" />
-              <span className="text-xs md:text-sm font-medium text-green-600 whitespace-nowrap">{stats.correct}</span>
-            </div>
-            <div className="flex items-center gap-1 md:gap-2 flex-shrink-0">
-              <XCircle className="w-3.5 h-3.5 md:w-4 md:h-4 lg:w-5 lg:h-5 text-red-600" />
-              <span className="text-xs md:text-sm font-medium text-red-600 whitespace-nowrap">{stats.incorrect}</span>
-            </div>
-            <div className="flex items-center gap-1 md:gap-2 flex-shrink-0">
-              <AlertCircle className="w-3.5 h-3.5 md:w-4 md:h-4 lg:w-5 lg:h-5 text-orange-600" />
-              <span className="text-xs md:text-sm font-medium text-orange-600 whitespace-nowrap">{stats.remaining}</span>
-            </div>
-            <div className="flex-grow min-w-0"></div>
-            <div className="flex items-center gap-1 flex-shrink-0">
+            <div className="flex items-center gap-1">
               <Button
                 variant="outline"
                 size="sm"
                 onClick={prevPage}
                 disabled={currentPage === 1}
-                className="h-7 w-7 md:h-8 md:w-8 p-0 flex-shrink-0"
+                className="h-8 w-8 p-0"
               >
-                <ChevronLeft className="w-3 h-3 md:w-4 md:h-4" />
+                <ChevronLeft className="w-4 h-4" />
               </Button>
-              <span className="text-xs font-medium text-center px-1 min-w-0 whitespace-nowrap">
+              <span className="text-xs font-medium text-center px-1 min-w-[60px]">
                 {currentPage}/{TOTAL_PAGES}
               </span>
               <Button
@@ -469,17 +470,17 @@ export function LearningSection() {
                 size="sm"
                 onClick={nextPage}
                 disabled={currentPage === TOTAL_PAGES}
-                className="h-7 w-7 md:h-8 md:w-8 p-0 flex-shrink-0"
+                className="h-8 w-8 p-0"
               >
-                <ChevronRight className="w-3 h-3 md:w-4 md:h-4" />
+                <ChevronRight className="w-4 h-4" />
               </Button>
               <Button
                 variant="outline"
                 size="sm"
                 onClick={handleReset}
-                className="text-red-600 hover:text-red-700 px-2 md:px-3 flex-shrink-0"
+                className="text-red-600 hover:text-red-700 px-2"
               >
-                <RotateCcw className="w-3 h-3 md:w-4 md:h-4" />
+                <RotateCcw className="w-4 h-4" />
                 <span className="hidden md:inline ml-1">Сброс</span>
               </Button>
             </div>
@@ -522,7 +523,7 @@ export function LearningSection() {
                 </div>
               </div>
             </CardHeader>
-            <CardContent className="pt-6">
+            <CardContent className="pt-2">
               <p className="text-slate-800 mb-6 leading-relaxed">
                 {question.question}
               </p>
