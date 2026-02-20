@@ -31,21 +31,21 @@ interface SavedState {
 }
 
 const QUESTIONS_PER_SESSION = 10;
-const STORAGE_KEY = 'electrospa_quiz_progress';
-const STORAGE_PAGE_KEY = 'electrospa_current_page';
+const LEARNING_PAGE_KEY = 'electrospa_learning_page';
+const LEARNING_PROGRESS_KEY = 'electrospa_learning_progress';
 const TOTAL_QUESTIONS = questionsData?.questions?.length || 304;
 const TOTAL_PAGES = Math.ceil(TOTAL_QUESTIONS / QUESTIONS_PER_SESSION);
 
 // Функции для работы с localStorage
 const saveProgress = (state: SavedState) => {
   if (typeof window === 'undefined') return;
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  localStorage.setItem(LEARNING_PROGRESS_KEY, JSON.stringify(state));
   console.log('💾 Прогресс сохранён в localStorage');
 };
 
 const loadProgress = (): SavedState | null => {
   if (typeof window === 'undefined') return null;
-  const saved = localStorage.getItem(STORAGE_KEY);
+  const saved = localStorage.getItem(LEARNING_PROGRESS_KEY);
   if (saved) {
     console.log('💾 Найден сохранённый прогресс в localStorage');
     try {
@@ -61,13 +61,13 @@ const loadProgress = (): SavedState | null => {
 
 const saveCurrentPage = (page: number) => {
   if (typeof window === 'undefined') return;
-  localStorage.setItem(STORAGE_PAGE_KEY, page.toString());
+  localStorage.setItem(LEARNING_PAGE_KEY, page.toString());
   console.log(`📄 Страница ${page} сохранена в localStorage`);
 };
 
 const loadCurrentPage = (): number => {
   if (typeof window === 'undefined') return 1;
-  const saved = localStorage.getItem(STORAGE_PAGE_KEY);
+  const saved = localStorage.getItem(LEARNING_PAGE_KEY);
   if (saved) {
     const page = parseInt(saved, 10);
     if (!isNaN(page) && page >= 1 && page <= TOTAL_PAGES) {
@@ -81,8 +81,8 @@ const loadCurrentPage = (): number => {
 
 const clearProgress = () => {
   if (typeof window === 'undefined') return;
-  localStorage.removeItem(STORAGE_KEY);
-  localStorage.removeItem(STORAGE_PAGE_KEY);
+  localStorage.removeItem(LEARNING_PROGRESS_KEY);
+  localStorage.removeItem(LEARNING_PAGE_KEY);
   console.log('🗑️ Прогресс очищен из localStorage');
 };
 
