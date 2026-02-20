@@ -23,31 +23,35 @@ interface QuizState {
 }
 
 const QUESTIONS_PER_SESSION = 10;
-const COOKIE_NAME = 'electrospa_quiz_progress';
+const STORAGE_KEY = 'electrospa_quiz_progress';
 
-// Функции для работы с cookies напрямую
-const setCookie = (name: string, value: string, days: number = 30) => {
-  const expires = new Date(Date.now() + days * 24 * 60 * 60 * 1000).toUTCString();
-  document.cookie = `${name}=${encodeURIComponent(value)}; expires=${expires}; path=/; SameSite=Lax`;
-  console.log(`🍪 Cookie записан: ${name}`);
+// Функции для работы с localStorage
+const saveProgress = (state: QuizState) => {
+  if (typeof window === 'undefined') return;
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  console.log('💾 Прогресс сохранён в localStorage');
 };
 
-const getCookie = (name: string): string | null => {
-  if (typeof document === 'undefined') return null;
-  const value = `; ${document.cookie}`;
-  const parts = value.split(`; ${name}=`);
-  if (parts.length === 2) {
-    const cookieValue = parts.pop()?.split(';').shift();
-    console.log(`🍪 Cookie прочитан: ${name} =`, cookieValue);
-    return cookieValue || null;
+const loadProgress = (): QuizState | null => {
+  if (typeof window === 'undefined') return null;
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if (saved) {
+    console.log('💾 Найден сохранённый прогресс в localStorage');
+    try {
+      return JSON.parse(saved);
+    } catch (e) {
+      console.error('❌ Ошибка чтения прогресса:', e);
+      return null;
+    }
   }
-  console.log(`🍪 Cookie не найден: ${name}`);
+  console.log('📭 Сохранённый прогресс не найден');
   return null;
 };
 
-const removeCookie = (name: string) => {
-  document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/`;
-  console.log(`🗑️ Cookie удалён: ${name}`);
+const clearProgress = () => {
+  if (typeof window === 'undefined') return;
+  localStorage.removeItem(STORAGE_KEY);
+  console.log('🗑️ Прогресс очищен из localStorage');
 };
 
 export function LearningSection() {
@@ -65,8 +69,8 @@ export function LearningSection() {
     console.log('📦 Questions data:', questionsData);
     console.log('📊 Questions count:', questionsData?.questions?.length);
     
-    // Читаем cookie напрямую
-    const savedProgress = getCookie(COOKIE_NAME);
+    // Читаем из localStorage
+    const savedProgress = loadProgress();
     console.log('🔍 Saved progress:', savedProgress);
 
     const allQuestions = questionsData?.questions || [];
@@ -75,14 +79,13 @@ export function LearningSection() {
       return;
     }
 
-    // Пробуем загрузить из cookies
+    // Пробуем загрузить сохранённое состояние
     if (savedProgress) {
       try {
-        const parsed = JSON.parse(savedProgress);
         // Проверяем валидность сохранённого состояния
-        if (parsed.currentQuestions && parsed.currentQuestions.length > 0) {
-          console.log('✅ Загружено сохранённое состояние:', parsed);
-          setQuizState(parsed);
+        if (savedProgress.currentQuestions && savedProgress.currentQuestions.length > 0) {
+          console.log('✅ Загружено сохранённое состояние:', savedProgress);
+          setQuizState(savedProgress);
           // Статистика обновится через useEffect
           return;
         } else {
@@ -105,17 +108,15 @@ export function LearningSection() {
     }
   }, [quizState]);
 
-  // Сохранение прогресса в cookies
+  // Сохранение прогресса в localStorage
   useEffect(() => {
     if (quizState.currentQuestions.length > 0) {
-      const cookieData = JSON.stringify(quizState);
-      console.log('💾 Сохранение прогресса в cookies:', {
+      console.log('💾 Сохранение прогресса в localStorage:', {
         questions: quizState.currentQuestions.length,
         answers: quizState.userAnswers.filter(a => a !== null).length,
         isComplete: quizState.isComplete
       });
-      setCookie(COOKIE_NAME, cookieData, 30);
-      console.log('✅ Прогресс сохранён');
+      saveProgress(quizState);
     }
   }, [quizState]);
 
@@ -202,7 +203,7 @@ export function LearningSection() {
 
   // Сброс прогресса
   const handleReset = () => {
-    removeCookie(COOKIE_NAME);
+    clearProgress();
     const allQuestions = questionsData?.questions || [];
     startNewSession(allQuestions);
   };
