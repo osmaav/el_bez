@@ -229,7 +229,8 @@ export function LearningSection() {
   }
 
   return (
-    <div className="max-w-6xl mx-auto px-4 py-8">
+    <div className="min-h-screen bg-slate-50">
+      <div className="max-w-6xl mx-auto px-4 py-8 pt-20">
       {/* Заголовок */}
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-slate-900 mb-2">
@@ -241,7 +242,7 @@ export function LearningSection() {
       </div>
 
       {/* Прогресс-бар в шапке */}
-      <Card className="mb-6 sticky top-0 z-10 bg-white/95 backdrop-blur shadow-lg">
+      <Card className="mb-6 sticky top-16 z-10 bg-white/95 backdrop-blur shadow-lg">
         <CardContent className="pt-6">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-4">
@@ -376,6 +377,7 @@ export function LearningSection() {
           </CardContent>
         </Card>
       )}
+      </div>
     </div>
   );
 }
