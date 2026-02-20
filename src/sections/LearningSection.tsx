@@ -101,7 +101,7 @@ export function LearningSection() {
     
     // Если нет сохранённого состояния — начинаем новую сессию
     console.log('🆕 Начинаем новую сессию');
-    startNewSession(allQuestions);
+    startNewSession(1);
   }, []);
 
   // Обновление статистики при изменении quizState
@@ -122,6 +122,27 @@ export function LearningSection() {
       saveProgress(quizState);
     }
   }, [quizState]);
+
+  // Подгрузка вопросов при изменении страницы
+  useEffect(() => {
+    if (currentPage > 0) {
+      const questions = questionsData?.questions || [];
+      const startIndex = (currentPage - 1) * QUESTIONS_PER_SESSION;
+      const selected = questions.slice(startIndex, startIndex + QUESTIONS_PER_SESSION);
+      
+      // Создаём перемешанные индексы для каждого вопроса
+      const shuffledAnswers = selected.map((q) =>
+        shuffleArray([...Array(q.answers?.length || 4).keys()])
+      );
+      
+      setQuizState({
+        currentQuestions: selected,
+        shuffledAnswers,
+        userAnswers: new Array(selected.length).fill(null),
+        isComplete: false,
+      });
+    }
+  }, [currentPage]);
 
   const updateStats = (state: QuizState) => {
     let correct = 0;
@@ -159,8 +180,8 @@ export function LearningSection() {
   }, []);
 
   // Начало новой сессии
-  const startNewSession = useCallback((allQuestions?: Question[], page: number = 1) => {
-    const questions = allQuestions || questionsData?.questions || [];
+  const startNewSession = useCallback((page: number = 1) => {
+    const questions = questionsData?.questions || [];
     if (questions.length === 0) {
       console.error('No questions available');
       return;
@@ -190,8 +211,7 @@ export function LearningSection() {
   const goToPage = useCallback((page: number) => {
     const newPage = Math.max(1, Math.min(page, TOTAL_PAGES));
     setCurrentPage(newPage);
-    startNewSession(undefined, newPage);
-  }, [startNewSession]);
+  }, []);
 
   // Следующая страница
   const nextPage = useCallback(() => {
@@ -225,9 +245,8 @@ export function LearningSection() {
   // Сброс прогресса
   const handleReset = () => {
     clearProgress();
-    const allQuestions = questionsData?.questions || [];
     setCurrentPage(1);
-    startNewSession(allQuestions, 1);
+    startNewSession(1);
   };
 
   // Получение цвета для ответа
@@ -272,8 +291,7 @@ export function LearningSection() {
           <p className="text-slate-600 mb-4">Вопросы не загружены</p>
           <Button onClick={(e) => {
             e.preventDefault();
-            const allQuestions = questionsData?.questions || [];
-            startNewSession(allQuestions);
+            startNewSession(1);
           }}>
             Загрузить вопросы
           </Button>
@@ -343,15 +361,6 @@ export function LearningSection() {
                   <ChevronRight className="w-4 h-4" />
                 </Button>
               </div>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => goToPage(1)}
-                className="gap-2"
-              >
-                <Shuffle className="w-4 h-4" />
-                Новые
-              </Button>
               <Button
                 variant="outline"
                 size="sm"
@@ -442,8 +451,8 @@ export function LearningSection() {
               <div className="flex justify-center gap-4">
                 <Button onClick={(e) => {
                   e.preventDefault();
-                  const allQuestions = questionsData?.questions || [];
-                  startNewSession(allQuestions);
+                  setCurrentPage(1);
+                  startNewSession(1);
                 }} size="lg" className="gap-2">
                   <Shuffle className="w-5 h-5" />
                   Новая сессия
