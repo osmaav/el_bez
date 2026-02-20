@@ -497,7 +497,7 @@ export function LearningSection() {
                 ))}
               </div>
               {/* Кнопка Источник */}
-              <div className="mt-4 flex items-center justify-between">
+              <div className="mt-4 flex items-center gap-2">
                 <Button
                   variant="outline"
                   size="sm"
