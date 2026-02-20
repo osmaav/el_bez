@@ -41,34 +41,49 @@ export function LearningSection() {
     console.log('LearningSection mounted');
     console.log('Questions data:', questionsData);
     console.log('Questions count:', questionsData?.questions?.length);
-    
+
     const allQuestions = questionsData?.questions || [];
     if (allQuestions.length === 0) {
       console.error('No questions loaded!');
       return;
     }
 
+    // Пробуем загрузить из cookies
     const savedProgress = cookies[COOKIE_NAME];
     if (savedProgress) {
       try {
         const parsed = JSON.parse(savedProgress);
-        setQuizState(parsed);
-        updateStats(parsed);
+        // Проверяем валидность сохранённого состояния
+        if (parsed.currentQuestions && parsed.currentQuestions.length > 0) {
+          console.log('✅ Загружено сохранённое состояние:', parsed);
+          setQuizState(parsed);
+          // Статистика обновится через useEffect
+          return;
+        }
       } catch (e) {
         console.error('Ошибка загрузки прогресса:', e);
-        startNewSession(allQuestions);
       }
-    } else {
-      startNewSession(allQuestions);
     }
+    
+    // Если нет сохранённого состояния — начинаем новую сессию
+    console.log('🆕 Начинаем новую сессию');
+    startNewSession(allQuestions);
   }, []);
 
-  // Сохранение прогресса
+  // Обновление статистики при изменении quizState
+  useEffect(() => {
+    if (quizState.currentQuestions.length > 0) {
+      updateStats(quizState);
+    }
+  }, [quizState]);
+
+  // Сохранение прогресса в cookies
   useEffect(() => {
     if (quizState.currentQuestions.length > 0) {
       setCookie(COOKIE_NAME, JSON.stringify(quizState), {
         maxAge: 30 * 24 * 60 * 60, // 30 дней
         path: '/',
+        sameSite: 'lax' as const,
       });
     }
   }, [quizState, setCookie]);
