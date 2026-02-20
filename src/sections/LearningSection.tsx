@@ -315,6 +315,8 @@ export function LearningSection() {
   useEffect(() => {
     if (currentPage > 0 && isInitialized) {
       saveCurrentPage(currentPage);
+      // Прокрутка к началу страницы при изменении
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   }, [currentPage, isInitialized]);
 
