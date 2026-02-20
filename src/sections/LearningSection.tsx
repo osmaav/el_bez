@@ -115,13 +115,13 @@ export function LearningSection() {
       console.error('No questions available');
       return;
     }
-    
+
     const shuffled = [...questions].sort(() => Math.random() - 0.5);
     const selected = shuffled.slice(0, Math.min(QUESTIONS_PER_SESSION, questions.length));
 
-    const maxAnswers = Math.max(...questions.map(q => q.answers?.length || 4));
-    const shuffledAnswers = selected.map(() => 
-      shuffleArray([...Array(maxAnswers).keys()])
+    // Создаём перемешанные индексы для каждого вопроса индивидуально
+    const shuffledAnswers = selected.map((q) =>
+      shuffleArray([...Array(q.answers?.length || 4).keys()])
     );
 
     const newState: QuizState = {
