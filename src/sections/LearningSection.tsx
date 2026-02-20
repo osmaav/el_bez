@@ -77,12 +77,24 @@ export function LearningSection() {
   }, [quizState, setCookie]);
 
   const updateStats = (state: QuizState) => {
-    const correct = state.userAnswers.filter((answer, idx) => 
-      answer === state.shuffledAnswers[idx]?.findIndex(
-        (shuffledIdx) => shuffledIdx === state.currentQuestions[idx].correct
-      )
-    ).length;
-    const answered = state.userAnswers.filter(a => a !== null).length;
+    let correct = 0;
+    let answered = 0;
+
+    state.userAnswers.forEach((userAnswerIdx, qIdx) => {
+      if (userAnswerIdx === null) return;
+      
+      answered++;
+      
+      // userAnswerIdx - это индекс в перемешанном списке (0, 1, 2, 3)
+      // shuffledAnswers[qIdx][userAnswerIdx] - это оригинальный индекс ответа
+      const originalAnswerIndex = state.shuffledAnswers[qIdx][userAnswerIdx];
+      const correctOriginalIndex = state.currentQuestions[qIdx].correct;
+      
+      if (originalAnswerIndex === correctOriginalIndex) {
+        correct++;
+      }
+    });
+
     const incorrect = answered - correct;
     const remaining = state.currentQuestions.length - answered;
 
@@ -153,23 +165,26 @@ export function LearningSection() {
   };
 
   // Получение цвета для ответа
-  const getAnswerStyle = (questionIndex: number, _answerIndex: number, shuffledIndex: number) => {
+  const getAnswerStyle = (questionIndex: number, shuffledIndex: number) => {
     const userAnswer = quizState.userAnswers[questionIndex];
     const question = quizState.currentQuestions[questionIndex];
-    const correctAnswer = question.correct;
+    const correctOriginalIndex = question.correct;
 
-    // Находим оригинальный индекс ответа
+    // shuffledIndex - это позиция в перемешанном списке (0, 1, 2, 3)
+    // shuffledAnswers[questionIndex][shuffledIndex] - это оригинальный индекс ответа
     const originalIndex = quizState.shuffledAnswers[questionIndex][shuffledIndex];
 
     if (userAnswer === null) {
       return 'bg-white hover:bg-slate-50 border-slate-200';
     }
 
-    if (originalIndex === correctAnswer) {
+    // Проверяем, является ли этот ответ правильным
+    if (originalIndex === correctOriginalIndex) {
       return 'bg-green-100 border-green-500 text-green-900';
     }
 
-    if (shuffledIndex === userAnswer && originalIndex !== correctAnswer) {
+    // Проверяем, выбрал ли пользователь этот ответ (и он неправильный)
+    if (shuffledIndex === userAnswer && originalIndex !== correctOriginalIndex) {
       return 'bg-orange-100 border-orange-500 text-orange-900 border-2';
     }
 
@@ -312,7 +327,7 @@ export function LearningSection() {
                     disabled={quizState.userAnswers[qIdx] !== null}
                     className={`
                       w-full p-4 rounded-xl border-2 text-left transition-all duration-200
-                      ${getAnswerStyle(qIdx, shuffledIdx, originalIdx)}
+                      ${getAnswerStyle(qIdx, shuffledIdx)}
                       hover:shadow-md
                       disabled:cursor-default
                     `}
