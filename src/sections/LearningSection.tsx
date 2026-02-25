@@ -269,15 +269,21 @@ export function LearningSection() {
   }, [TOTAL_PAGES]);
 
   const nextPage = useCallback(() => {
-    goToPage(currentPage + 1);
-    // Плавная прокрутка к началу страницы
+    // Сначала прокручиваем к началу
     window.scrollTo({ top: 0, behavior: 'smooth' });
+    // Затем обновляем страницу с небольшой задержкой
+    setTimeout(() => {
+      goToPage(currentPage + 1);
+    }, 150);
   }, [currentPage, goToPage]);
 
   const prevPage = useCallback(() => {
-    goToPage(currentPage - 1);
-    // Плавная прокрутка к началу страницы
+    // Сначала прокручиваем к началу
     window.scrollTo({ top: 0, behavior: 'smooth' });
+    // Затем обновляем страницу с небольшой задержкой
+    setTimeout(() => {
+      goToPage(currentPage - 1);
+    }, 150);
   }, [currentPage, goToPage]);
 
   // Обработка выбора ответа
