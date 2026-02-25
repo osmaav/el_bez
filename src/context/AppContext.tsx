@@ -1,11 +1,17 @@
 import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
-import type { Question, Ticket, TestStats, PageType } from '@/types';
-import questionsData from '@/data/questions.json';
+import type { Question, Ticket, TestStats, PageType, SectionType, SectionInfo } from '@/types';
+import questions125619 from '@/data/questions-1256-19.json';
+import questions125820 from '@/data/questions-1258-20.json';
 
 interface AppContextType {
   // Навигация
   currentPage: PageType;
   setCurrentPage: (page: PageType) => void;
+
+  // Раздел (курс)
+  currentSection: SectionType;
+  setCurrentSection: (section: SectionType) => void;
+  sections: SectionInfo[];
 
   // Данные
   questions: Question[];
@@ -40,14 +46,38 @@ interface AppContextType {
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
-const STORAGE_KEY = 'electrospa_current_page';
+const STORAGE_KEY_PAGE = 'electrospa_current_page';
+const STORAGE_KEY_SECTION = 'electrospa_current_section';
+
+// Информация о разделах
+const SECTIONS: SectionInfo[] = [
+  {
+    id: '1256-19',
+    name: 'ЭБ 1256.19',
+    description: '3 группа до 1000 В',
+    totalQuestions: 250,
+    totalTickets: 25
+  },
+  {
+    id: '1258-20',
+    name: 'ЭБ 1258.20',
+    description: '4 группа до 1000 В',
+    totalQuestions: 304,
+    totalTickets: 31
+  }
+];
+
+// Данные вопросов по разделам
+const QUESTIONS_DATA: Record<string, any> = {
+  '1256-19': questions125619,
+  '1258-20': questions125820
+};
 
 export function AppProvider({ children }: { children: React.ReactNode }) {
   // Навигация - загружаем сохранённую страницу из localStorage
   const [currentPage, setCurrentPageState] = useState<PageType>(() => {
-    // Восстанавливаем страницу при загрузке
     if (typeof window !== 'undefined') {
-      const savedPage = localStorage.getItem(STORAGE_KEY) as PageType | null;
+      const savedPage = localStorage.getItem(STORAGE_KEY_PAGE) as PageType | null;
       if (savedPage && ['learning', 'theory', 'examples', 'trainer', 'exam'].includes(savedPage)) {
         return savedPage;
       }
@@ -55,25 +85,44 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     return 'theory';
   });
 
+  // Раздел (курс) - загружаем сохранённый раздел
+  const [currentSection, setCurrentSectionState] = useState<SectionType>(() => {
+    if (typeof window !== 'undefined') {
+      const savedSection = localStorage.getItem(STORAGE_KEY_SECTION) as SectionType | null;
+      if (savedSection && ['1256-19', '1258-20'].includes(savedSection)) {
+        return savedSection;
+      }
+    }
+    return '1258-20'; // По умолчанию 4 группа
+  });
+
   // Обновляем setCurrentPage для сохранения в localStorage
   const setCurrentPage = useCallback((page: PageType) => {
     setCurrentPageState(page);
     if (typeof window !== 'undefined') {
-      localStorage.setItem(STORAGE_KEY, page);
+      localStorage.setItem(STORAGE_KEY_PAGE, page);
     }
   }, []);
-  
+
+  // Обновляем setCurrentSection для сохранения в localStorage
+  const setCurrentSection = useCallback((section: SectionType) => {
+    setCurrentSectionState(section);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(STORAGE_KEY_SECTION, section);
+    }
+  }, []);
+
   // Данные
   const [questions, setQuestions] = useState<Question[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  
+
   // Тренажер состояние
   const [trainerQuestions, setTrainerQuestions] = useState<Question[]>([]);
   const [trainerCurrentIndex, setTrainerCurrentIndex] = useState(0);
   const [trainerAnswers, setTrainerAnswers] = useState<Record<number, number>>({});
   const [isTrainerFinished, setIsTrainerFinished] = useState(false);
-  
+
   // Экзамен состояние
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [currentTicketId, setCurrentTicketId] = useState<number | null>(null);
@@ -81,25 +130,33 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [examResults, setExamResults] = useState<Record<number, boolean>>({});
   const [isExamFinished, setIsExamFinished] = useState(false);
 
-  // Загрузка вопросов
+  // Загрузка вопросов при изменении раздела
   useEffect(() => {
     const loadQuestions = async () => {
       try {
-        console.log('🔵 Загрузка вопросов...');
+        console.log('🔵 Загрузка вопросов для раздела:', currentSection);
+        setIsLoading(true);
+
+        const data = QUESTIONS_DATA[currentSection];
         
         // Преобразуем данные из формата JSON в формат Question
-        const transformedQuestions: Question[] = (questionsData.questions || []).map((q: any) => ({
+        const transformedQuestions: Question[] = (data.questions || []).map((q: any) => ({
           id: q.id,
-          text: q.question,
-          options: q.answers,
-          correct_index: q.correct
+          ticket: q.ticket || 1,
+          text: q.question || q.text,
+          question: q.question,
+          options: q.answers || q.options,
+          answers: q.answers,
+          correct_index: q.correct !== undefined ? q.correct : (q.correct_index || 0),
+          correct: q.correct,
+          link: q.link
         }));
 
         console.log('🔵 Преобразовано вопросов:', transformedQuestions.length);
         setQuestions(transformedQuestions);
 
         // Генерируем билеты на основе поля ticket из JSON
-        generateTicketsFromData(transformedQuestions, questionsData.questions || []);
+        generateTicketsFromData(transformedQuestions, data.questions || []);
       } catch (err) {
         console.error('❌ Ошибка загрузки:', err);
         setError(err instanceof Error ? err.message : 'Ошибка загрузки');
@@ -110,7 +167,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     };
 
     loadQuestions();
-  }, []);
+  }, [currentSection]);
 
   // Генерация билетов из данных с учётом поля ticket
   const generateTicketsFromData = (questions: Question[], rawQuestions: any[]) => {
@@ -167,7 +224,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const answerTrainerQuestion = useCallback((answerIndex: number) => {
     const currentQuestion = trainerQuestions[trainerCurrentIndex];
     if (!currentQuestion) return;
-    
+
     setTrainerAnswers(prev => ({
       ...prev,
       [currentQuestion.id]: answerIndex
@@ -215,13 +272,13 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const finishExam = useCallback(() => {
     const ticket = tickets.find(t => t.id === currentTicketId);
     if (!ticket) return;
-    
+
     const results: Record<number, boolean> = {};
     ticket.questions.forEach(q => {
       const userAnswer = examAnswers[q.id];
       results[q.id] = userAnswer === q.correct_index;
     });
-    
+
     setExamResults(results);
     setIsExamFinished(true);
   }, [tickets, currentTicketId, examAnswers]);
@@ -236,12 +293,12 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const getExamStats = useCallback(() => {
     const ticket = tickets.find(t => t.id === currentTicketId);
     if (!ticket) return { correct: 0, total: 0, percentage: 0 };
-    
+
     let correct = 0;
     ticket.questions.forEach(q => {
       if (examResults[q.id]) correct++;
     });
-    
+
     return {
       correct,
       total: ticket.questions.length,
@@ -267,6 +324,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     <AppContext.Provider value={{
       currentPage,
       setCurrentPage,
+      currentSection,
+      setCurrentSection,
+      sections: SECTIONS,
       questions,
       isLoading,
       error,

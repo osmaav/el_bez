@@ -1,7 +1,0 @@
-[Log] 🔵 Загрузка вопросов... (index-B2S_nPKY.js, line 9)
-[Error] Failed to load resource: the server responded with a status of 404 () (questions.json, line 0)
-[Log] 🔵 Status: – 404 (index-B2S_nPKY.js, line 9)
-[Error] ❌ Ошибка загрузки: – Error: Не удалось загрузить вопросы — index-B2S_nPKY.js:10564
-Error: Не удалось загрузить вопросы — index-B2S_nPKY.js:10564
-	(anonymous function) (index-B2S_nPKY.js:9:38484)
-[Log] 🔵 Загрузка завершена, isLoading = false (index-B2S_nPKY.js, line 9)

@@ -2,9 +2,14 @@
 
 export interface Question {
   id: number;
+  ticket: number;
   text: string;
+  question?: string; // Для совместимости с JSON
   options: string[];
+  answers?: string[]; // Для совместимости с JSON
   correct_index: number;
+  correct?: number; // Для совместимости с JSON
+  link?: string;
 }
 
 export interface QuestionWithAnswer extends Question {
@@ -25,6 +30,16 @@ export interface Ticket {
 }
 
 export type PageType = 'learning' | 'theory' | 'examples' | 'trainer' | 'exam';
+
+export type SectionType = '1256-19' | '1258-20';
+
+export interface SectionInfo {
+  id: SectionType;
+  name: string;
+  description: string;
+  totalQuestions: number;
+  totalTickets: number;
+}
 
 export interface TrainerState {
   questions: QuestionWithAnswer[];

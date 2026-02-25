@@ -28,9 +28,12 @@ export function ExamSection() {
     answerExamQuestion,
     finishExam,
     resetExam,
-    getExamStats
+    getExamStats,
+    currentSection,
+    sections
   } = useApp();
 
+  const currentSectionInfo = sections.find(s => s.id === currentSection);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
   const [showConfirmFinish, setShowConfirmFinish] = useState(false);
@@ -55,7 +58,7 @@ export function ExamSection() {
         <div className="mb-6">
           <h2 className="text-3xl font-bold text-slate-900">Экзамен</h2>
           <p className="text-slate-600 mt-2">
-            Выберите билет для прохождения экзамена. Каждый билет содержит 10 вопросов.
+            {currentSectionInfo?.name} — {currentSectionInfo?.description} • {tickets.length} билетов
           </p>
         </div>
 
