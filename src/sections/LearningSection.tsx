@@ -270,10 +270,14 @@ export function LearningSection() {
 
   const nextPage = useCallback(() => {
     goToPage(currentPage + 1);
+    // Плавная прокрутка к началу страницы
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   }, [currentPage, goToPage]);
 
   const prevPage = useCallback(() => {
     goToPage(currentPage - 1);
+    // Плавная прокрутка к началу страницы
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   }, [currentPage, goToPage]);
 
   // Обработка выбора ответа
