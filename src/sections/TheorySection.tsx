@@ -1,16 +1,18 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { 
-  AlertTriangle, 
-  Shield, 
-  Zap, 
-  FileText, 
+import {
+  AlertTriangle,
+  Shield,
+  Zap,
+  FileText,
   HardHat,
   ChevronRight,
-  BookOpen
+  BookOpen,
 } from 'lucide-react';
+import { LoginModal } from '@/components/LoginModal';
+import { useAuth } from '@/context/AuthContext';
 
 const theoryTopics = [
   {
@@ -195,7 +197,20 @@ const theoryTopics = [
 ];
 
 export function TheorySection() {
+  const { isAuthenticated } = useAuth();
   const [selectedTopic, setSelectedTopic] = useState(theoryTopics[0]);
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+
+  // Показываем модальное окно входа только если пользователь не авторизован
+  useEffect(() => {
+    if (!isAuthenticated) {
+      // Небольшая задержка перед показом модального окна
+      const timer = setTimeout(() => {
+        setIsLoginModalOpen(true);
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+  }, [isAuthenticated]);
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
@@ -218,15 +233,15 @@ export function TheorySection() {
                 {theoryTopics.map((topic) => {
                   const Icon = topic.icon;
                   const isActive = selectedTopic.id === topic.id;
-                  
+
                   return (
                     <button
                       key={topic.id}
                       onClick={() => setSelectedTopic(topic)}
                       className={`
                         w-full flex items-center space-x-3 px-3 py-3 rounded-lg text-left transition-all
-                        ${isActive 
-                          ? 'bg-yellow-100 text-yellow-900 border border-yellow-300' 
+                        ${isActive
+                          ? 'bg-yellow-100 text-yellow-900 border border-yellow-300'
                           : 'hover:bg-slate-100 text-slate-700'
                         }
                       `}
@@ -255,7 +270,7 @@ export function TheorySection() {
           </CardHeader>
           <CardContent className="p-6">
             <ScrollArea className="h-[500px]">
-              <div 
+              <div
                 className="prose prose-slate max-w-none"
                 dangerouslySetInnerHTML={{ __html: selectedTopic.content }}
               />
@@ -269,11 +284,17 @@ export function TheorySection() {
         <AlertTriangle className="w-5 h-5 text-yellow-600" />
         <AlertTitle className="text-yellow-800">Важно!</AlertTitle>
         <AlertDescription className="text-yellow-700">
-          Данный материал носит справочный характер. Перед сдачей экзамена обязательно 
-          изучите актуальную редакцию Правил по охране труда при эксплуатации электроустановок 
+          Данный материал носит справочный характер. Перед сдачей экзамена обязательно
+          изучите актуальную редакцию Правил по охране труда при эксплуатации электроустановок
           и методические материалы Ростехнадзора.
         </AlertDescription>
       </Alert>
+
+      {/* Модальное окно входа */}
+      <LoginModal
+        isOpen={isLoginModalOpen}
+        onClose={() => setIsLoginModalOpen(false)}
+      />
     </div>
   );
 }

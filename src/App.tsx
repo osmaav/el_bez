@@ -1,15 +1,17 @@
 import { AppProvider, useApp } from '@/context/AppContext';
+import { AuthProvider } from '@/context/AuthContext';
 import { CookiesProvider } from 'react-cookie';
 import { Navigation } from '@/components/Navigation';
 import { LearningSection } from '@/sections/LearningSection';
 import { TheorySection } from '@/sections/TheorySection';
-import { ExamplesSection } from '@/sections/ExamplesSection';
 import { TrainerSection } from '@/sections/TrainerSection';
 import { ExamSection } from '@/sections/ExamSection';
 import { Toaster } from '@/components/ui/sonner';
 import { useEffect } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { RegisterPage } from '@/pages/RegisterPage';
+import { LoginPage } from '@/pages/LoginPage';
+import { FirebaseTestPage } from '../tests/FirebaseTestPage';
 
 function AppContent() {
   const { currentPage } = useApp();
@@ -25,7 +27,6 @@ function AppContent() {
       <main className="pb-12">
         {currentPage === 'learning' && <LearningSection />}
         {currentPage === 'theory' && <TheorySection />}
-        {currentPage === 'examples' && <ExamplesSection />}
         {currentPage === 'trainer' && <TrainerSection />}
         {currentPage === 'exam' && <ExamSection />}
       </main>
@@ -37,13 +38,17 @@ function App() {
   return (
     <CookiesProvider>
       <BrowserRouter>
-        <AppProvider>
-          <Routes>
-            <Route path="/register" element={<RegisterPage />} />
-            <Route path="/*" element={<AppContent />} />
-          </Routes>
-          <Toaster />
-        </AppProvider>
+        <AuthProvider>
+          <AppProvider>
+            <Routes>
+              <Route path="/*" element={<AppContent />} />
+              <Route path="/register" element={<RegisterPage />} />
+              <Route path="/login" element={<LoginPage />} />
+              <Route path="/firebase-test" element={<FirebaseTestPage />} />
+            </Routes>
+            <Toaster />
+          </AppProvider>
+        </AuthProvider>
       </BrowserRouter>
     </CookiesProvider>
   );

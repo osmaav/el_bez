@@ -1,7 +1,7 @@
 {
   "name": "el_bez",
   "private": true,
-  "version": "0.0.0",
+  "version": "2026.04.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -43,6 +43,7 @@
     "date-fns": "^4.1.0",
     "embla-carousel-react": "^8.6.0",
     "firebase": "^12.9.0",
+    "firebase-admin": "^13.7.0",
     "input-otp": "^1.4.2",
     "lucide-react": "^0.562.0",
     "next-themes": "^0.4.6",

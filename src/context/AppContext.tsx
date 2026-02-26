@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
 import type { Question, Ticket, TestStats, PageType, SectionType, SectionInfo } from '@/types';
-import questions125619 from '@/data/questions-1256-19.json';
-import questions125820 from '@/data/questions-1258-20.json';
+import { loadQuestionsForSection, saveUserState } from '@/services/questionService';
+import { useAuth } from './AuthContext';
 
 interface AppContextType {
   // Навигация
@@ -67,13 +67,9 @@ const SECTIONS: SectionInfo[] = [
   }
 ];
 
-// Данные вопросов по разделам
-const QUESTIONS_DATA: Record<string, any> = {
-  '1256-19': questions125619,
-  '1258-20': questions125820
-};
-
 export function AppProvider({ children }: { children: React.ReactNode }) {
+  const { user } = useAuth();
+  
   // Навигация - загружаем сохранённую страницу из localStorage
   const [currentPage, setCurrentPageState] = useState<PageType>(() => {
     if (typeof window !== 'undefined') {
@@ -96,21 +92,29 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     return '1258-20'; // По умолчанию 4 группа
   });
 
-  // Обновляем setCurrentPage для сохранения в localStorage
+  // Обновляем setCurrentPage для сохранения в localStorage и Firestore
   const setCurrentPage = useCallback((page: PageType) => {
     setCurrentPageState(page);
     if (typeof window !== 'undefined') {
       localStorage.setItem(STORAGE_KEY_PAGE, page);
+      // Сохраняем в Firestore для авторизованных пользователей
+      if (user) {
+        saveUserState(user.id, { currentPage: page });
+      }
     }
-  }, []);
+  }, [user]);
 
-  // Обновляем setCurrentSection для сохранения в localStorage
+  // Обновляем setCurrentSection для сохранения в localStorage и Firestore
   const setCurrentSection = useCallback((section: SectionType) => {
     setCurrentSectionState(section);
     if (typeof window !== 'undefined') {
       localStorage.setItem(STORAGE_KEY_SECTION, section);
+      // Сохраняем в Firestore для авторизованных пользователей
+      if (user) {
+        saveUserState(user.id, { currentSection: section });
+      }
     }
-  }, []);
+  }, [user]);
 
   // Данные
   const [questions, setQuestions] = useState<Question[]>([]);
@@ -134,40 +138,33 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const loadQuestions = async () => {
       try {
-        // console.log('🔵 Загрузка вопросов для раздела:', currentSection);
+        console.log('🔵 [AppContext] Загрузка вопросов для раздела:', currentSection);
         setIsLoading(true);
 
-        const data = QUESTIONS_DATA[currentSection];
+        // Динамическая загрузка вопросов из Firestore (или JSON в mock-режиме)
+        const loadedQuestions = await loadQuestionsForSection(currentSection);
+        
+        console.log('🔵 [AppContext] Загружено вопросов:', loadedQuestions.length);
+        setQuestions(loadedQuestions);
 
-        // Преобразуем данные из формата JSON в формат Question
-        const transformedQuestions: Question[] = (data.questions || []).map((q: any) => ({
-          id: q.id,
-          ticket: q.ticket || 1,
-          text: q.question || q.text,
-          question: q.question,
-          options: q.answers || q.options,
-          answers: q.answers,
-          correct_index: q.correct !== undefined ? q.correct : (q.correct_index || 0),
-          correct: q.correct,
-          link: q.link
-        }));
-
-        // console.log('🔵 Преобразовано вопросов:', transformedQuestions.length);
-        setQuestions(transformedQuestions);
-
-        // Генерируем билеты на основе поля ticket из JSON
-        generateTicketsFromData(transformedQuestions, data.questions || []);
+        // Генерируем билеты на основе поля ticket
+        generateTicketsFromData(loadedQuestions, loadedQuestions);
+        
+        // Сохраняем состояние в Firestore для авторизованных пользователей
+        if (user) {
+          await saveUserState(user.id, { currentSection });
+        }
       } catch (err) {
-        console.error('❌ Ошибка загрузки:', err);
+        console.error('❌ [AppContext] Ошибка загрузки:', err);
         setError(err instanceof Error ? err.message : 'Ошибка загрузки');
       } finally {
         setIsLoading(false);
-        // console.log('🔵 Загрузка завершена, isLoading = false');
+        console.log('🔵 [AppContext] Загрузка завершена, isLoading = false');
       }
     };
 
     loadQuestions();
-  }, [currentSection]);
+  }, [currentSection, user]);
 
   // Генерация билетов из данных с учётом поля ticket
   const generateTicketsFromData = (questions: Question[], rawQuestions: any[]) => {

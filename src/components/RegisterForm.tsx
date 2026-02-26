@@ -9,30 +9,51 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { registerUser, signInWithOAuth, validateRegisterData } from '@/services/authService';
+import { registerUser, validateRegisterData } from '@/services/authService';
+import { useAuth } from '@/context/AuthContext';
 import type { RegisterUserData, ValidationErrors } from '@/types/auth';
-import { Apple, Mail } from 'lucide-react';
 
 export function RegisterForm() {
   const navigate = useNavigate();
+  const { login } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [validationErrors, setValidationErrors] = useState<ValidationErrors>({});
 
-  const [formData, setFormData] = useState<RegisterUserData>({
-    surname: '',
-    name: '',
-    patronymic: '',
-    birthDate: '',
-    workplace: '',
-    position: '',
-    email: '',
-    password: ''
+  // Автозаполнение из localStorage
+  const [formData, setFormData] = useState<RegisterUserData>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('elbez_register_form');
+      if (saved) {
+        try {
+          return JSON.parse(saved);
+        } catch (e) {
+          console.error('Ошибка парсинга сохранённых данных формы:', e);
+        }
+      }
+    }
+    return {
+      surname: '',
+      name: '',
+      patronymic: '',
+      birthDate: '',
+      workplace: '',
+      position: '',
+      email: '',
+      password: ''
+    };
   });
 
   const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    const updatedData = { ...formData, [name]: value };
+    setFormData(updatedData);
+    
+    // Сохраняем в localStorage для автозаполнения (кроме пароля)
+    if (name !== 'password') {
+      localStorage.setItem('elbez_register_form', JSON.stringify(updatedData));
+    }
+    
     // Очищаем ошибку при изменении поля
     if (validationErrors[name as keyof ValidationErrors]) {
       setValidationErrors(prev => ({ ...prev, [name]: undefined }));
@@ -54,29 +75,24 @@ export function RegisterForm() {
     setIsLoading(true);
 
     try {
-      await registerUser(formData);
-      // Перенаправление на страницу входа с сообщением об успехе
-      navigate('/login', { 
-        state: { 
-          message: 'Регистрация успешна! Проверьте email для подтверждения.' 
-        } 
+      console.log('📝 [RegisterForm] Регистрация пользователя:', formData.email);
+      const user = await registerUser(formData);
+      console.log('✅ [RegisterForm] Регистрация успешна:', {
+        email: user.email,
+        emailVerified: user.emailVerified,
+        provider: user.provider
       });
-    } catch (err: any) {
-      setError(err.message || 'Ошибка при регистрации');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleOAuthSignIn = async (provider: 'apple' | 'yandex') => {
-    setError(null);
-    setIsLoading(true);
-
-    try {
-      await signInWithOAuth(provider);
+      
+      // Автоматический вход после регистрации
+      login(user);
+      
+      // ⚠️ ПРОВЕРКА EMAIL ОТКЛЮЧЕНА ВРЕМЕННО
+      // Перенаправляем на главную сразу после регистрации
+      console.log('⚠️ [RegisterForm] Проверка email отключена, перенаправление на главную');
       navigate('/');
     } catch (err: any) {
-      setError(err.message || 'Ошибка при входе через OAuth');
+      console.error('❌ [RegisterForm] Ошибка регистрации:', err);
+      setError(err.message || 'Ошибка при регистрации');
     } finally {
       setIsLoading(false);
     }
@@ -90,39 +106,6 @@ export function RegisterForm() {
         </CardTitle>
       </CardHeader>
       <CardContent>
-        {/* OAuth кнопки */}
-        <div className="grid grid-cols-2 gap-4 mb-6">
-          <Button
-            variant="outline"
-            className="w-full"
-            onClick={() => handleOAuthSignIn('apple')}
-            disabled={isLoading}
-          >
-            <Apple className="w-5 h-5 mr-2" />
-            Через Apple
-          </Button>
-          <Button
-            variant="outline"
-            className="w-full"
-            onClick={() => handleOAuthSignIn('yandex')}
-            disabled={isLoading}
-          >
-            <Mail className="w-5 h-5 mr-2" />
-            Через Яндекс
-          </Button>
-        </div>
-
-        <div className="relative mb-6">
-          <div className="absolute inset-0 flex items-center">
-            <span className="w-full border-t" />
-          </div>
-          <div className="relative flex justify-center text-xs uppercase">
-            <span className="bg-background px-2 text-muted-foreground">
-              Или зарегистрируйтесь через email
-            </span>
-          </div>
-        </div>
-
         {/* Сообщение об ошибке */}
         {error && (
           <Alert variant="destructive" className="mb-6">
@@ -205,7 +188,7 @@ export function RegisterForm() {
                 name="workplace"
                 value={formData.workplace}
                 onChange={handleInputChange}
-                placeholder="ООО «Ромашка»"
+                placeholder="ООО «Феорана-СБ»"
                 disabled={isLoading}
               />
               {validationErrors.workplace && (
@@ -237,7 +220,7 @@ export function RegisterForm() {
               type="email"
               value={formData.email}
               onChange={handleInputChange}
-              placeholder="example@mail.ru"
+              placeholder="example@sb.feorana.ru"
               disabled={isLoading}
             />
             {validationErrors.email && (

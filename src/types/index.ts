@@ -32,7 +32,7 @@ export interface Ticket {
   questions: Question[];
 }
 
-export type PageType = 'learning' | 'theory' | 'examples' | 'trainer' | 'exam';
+export type PageType = 'learning' | 'theory' | 'trainer' | 'exam';
 
 export type SectionType = '1256-19' | '1258-20';
 

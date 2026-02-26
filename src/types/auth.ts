@@ -43,7 +43,7 @@ export interface UserProfile {
   workplace: string;
   position: string;
   photoURL?: string;
-  provider: 'local' | 'apple' | 'yandex' | 'telegram' | 'max';
+  provider: 'local' | OAuthProvider;
   providerId?: string;
   emailVerified: boolean;
   createdAt: string; // ISO timestamp
