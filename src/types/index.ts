@@ -1,4 +1,7 @@
 // Типы для вопросов и тестов
+// Типы для аутентификации: см. auth.ts
+
+export * from './auth';
 
 export interface Question {
   id: number;

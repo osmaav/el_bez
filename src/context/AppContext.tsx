@@ -134,11 +134,11 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const loadQuestions = async () => {
       try {
-        console.log('🔵 Загрузка вопросов для раздела:', currentSection);
+        // console.log('🔵 Загрузка вопросов для раздела:', currentSection);
         setIsLoading(true);
 
         const data = QUESTIONS_DATA[currentSection];
-        
+
         // Преобразуем данные из формата JSON в формат Question
         const transformedQuestions: Question[] = (data.questions || []).map((q: any) => ({
           id: q.id,
@@ -152,7 +152,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
           link: q.link
         }));
 
-        console.log('🔵 Преобразовано вопросов:', transformedQuestions.length);
+        // console.log('🔵 Преобразовано вопросов:', transformedQuestions.length);
         setQuestions(transformedQuestions);
 
         // Генерируем билеты на основе поля ticket из JSON
@@ -162,7 +162,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         setError(err instanceof Error ? err.message : 'Ошибка загрузки');
       } finally {
         setIsLoading(false);
-        console.log('🔵 Загрузка завершена, isLoading = false');
+        // console.log('🔵 Загрузка завершена, isLoading = false');
       }
     };
 
@@ -171,7 +171,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
   // Генерация билетов из данных с учётом поля ticket
   const generateTicketsFromData = (questions: Question[], rawQuestions: any[]) => {
-    console.log('🔵 Генерация билетов, вопросов:', questions.length, 'сырых:', rawQuestions.length);
+    // console.log('🔵 Генерация билетов, вопросов:', questions.length, 'сырых:', rawQuestions.length);
     const ticketMap = new Map<number, Question[]>();
 
     // Группируем вопросы по номеру билета
@@ -186,7 +186,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       }
     });
 
-    console.log('🔵 Уникальных билетов:', ticketMap.size);
+    // console.log('🔵 Уникальных билетов:', ticketMap.size);
 
     // Преобразуем карту в массив билетов
     const newTickets: Ticket[] = [];
@@ -200,21 +200,21 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     // Сортируем билеты по ID
     newTickets.sort((a, b) => a.id - b.id);
 
-    console.log('🔵 Сгенерировано билетов:', newTickets.length);
-    console.log('🔵 Первый билет:', newTickets[0]?.questions.length, 'вопросов');
+    // console.log('🔵 Сгенерировано билетов:', newTickets.length);
+    // console.log('🔵 Первый билет:', newTickets[0]?.questions.length, 'вопросов');
     setTickets(newTickets);
   };
 
   // Тренажер функции
   const startTrainer = useCallback((questionCount: number = 50) => {
-    console.log('🔵 startTrainer вызван, вопросов:', questions.length);
+    // console.log('🔵 startTrainer вызван, вопросов:', questions.length);
     if (questions.length === 0) {
       console.error('❌ Вопросы ещё не загружены');
       return;
     }
     const shuffled = [...questions].sort(() => Math.random() - 0.5);
     const selected = shuffled.slice(0, Math.min(questionCount, shuffled.length));
-    console.log('✅ Тренажер запущен, выбрано вопросов:', selected.length);
+    // console.log('✅ Тренажер запущен, выбрано вопросов:', selected.length);
     setTrainerQuestions(selected);
     setTrainerCurrentIndex(0);
     setTrainerAnswers({});

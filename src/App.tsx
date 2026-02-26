@@ -8,6 +8,8 @@ import { TrainerSection } from '@/sections/TrainerSection';
 import { ExamSection } from '@/sections/ExamSection';
 import { Toaster } from '@/components/ui/sonner';
 import { useEffect } from 'react';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { RegisterPage } from '@/pages/RegisterPage';
 
 function AppContent() {
   const { currentPage } = useApp();
@@ -34,10 +36,15 @@ function AppContent() {
 function App() {
   return (
     <CookiesProvider>
-      <AppProvider>
-        <AppContent />
-        <Toaster />
-      </AppProvider>
+      <BrowserRouter>
+        <AppProvider>
+          <Routes>
+            <Route path="/register" element={<RegisterPage />} />
+            <Route path="/*" element={<AppContent />} />
+          </Routes>
+          <Toaster />
+        </AppProvider>
+      </BrowserRouter>
     </CookiesProvider>
   );
 }
