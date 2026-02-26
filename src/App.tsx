@@ -11,7 +11,6 @@ import { useEffect } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { RegisterPage } from '@/pages/RegisterPage';
 import { LoginPage } from '@/pages/LoginPage';
-import { FirebaseTestPage } from '../tests/FirebaseTestPage';
 
 function AppContent() {
   const { currentPage } = useApp();
@@ -44,7 +43,6 @@ function App() {
               <Route path="/*" element={<AppContent />} />
               <Route path="/register" element={<RegisterPage />} />
               <Route path="/login" element={<LoginPage />} />
-              <Route path="/firebase-test" element={<FirebaseTestPage />} />
             </Routes>
             <Toaster />
           </AppProvider>
