@@ -3,7 +3,11 @@
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+<<<<<<< HEAD
 console.txt
+=======
+Console.*
+>>>>>>> b145af7ae6ab54d20a5d6b29692c59e2aec43054
 
 # macOS
 .DS_Store
