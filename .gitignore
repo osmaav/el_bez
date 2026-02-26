@@ -49,6 +49,7 @@ tmp/
 temp/
 scripts/
 
+QWEN.md
 .qwen/
 gha-creds-*.json
 
