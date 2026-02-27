@@ -96,15 +96,15 @@ export function Navigation() {
             </div>
 
             {/* Название приложения */}
-            <div className="min-w-0 hidden lg:block">
+            <div className="hidden md:block min-w-0">
               <h1 className="font-bold text-sm sm:text-lg leading-tight truncate">Электробезопасность</h1>
-              <p className="text-xs text-slate-400 hidden lg:block">{currentSectionInfo?.description}</p>
+              <p className="text-xs text-slate-400">{currentSectionInfo?.description}</p>
             </div>
 
             {/* Информация о пользователе и кнопка выхода */}
             {user && (
               <div className="flex items-center space-x-2 border-l border-slate-700 pl-4 ml-2">
-                <span className="text-sm text-slate-300 font-medium">
+                <span className="hidden md:inline text-sm text-slate-300 font-medium">
                   {user.name}
                 </span>
                 <Button
@@ -142,7 +142,7 @@ export function Navigation() {
                     `}
                   >
                     <Icon className="w-4 h-4 sm:w-5 sm:h-5" />
-                    <span className="text-xs sm:text-sm">{item.label}</span>
+                    <span className="hidden md:inline text-xs sm:text-sm">{item.label}</span>
                   </button>
                 );
               })}
