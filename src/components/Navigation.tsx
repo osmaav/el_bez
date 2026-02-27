@@ -112,6 +112,7 @@ export function Navigation() {
                   size="sm"
                   onClick={handleLogout}
                   className="text-slate-300 hover:text-white hover:bg-slate-800 h-8 w-8 p-0"
+                  title="Выход из системы"
                 >
                   <LogOut className="w-4 h-4" />
                 </Button>
