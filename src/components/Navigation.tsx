@@ -37,6 +37,11 @@ export function Navigation() {
 
   const currentSectionInfo = sections.find(s => s.id === currentSection);
 
+  // Короткие названия для разделов
+  const getShortSectionName = (sectionId: SectionType) => {
+    return sectionId === '1256-19' ? 'III' : 'IV';
+  };
+
   return (
     <nav className="bg-slate-900 text-white shadow-lg sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-2 sm:px-4">
@@ -80,8 +85,9 @@ export function Navigation() {
               <button
                 onClick={() => setShowSectionMenu(!showSectionMenu)}
                 className="flex items-center space-x-1 px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg bg-slate-800 hover:bg-slate-700 transition-all text-xs sm:text-sm"
+                title={currentSectionInfo?.description}
               >
-                <span className="font-medium">{currentSectionInfo?.name}</span>
+                <span className="font-medium">{getShortSectionName(currentSection)}</span>
                 <ChevronDown className="w-3 h-3 sm:w-4 sm:h-4" />
               </button>
 
