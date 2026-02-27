@@ -103,8 +103,8 @@ export function Navigation() {
 
             {/* Информация о пользователе и кнопка выхода */}
             {user && (
-              <div className="hidden lg:flex items-center space-x-2 border-l border-slate-700 pl-4 ml-2">
-                <span className="text-sm text-slate-300 font-medium">
+              <div className="flex items-center space-x-2 border-l border-slate-700 pl-4 ml-2">
+                <span className="text-sm text-slate-300 font-medium hidden lg:inline">
                   {user.name}
                 </span>
                 <Button
