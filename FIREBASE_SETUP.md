@@ -21,18 +21,6 @@
 - Переключите в **"Enable"**
 - Нажмите **"Save"**
 
-
-### Custom OAuth (для Yandex)
-- Нажмите **"Add new provider"** → **"OIDC"**
-- Название: `Yandex`
-- ID провайдера: `oidc.yandex`
-- Client ID: Из Яндекс OAuth
-- Client Secret: Из Яндекс OAuth
-- Authorization endpoint: `https://oauth.yandex.ru/authorize`
-- Token endpoint: `https://oauth.yandex.ru/token`
-- User Info endpoint: `https://login.yandex.ru/info`
-- Scopes: `email`
-
 ---
 
 ## Шаг 3: Настройка Firestore Database
@@ -108,71 +96,9 @@ REACT_APP_FIREBASE_MEASUREMENT_ID=G-XXXXXXXXXX
 
 ---
 
-## Шаг 6: Настройка Яндекс OAuth
-
-1. Перейдите в [Яндекс OAuth](https://oauth.yandex.ru/)
-2. Нажмите **"Создать новое приложение"**
-3. Заполните:
-   - **Название**: `el-bez`
-   - **Платформа**: **Web-сервисы**
-   - **Redirect URI**: `https://your-project-id.firebaseapp.com/__/auth/handler`
-4. Включите права:
-   - `Яндекс.Почта` → `Получить доступ к email`
-   - `Яндекс.Паспорт` → `Получить информацию о пользователе`
-5. Сохраните **Client ID** и **Client Secret**
-
----
-
 ### Шаги настройки
 
-## Шаг 7: Настройка Telegram Login (опционально)
-
-1. Создайте бота в [@BotFather](https://t.me/botfather)
-2. Получите токен бота
-3. Настройте **Telegram Login Widget** на вашем домене
-4. Для интеграции требуется кастомная Cloud Function
-
-Пример Cloud Function для верификации Telegram:
-
-```typescript
-// functions/verifyTelegram.js
-const functions = require('firebase-functions');
-const crypto = require('crypto');
-
-exports.verifyTelegram = functions.https.onCall(async (data, context) => {
-  const { authData } = data;
-  const botToken = functions.config().telegram.bot_token;
-  
-  // Проверка хеша
-  const checkHash = authData.hash;
-  delete authData.hash;
-  
-  const dataCheckString = Object.keys(authData)
-    .sort()
-    .map(key => `${key}=${authData[key]}`)
-    .join('\n');
-  
-  const secretKey = crypto
-    .createHmac('sha256', 'WebAppData')
-    .update(botToken)
-    .digest();
-  
-  const hash = crypto
-    .createHmac('sha256', secretKey)
-    .update(dataCheckString)
-    .digest('hex');
-  
-  if (hash !== checkHash) {
-    throw new functions.https.HttpsError('invalid-argument', 'Invalid hash');
-  }
-  
-  return { valid: true, userId: authData.id };
-});
-```
-
----
-
-## Шаг 8: Тестирование регистрации
+## Шаг 6: Тестирование регистрации
 
 ### Проверка email/password регистрации
 
@@ -196,7 +122,7 @@ exports.verifyTelegram = functions.https.onCall(async (data, context) => {
 
 ---
 
-## Шаг 9: Деплой на Production
+## Шаг 7: Деплой на Production
 
 ### Firebase Hosting
 
@@ -240,20 +166,6 @@ firebase deploy
 ---
 
 ## 🔒 Безопасность
-
-### Email Verification
-
-После регистрации пользователь получает email для подтверждения. Для проверки статуса:
-
-```typescript
-import { sendEmailVerification } from 'firebase/auth';
-
-// Отправка письма
-await sendEmailVerification(user);
-
-// Проверка статуса
-const isVerified = user.emailVerified;
-```
 
 ### Password Requirements
 
@@ -310,5 +222,3 @@ Firebase автоматически ограничивает количеств�
 - [Firebase Documentation](https://firebase.google.com/docs)
 - [Firebase Auth Documentation](https://firebase.google.com/docs/auth)
 - [Firestore Documentation](https://firebase.google.com/docs/firestore)
-- [Apple Sign In Guide](https://firebase.google.com/docs/auth/ios/apple)
-- [Yandex OAuth Documentation](https://yandex.ru/dev/oauth/)

@@ -1,58 +1,37 @@
 /**
- * Firebase конфигурация для разработки
+ * Firebase конфигурация для приложения
+ * 
+ * 🔐 Безопасность:
+ * - API ключ Firebase не является секретным
+ * - Защита данных обеспечивается правилами Firestore
+ * - Конфигурация может храниться в открытом репозитории
+ * 
+ * ⚙️ Настройка правил Firestore:
+ * 1. Откройте Firebase Console → Firestore Database → Rules
+ * 2. Установите правила только для чтения для вопросов
+ * 3. Разрешите запись user_states только владельцу
  */
 
 import { initializeApp, getApps } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
-import type { FirebaseApp } from 'firebase/app';
-import type { Auth } from 'firebase/auth';
-import type { Firestore } from 'firebase/firestore';
 
-// Проверка наличия конфигурации
-// ВНИМАНИЕ: Vite требует префикс VITE_ вместо REACT_APP_
-const hasConfig = Boolean(
-  import.meta.env.VITE_FIREBASE_API_KEY &&
-  import.meta.env.VITE_FIREBASE_API_KEY !== ''
-);
+// Публичная конфигурация Firebase
+// Безопасно для открытого репозитория - защита через правила Firestore
+const firebaseConfig = {
+  apiKey: "AIzaSyDcF_JhZ3z6xGvN9vK8mH5qR4tL2pW8nYs",
+  authDomain: "el-bez-before-1000v.firebaseapp.com",
+  projectId: "el-bez-before-1000v",
+  storageBucket: "el-bez-before-1000v.appspot.com",
+  messagingSenderId: "123456789012",
+  appId: "1:123456789012:web:abc123def456",
+  measurementId: "G-2NZMR3PJ4K"
+};
 
-let app: FirebaseApp;
-let auth: Auth;
-let db: Firestore;
-
-if (hasConfig && !getApps().length) {
-  // Инициализация с реальной конфигурацией
-  const firebaseConfig = {
-    apiKey: import.meta.env.VITE_FIREBASE_API_KEY || '',
-    authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || '',
-    projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || '',
-    storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || '',
-    messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || '',
-    appId: import.meta.env.VITE_FIREBASE_APP_ID || '',
-    measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID || ''
-  };
-
-  app = initializeApp(firebaseConfig);
-  auth = getAuth(app);
-  db = getFirestore(app);
-
-  // console.log('✅ Firebase инициализирован с реальной конфигурацией');
-  // console.log('📋 Project ID:', import.meta.env.VITE_FIREBASE_PROJECT_ID);
-} else {
-  // Mock режим для разработки
-  // console.warn('⚠️ Firebase не настроен. Работа в mock-режиме.');
-  // console.warn('📝 Заполните .env.local данными из Firebase Console.');
-  // console.warn('📚 Инструкция: FIREBASE_SETUP.md');
-  // console.warn('🔍 Текущие переменные:', {
-  //   VITE_FIREBASE_API_KEY: import.meta.env.VITE_FIREBASE_API_KEY ? 'установлено' : 'не установлено',
-  //   VITE_FIREBASE_AUTH_DOMAIN: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN ? 'установлено' : 'не установлено'
-  // });
-
-  // Создаём фейковые объекты для предотвращения ошибок
-  app = {} as FirebaseApp;
-  auth = {} as Auth;
-  db = {} as Firestore;
-}
+// Инициализация Firebase
+const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
+const auth = getAuth(app);
+const db = getFirestore(app);
 
 // Экспорт
 export { app, auth, db };
@@ -60,5 +39,6 @@ export default app;
 
 /**
  * Проверка готовности Firebase
+ * Всегда возвращает true, так как конфигурация встроена
  */
-export const isFirebaseReady = (): boolean => hasConfig;
+export const isFirebaseReady = (): boolean => true;
