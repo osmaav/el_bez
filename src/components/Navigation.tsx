@@ -132,6 +132,7 @@ export function Navigation() {
                   <button
                     key={item.id}
                     onClick={() => handlePageChange(item.id)}
+                    title={item.label}
                     className={`
                       flex items-center space-x-1 sm:space-x-2 px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg transition-all duration-200 whitespace-nowrap flex-shrink-0
                       ${isActive
@@ -141,7 +142,7 @@ export function Navigation() {
                     `}
                   >
                     <Icon className="w-4 h-4 sm:w-5 sm:h-5" />
-                    <span className="text-xs sm:text-sm hidden lg:inline">{item.label}</span>
+                    <span className="text-xs sm:text-sm">{item.label}</span>
                   </button>
                 );
               })}
