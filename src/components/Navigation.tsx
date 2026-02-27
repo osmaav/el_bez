@@ -56,9 +56,9 @@ export function Navigation() {
               <div className="w-8 h-8 sm:w-10 sm:h-10 bg-yellow-500 rounded-lg flex items-center justify-center flex-shrink-0">
                 <span className="text-slate-900 font-bold text-sm sm:text-lg">ЭБ</span>
               </div>
-              <div className="min-w-0 hidden sm:block">
+              <div className="min-w-0 hidden lg:block">
                 <h1 className="font-bold text-sm sm:text-lg leading-tight truncate">Электробезопасность</h1>
-                <p className="text-xs text-slate-400 hidden sm:block">{currentSectionInfo?.description}</p>
+                <p className="text-xs text-slate-400 hidden lg:block">{currentSectionInfo?.description}</p>
               </div>
             </div>
 
@@ -101,7 +101,7 @@ export function Navigation() {
 
             {/* Информация о пользователе и кнопка выхода */}
             {user && (
-              <div className="hidden md:flex items-center space-x-2 border-l border-slate-700 pl-4 ml-2">
+              <div className="hidden lg:flex items-center space-x-2 border-l border-slate-700 pl-4 ml-2">
                 <span className="text-sm text-slate-300 font-medium">
                   {user.name}
                 </span>
@@ -138,7 +138,7 @@ export function Navigation() {
                     `}
                   >
                     <Icon className="w-4 h-4 sm:w-5 sm:h-5" />
-                    <span className="text-xs sm:text-sm hidden md:inline">{item.label}</span>
+                    <span className="text-xs sm:text-sm hidden lg:inline">{item.label}</span>
                   </button>
                 );
               })}
