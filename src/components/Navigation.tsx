@@ -104,7 +104,7 @@ export function Navigation() {
             {/* Информация о пользователе и кнопка выхода */}
             {user && (
               <div className="flex items-center space-x-2 border-l border-slate-700 pl-4 ml-2">
-                <span className="hidden md:inline text-sm text-slate-300 font-medium">
+                <span className="text-sm text-slate-300 font-medium">
                   {user.name}
                 </span>
                 <Button
