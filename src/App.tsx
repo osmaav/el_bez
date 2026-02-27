@@ -2,6 +2,7 @@ import { AppProvider, useApp } from '@/context/AppContext';
 import { AuthProvider } from '@/context/AuthContext';
 import { CookiesProvider } from 'react-cookie';
 import { Navigation } from '@/components/Navigation';
+import { Footer } from '@/sections/Footer';
 import { LearningSection } from '@/sections/LearningSection';
 import { TheorySection } from '@/sections/TheorySection';
 import { TrainerSection } from '@/sections/TrainerSection';
@@ -21,14 +22,15 @@ function AppContent() {
   }, [currentPage]);
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-slate-50 flex flex-col">
       <Navigation />
-      <main className="pb-12">
+      <main className="pb-12 flex-grow">
         {currentPage === 'learning' && <LearningSection />}
         {currentPage === 'theory' && <TheorySection />}
         {currentPage === 'trainer' && <TrainerSection />}
         {currentPage === 'exam' && <ExamSection />}
       </main>
+      <Footer />
     </div>
   );
 }
