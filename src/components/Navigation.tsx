@@ -46,8 +46,9 @@ export function Navigation() {
     <nav className="bg-slate-900 text-white shadow-lg sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-2 sm:px-4">
         <div className="flex items-center justify-between h-16">
-          {/* Левая часть: Логотип + Информация о пользователе */}
+          {/* Левая часть: Логотип + Выбор раздела + Информация о пользователе */}
           <div className="flex items-center space-x-2 sm:space-x-4">
+            {/* Логотип */}
             <div
               className="flex items-center space-x-2 cursor-pointer hover:opacity-80 transition-opacity"
               onClick={() => navigate('/app')}
@@ -61,26 +62,7 @@ export function Navigation() {
               </div>
             </div>
 
-            {/* Информация о пользователе и кнопка выхода */}
-            {user && (
-              <div className="hidden md:flex items-center space-x-2 border-l border-slate-700 pl-4 ml-2">
-                <span className="text-sm text-slate-300 font-medium">
-                  {user.name}
-                </span>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={handleLogout}
-                  className="text-slate-300 hover:text-white hover:bg-slate-800 h-8 w-8 p-0"
-                >
-                  <LogOut className="w-4 h-4" />
-                </Button>
-              </div>
-            )}
-          </div>
-
-          <div className="flex items-center space-x-2">
-            {/* Переключатель разделов */}
+            {/* Выбор раздела */}
             <div className="relative">
               <button
                 onClick={() => setShowSectionMenu(!showSectionMenu)}
@@ -92,7 +74,7 @@ export function Navigation() {
               </button>
 
               {showSectionMenu && (
-                <div className="absolute right-0 mt-1 w-64 bg-white rounded-lg shadow-lg overflow-hidden z-50">
+                <div className="absolute left-0 mt-1 w-64 bg-white rounded-lg shadow-lg overflow-hidden z-50">
                   <div className="py-1">
                     {sections.map((section) => (
                       <button
@@ -117,6 +99,26 @@ export function Navigation() {
               )}
             </div>
 
+            {/* Информация о пользователе и кнопка выхода */}
+            {user && (
+              <div className="hidden md:flex items-center space-x-2 border-l border-slate-700 pl-4 ml-2">
+                <span className="text-sm text-slate-300 font-medium">
+                  {user.name}
+                </span>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleLogout}
+                  className="text-slate-300 hover:text-white hover:bg-slate-800 h-8 w-8 p-0"
+                >
+                  <LogOut className="w-4 h-4" />
+                </Button>
+              </div>
+            )}
+          </div>
+
+          {/* Правая часть: Навигация */}
+          <div className="flex items-center space-x-2">
             {/* Навигация */}
             <div className="flex space-x-0.5 sm:space-x-1 overflow-x-auto flex-shrink-0">
               {navItems.map((item) => {
