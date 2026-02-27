@@ -59,13 +59,15 @@ export interface UserState {
 
 /**
  * Загрузка всех вопросов для раздела
+ * Загружает вопросы ТОЛЬКО из Firebase Firestore
  */
 export const loadQuestionsForSection = async (sectionId: string): Promise<Question[]> => {
   console.log('📚 [QuestionService] Загрузка вопросов для раздела:', sectionId);
   
   if (!isFirebaseReady()) {
-    console.log('🔧 [QuestionService] Mock-режим, загрузка из JSON');
-    return mockLoadQuestions(sectionId);
+    console.warn('⚠️ [QuestionService] Firebase не настроен. Вопросы недоступны.');
+    console.warn('📝 Настройте Firebase в .env.local для загрузки вопросов');
+    return [];
   }
 
   try {
@@ -143,12 +145,14 @@ export const loadQuestionsForSection = async (sectionId: string): Promise<Questi
 
 /**
  * Загрузка конкретного билета
+ * Загружает вопросы ТОЛЬКО из Firebase Firestore
  */
 export const loadTicket = async (sectionId: string, ticketId: number): Promise<Question[]> => {
   console.log('📚 [QuestionService] Загрузка билета:', { sectionId, ticketId });
   
   if (!isFirebaseReady()) {
-    return mockLoadTicket(sectionId, ticketId);
+    console.warn('⚠️ [QuestionService] Firebase не настроен. Вопросы недоступны.');
+    return [];
   }
 
   try {
@@ -187,10 +191,12 @@ export const loadTicket = async (sectionId: string, ticketId: number): Promise<Q
 
 /**
  * Получение состояния пользователя
+ * Загружает состояние ТОЛЬКО из Firebase Firestore
  */
 export const getUserState = async (userId: string): Promise<UserState | null> => {
   if (!isFirebaseReady()) {
-    return mockGetUserState(userId);
+    console.warn('⚠️ [QuestionService] Firebase не настроен. Состояние недоступно.');
+    return null;
   }
 
   try {
@@ -212,17 +218,18 @@ export const getUserState = async (userId: string): Promise<UserState | null> =>
 
 /**
  * Сохранение состояния пользователя
+ * Сохраняет состояние ТОЛЬКО в Firebase Firestore
  */
 export const saveUserState = async (userId: string, state: Partial<UserState>): Promise<void> => {
   if (!isFirebaseReady()) {
-    console.log('🔧 [QuestionService] Mock сохранение состояния:', state);
-    return mockSaveUserState(userId, state);
+    console.warn('⚠️ [QuestionService] Firebase не настроен. Состояние не сохранено.');
+    return;
   }
 
   try {
     const { setDoc } = await import('firebase/firestore');
     const docRef = doc(db, USER_STATES_COLLECTION, userId);
-    
+
     // Получаем текущее состояние
     const docSnap = await getDoc(docRef);
     const currentState = docSnap.exists() ? docSnap.data() : {};
@@ -238,49 +245,4 @@ export const saveUserState = async (userId: string, state: Partial<UserState>): 
   } catch (error: any) {
     console.error('❌ [QuestionService] Ошибка сохранения состояния пользователя:', error);
   }
-};
-
-/**
- * Mock функции для разработки без Firebase
- */
-const mockLoadQuestions = async (sectionId: string): Promise<Question[]> => {
-  // Импортируем JSON файлы
-  const questions125619 = await import('@/data/questions-1256-19.json');
-  const questions125820 = await import('@/data/questions-1258-20.json');
-
-  const data = sectionId === '1256-19' ? questions125619 : questions125820;
-  
-  const questions: Question[] = (data.questions || []).map((q: any) => ({
-    id: q.id,
-    ticket: q.ticket || 1,
-    text: q.question || q.text,
-    question: q.question,
-    options: q.answers || q.options,
-    answers: q.answers,
-    correct_index: q.correct !== undefined ? q.correct : (q.correct_index || 0),
-    correct: q.correct,
-    link: q.link
-  }));
-
-  console.log(`🔧 [QuestionService] Mock загрузка: ${questions.length} вопросов для ${sectionId}`);
-  return questions;
-};
-
-const mockLoadTicket = async (sectionId: string, ticketId: number): Promise<Question[]> => {
-  const allQuestions = await mockLoadQuestions(sectionId);
-  return allQuestions.filter(q => q.ticket === ticketId);
-};
-
-const mockGetUserState = async (userId: string): Promise<UserState | null> => {
-  const saved = localStorage.getItem(`user_state_${userId}`);
-  if (saved) {
-    console.log('🔧 [QuestionService] Mock загрузка состояния из localStorage');
-    return JSON.parse(saved);
-  }
-  return null;
-};
-
-const mockSaveUserState = async (userId: string, state: Partial<UserState>): Promise<void> => {
-  localStorage.setItem(`user_state_${userId}`, JSON.stringify(state));
-  console.log('🔧 [QuestionService] Mock сохранение состояния в localStorage');
 };
