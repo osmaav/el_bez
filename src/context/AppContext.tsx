@@ -54,14 +54,14 @@ const SECTIONS: SectionInfo[] = [
   {
     id: '1256-19',
     name: 'ЭБ 1256.19',
-    description: '3 группа до 1000 В',
+    description: 'III группа до 1000 В',
     totalQuestions: 250,
     totalTickets: 25
   },
   {
     id: '1258-20',
     name: 'ЭБ 1258.20',
-    description: '4 группа до 1000 В',
+    description: 'IV группа до 1000 В',
     totalQuestions: 304,
     totalTickets: 31
   }
@@ -89,7 +89,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         return savedSection;
       }
     }
-    return '1258-20'; // По умолчанию 4 группа
+    return '1258-20'; // По умолчанию IV группа
   });
 
   // Обновляем setCurrentPage для сохранения в localStorage и Firestore
