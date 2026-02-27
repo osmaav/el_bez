@@ -141,23 +141,6 @@ export function Navigation() {
                 );
               })}
             </div>
-
-            {/* Информация о пользователе и кнопка выхода */}
-            {user && (
-              <div className="flex items-center space-x-2 border-l border-slate-700 pl-4 ml-2">
-                <span className="text-sm text-slate-300 hidden md:inline font-medium">
-                  {user.name}
-                </span>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={handleLogout}
-                  className="text-slate-300 hover:text-white hover:bg-slate-800 h-8 w-8 p-0"
-                >
-                  <LogOut className="w-4 h-4" />
-                </Button>
-              </div>
-            )}
           </div>
         </div>
       </div>
