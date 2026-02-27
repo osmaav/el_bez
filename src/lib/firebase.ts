@@ -19,13 +19,13 @@ import { getFirestore } from 'firebase/firestore';
 // Публичная конфигурация Firebase
 // Безопасно для открытого репозитория - защита через правила Firestore
 const firebaseConfig = {
-  apiKey: "AIzaSyDcF_JhZ3z6xGvN9vK8mH5qR4tL2pW8nYs",
+  //measurementId: "G-2NZMR3PJ4K"
+  apiKey: "AIzaSyA2ms6ztsgTuKRbv5P-5QQShqNlVNAeo94",
   authDomain: "el-bez-before-1000v.firebaseapp.com",
   projectId: "el-bez-before-1000v",
-  storageBucket: "el-bez-before-1000v.appspot.com",
-  messagingSenderId: "123456789012",
-  appId: "1:123456789012:web:abc123def456",
-  measurementId: "G-2NZMR3PJ4K"
+  storageBucket: "el-bez-before-1000v.firebasestorage.app",
+  messagingSenderId: "1013436440367",
+  appId: "1:1013436440367:web:a20e108f7155e79da28bda"
 };
 
 // Инициализация Firebase
