@@ -56,10 +56,6 @@ export function Navigation() {
               <div className="w-8 h-8 sm:w-10 sm:h-10 bg-yellow-500 rounded-lg flex items-center justify-center flex-shrink-0">
                 <span className="text-slate-900 font-bold text-sm sm:text-lg">ЭБ</span>
               </div>
-              <div className="min-w-0 hidden lg:block">
-                <h1 className="font-bold text-sm sm:text-lg leading-tight truncate">Электробезопасность</h1>
-                <p className="text-xs text-slate-400 hidden lg:block">{currentSectionInfo?.description}</p>
-              </div>
             </div>
 
             {/* Выбор раздела */}
@@ -97,6 +93,12 @@ export function Navigation() {
                   </div>
                 </div>
               )}
+            </div>
+
+            {/* Название приложения */}
+            <div className="min-w-0 hidden lg:block">
+              <h1 className="font-bold text-sm sm:text-lg leading-tight truncate">Электробезопасность</h1>
+              <p className="text-xs text-slate-400 hidden lg:block">{currentSectionInfo?.description}</p>
             </div>
 
             {/* Информация о пользователе и кнопка выхода */}
