@@ -36,17 +36,17 @@ if (hasConfig && !getApps().length) {
   auth = getAuth(app);
   db = getFirestore(app);
 
-  console.log('✅ Firebase инициализирован с реальной конфигурацией');
-  console.log('📋 Project ID:', import.meta.env.VITE_FIREBASE_PROJECT_ID);
+  // console.log('✅ Firebase инициализирован с реальной конфигурацией');
+  // console.log('📋 Project ID:', import.meta.env.VITE_FIREBASE_PROJECT_ID);
 } else {
   // Mock режим для разработки
-  console.warn('⚠️ Firebase не настроен. Работа в mock-режиме.');
-  console.warn('📝 Заполните .env.local данными из Firebase Console.');
-  console.warn('📚 Инструкция: FIREBASE_SETUP.md');
-  console.warn('🔍 Текущие переменные:', {
-    VITE_FIREBASE_API_KEY: import.meta.env.VITE_FIREBASE_API_KEY ? 'установлено' : 'не установлено',
-    VITE_FIREBASE_AUTH_DOMAIN: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN ? 'установлено' : 'не установлено'
-  });
+  // console.warn('⚠️ Firebase не настроен. Работа в mock-режиме.');
+  // console.warn('📝 Заполните .env.local данными из Firebase Console.');
+  // console.warn('📚 Инструкция: FIREBASE_SETUP.md');
+  // console.warn('🔍 Текущие переменные:', {
+  //   VITE_FIREBASE_API_KEY: import.meta.env.VITE_FIREBASE_API_KEY ? 'установлено' : 'не установлено',
+  //   VITE_FIREBASE_AUTH_DOMAIN: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN ? 'установлено' : 'не установлено'
+  // });
 
   // Создаём фейковые объекты для предотвращения ошибок
   app = {} as FirebaseApp;

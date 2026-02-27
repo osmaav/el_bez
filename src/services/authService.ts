@@ -45,7 +45,7 @@ const STORAGE_KEY_USER = 'elbez_current_user';
 export const registerUser = async (userData: RegisterUserData): Promise<UserProfile> => {
   // Проверка готовности Firebase
   if (!isFirebaseReady()) {
-    console.log('🔧 Mock регистрация (Firebase не настроен)');
+    // console.log('🔧 Mock регистрация (Firebase не настроен)');
     return mockRegisterUser(userData);
   }
 
@@ -123,7 +123,7 @@ const mockRegisterUser = async (userData: RegisterUserData): Promise<UserProfile
   localStorage.setItem(STORAGE_KEY_USER, JSON.stringify(userProfile));
   localStorage.setItem(STORAGE_KEY_AUTH, 'true');
 
-  console.log('✅ Mock пользователь создан:', userProfile.email);
+  // console.log('✅ Mock пользователь создан:', userProfile.email);
   return userProfile;
 };
 
@@ -133,7 +133,7 @@ const mockRegisterUser = async (userData: RegisterUserData): Promise<UserProfile
 export const loginUser = async (userData: LoginUserData): Promise<UserProfile> => {
   // Проверка готовности Firebase
   if (!isFirebaseReady()) {
-    console.log('🔧 Mock вход (Firebase не настроен)');
+    // console.log('🔧 Mock вход (Firebase не настроен)');
     return mockLoginUser(userData);
   }
 
@@ -191,7 +191,7 @@ const mockLoginUser = async (userData: LoginUserData): Promise<UserProfile> => {
 export const signInWithOAuth = async (provider: OAuthProviderType): Promise<UserProfile> => {
   // Проверка готовности Firebase
   if (!isFirebaseReady()) {
-    console.log('🔧 Mock OAuth вход (Firebase не настроен)');
+    // console.log('🔧 Mock OAuth вход (Firebase не настроен)');
     return mockOAuthSignIn(provider);
   }
 
@@ -276,7 +276,7 @@ const mockOAuthSignIn = async (provider: OAuthProviderType): Promise<UserProfile
   localStorage.setItem(STORAGE_KEY_USER, JSON.stringify(userProfile));
   localStorage.setItem(STORAGE_KEY_AUTH, 'true');
 
-  console.log(`✅ Mock ${provider} вход выполнен`);
+  // console.log(`✅ Mock ${provider} вход выполнен`);
   return userProfile;
 };
 
@@ -287,7 +287,7 @@ export const logoutUser = async (): Promise<void> => {
   if (!isFirebaseReady()) {
     localStorage.removeItem(STORAGE_KEY_USER);
     localStorage.removeItem(STORAGE_KEY_AUTH);
-    console.log('🔧 Mock выход выполнен');
+    // console.log('🔧 Mock выход выполнен');
     return;
   }
 
@@ -471,13 +471,13 @@ export const validateRegisterData = (data: RegisterUserData): Record<string, str
  */
 export const resendVerificationEmail = async (user: User): Promise<void> => {
   if (!isFirebaseReady()) {
-    console.log('🔧 Mock отправка повторного письма подтверждения');
+    // console.log('🔧 Mock отправка повторного письма подтверждения');
     return Promise.resolve();
   }
 
   try {
     await sendEmailVerification(user);
-    console.log('✅ Письмо подтверждения отправлено повторно');
+    // console.log('✅ Письмо подтверждения отправлено повторно');
   } catch (error: any) {
     throw handleAuthError(error);
   }
@@ -488,29 +488,29 @@ export const resendVerificationEmail = async (user: User): Promise<void> => {
  * Возвращает обновлённый профиль пользователя
  */
 export const checkEmailVerification = async (uid: string): Promise<UserProfile | null> => {
-  console.log('🔍 [checkEmailVerification] Начало проверки для uid:', uid);
-  
+  // console.log('🔍 [checkEmailVerification] Начало проверки для uid:', uid);
+
   if (!isFirebaseReady()) {
-    console.log('🔧 [checkEmailVerification] Mock-режим (Firebase не настроен)');
+    // console.log('🔧 [checkEmailVerification] Mock-режим (Firebase не настроен)');
     // Mock проверка - возвращаем пользователя из localStorage
     const currentUser = localStorage.getItem(STORAGE_KEY_USER);
     if (currentUser) {
       const user = JSON.parse(currentUser);
-      console.log('📄 [checkEmailVerification] Текущий пользователь из localStorage:', {
-        email: user.email,
-        emailVerified: user.emailVerified,
-        createdAt: user.createdAt
-      });
+      // console.log('📄 [checkEmailVerification] Текущий пользователь из localStorage:', {
+      //   email: user.email,
+      //   emailVerified: user.emailVerified,
+      //   createdAt: user.createdAt
+      // });
       // В mock-режиме считаем email подтверждённым через 5 минут после регистрации
       const createdAt = new Date(user.createdAt);
       const now = new Date();
       const minutesDiff = (now.getTime() - createdAt.getTime()) / (1000 * 60);
-      console.log('⏱️ [checkEmailVerification] Прошло минут с регистрации:', minutesDiff.toFixed(2));
-      
+      // console.log('⏱️ [checkEmailVerification] Прошло минут с регистрации:', minutesDiff.toFixed(2));
+
       if (minutesDiff >= 5) {
         user.emailVerified = true;
         localStorage.setItem(STORAGE_KEY_USER, JSON.stringify(user));
-        console.log('✅ [checkEmailVerification] Email подтверждён (прошло 5+ минут)');
+        // console.log('✅ [checkEmailVerification] Email подтверждён (прошло 5+ минут)');
         // Обновляем в mockUsers
         if (mockUsers[uid]) {
           mockUsers[uid].emailVerified = true;
@@ -518,49 +518,49 @@ export const checkEmailVerification = async (uid: string): Promise<UserProfile |
         }
         return user;
       } else {
-        console.log('⏳ [checkEmailVerification] Email ещё не подтверждён (прошло меньше 5 минут)');
+        // console.log('⏳ [checkEmailVerification] Email ещё не подтверждён (прошло меньше 5 минут)');
         return user;
       }
     }
-    console.log('❌ [checkEmailVerification] Пользователь не найден в localStorage');
+    // console.log('❌ [checkEmailVerification] Пользователь не найден в localStorage');
     return null;
   }
 
   try {
     // Перезагружаем состояние auth для получения актуального emailVerified
     const currentUser = auth.currentUser;
-    console.log('🔥 [checkEmailVerification] Firebase пользователь:', {
-      uid: currentUser?.uid,
-      email: currentUser?.email,
-      emailVerified: currentUser?.emailVerified
-    });
-    
+    // console.log('🔥 [checkEmailVerification] Firebase пользователь:', {
+    //   uid: currentUser?.uid,
+    //   email: currentUser?.email,
+    //   emailVerified: currentUser?.emailVerified
+    // });
+
     if (currentUser) {
-      console.log('🔄 [checkEmailVerification] Перезагрузка состояния auth...');
+      // console.log('🔄 [checkEmailVerification] Перезагрузка состояния auth...');
       await reload(currentUser);
-      console.log('✅ [checkEmailVerification] Состояние auth обновлено');
-      console.log('📊 [checkEmailVerification] emailVerified после reload:', currentUser.emailVerified);
-      
+      // console.log('✅ [checkEmailVerification] Состояние auth обновлено');
+      // console.log('📊 [checkEmailVerification] emailVerified после reload:', currentUser.emailVerified);
+
       // Обновляем профиль в Firestore
       const profile = await getUserProfile(uid);
-      console.log('📄 [checkEmailVerification] Профиль из Firestore:', {
-        emailVerified: profile?.emailVerified
-      });
-      
+      // console.log('📄 [checkEmailVerification] Профиль из Firestore:', {
+      //   emailVerified: profile?.emailVerified
+      // });
+
       if (profile && currentUser.emailVerified !== profile.emailVerified) {
-        console.log('📝 [checkEmailVerification] Обновление профиля в Firestore...');
+        // console.log('📝 [checkEmailVerification] Обновление профиля в Firestore...');
         await updateUserProfile(uid, {
           emailVerified: currentUser.emailVerified
         });
         profile.emailVerified = currentUser.emailVerified;
-        console.log('✅ [checkEmailVerification] Профиль обновлён');
+        // console.log('✅ [checkEmailVerification] Профиль обновлён');
       }
       return profile;
     }
-    console.log('❌ [checkEmailVerification] currentUser не найден');
+    // console.log('❌ [checkEmailVerification] currentUser не найден');
     return null;
   } catch (error: any) {
-    console.error('❌ [checkEmailVerification] Ошибка проверки email:', error);
+    // console.error('❌ [checkEmailVerification] Ошибка проверки email:', error);
     return null;
   }
 };

@@ -32,29 +32,29 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // Инициализация состояния аутентификации при загрузке
   useEffect(() => {
-    console.log('🔵 [AuthContext] Инициализация...');
-    
+    // console.log('🔵 [AuthContext] Инициализация...');
+
     // Проверяем сохранённые данные в localStorage
     const savedUser = localStorage.getItem(STORAGE_KEY_USER);
     const savedAuth = localStorage.getItem(STORAGE_KEY_AUTH);
-    console.log('📦 [AuthContext] Сохранённые данные:', {
-      hasSavedUser: !!savedUser,
-      hasSavedAuth: !!savedAuth,
-      savedAuthValue: savedAuth,
-      userEmail: savedUser ? JSON.parse(savedUser).email : null,
-      emailVerified: savedUser ? JSON.parse(savedUser).emailVerified : null
-    });
+    // console.log('📦 [AuthContext] Сохранённые данные:', {
+    //   hasSavedUser: !!savedUser,
+    //   hasSavedAuth: !!savedAuth,
+    //   savedAuthValue: savedAuth,
+    //   userEmail: savedUser ? JSON.parse(savedUser).email : null,
+    //   emailVerified: savedUser ? JSON.parse(savedUser).emailVerified : null
+    // });
 
     if (savedUser && savedAuth === 'true') {
       try {
         const parsedUser = JSON.parse(savedUser);
-        console.log('✅ [AuthContext] Пользователь загружен из localStorage:', {
-          email: parsedUser.email,
-          emailVerified: parsedUser.emailVerified
-        });
+        // console.log('✅ [AuthContext] Пользователь загружен из localStorage:', {
+        //   email: parsedUser.email,
+        //   emailVerified: parsedUser.emailVerified
+        // });
         setUser(parsedUser);
       } catch (error) {
-        console.error('❌ [AuthContext] Ошибка парсинга сохранённых данных:', error);
+        // console.error('❌ [AuthContext] Ошибка парсинга сохранённых данных:', error);
         localStorage.removeItem(STORAGE_KEY_USER);
         localStorage.removeItem(STORAGE_KEY_AUTH);
       }
@@ -62,19 +62,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     // Подписка на изменения аутентификации (Firebase + localStorage)
     const unsubscribe = onAuthChange((currentUser) => {
-      console.log('📡 [AuthContext] onAuthChange вызван:', {
-        hasUser: !!currentUser,
-        email: currentUser?.email,
-        emailVerified: currentUser?.emailVerified
-      });
-      
+      // console.log('📡 [AuthContext] onAuthChange вызван:', {
+      //   hasUser: !!currentUser,
+      //   email: currentUser?.email,
+      //   emailVerified: currentUser?.emailVerified
+      // });
+
       if (currentUser) {
-        console.log('✅ [AuthContext] Пользователь авторизован:', currentUser.email);
+        // console.log('✅ [AuthContext] Пользователь авторизован:', currentUser.email);
         setUser(currentUser);
         localStorage.setItem(STORAGE_KEY_USER, JSON.stringify(currentUser));
         localStorage.setItem(STORAGE_KEY_AUTH, 'true');
       } else {
-        console.log('🚪 [AuthContext] Пользователь вышел');
+        // console.log('🚪 [AuthContext] Пользователь вышел');
         setUser(null);
         localStorage.removeItem(STORAGE_KEY_USER);
         localStorage.removeItem(STORAGE_KEY_AUTH);
@@ -86,21 +86,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Проверка выполняется только по клику на кнопку в модальном окне
 
     return () => {
-      console.log('🧹 [AuthContext] Очистка...');
+      // console.log('🧹 [AuthContext] Очистка...');
       unsubscribe();
     };
   }, []);
 
   // Функция входа
   const login = useCallback(async (userData: UserProfile) => {
-    console.log('🔐 [AuthContext] login вызван:', {
-      email: userData.email,
-      emailVerified: userData.emailVerified
-    });
+    // console.log('🔐 [AuthContext] login вызван:', {
+    //   email: userData.email,
+    //   emailVerified: userData.emailVerified
+    // });
     setUser(userData);
     localStorage.setItem(STORAGE_KEY_USER, JSON.stringify(userData));
     localStorage.setItem(STORAGE_KEY_AUTH, 'true');
-    
+
     // Сохраняем состояние в Firestore
     if (isFirebaseReady()) {
       try {
@@ -108,16 +108,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         await saveUserState(userData.id, {
           updatedAt: Timestamp.now()
         });
-        console.log('✅ [AuthContext] Состояние сохранено в Firestore');
+        // console.log('✅ [AuthContext] Состояние сохранено в Firestore');
       } catch (error) {
-        console.error('❌ [AuthContext] Ошибка сохранения в Firestore:', error);
+        // console.error('❌ [AuthContext] Ошибка сохранения в Firestore:', error);
       }
     }
   }, []);
 
   // Функция выхода
   const logout = useCallback(async () => {
-    console.log('🚪 [AuthContext] logout вызван');
+    // console.log('🚪 [AuthContext] logout вызван');
     await authLogout();
     setUser(null);
     localStorage.removeItem(STORAGE_KEY_USER);
@@ -126,16 +126,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // Проверка подтверждения email
   const checkEmail = useCallback(async () => {
-    console.log('🔍 [AuthContext] checkEmail вызван');
+    // console.log('🔍 [AuthContext] checkEmail вызван');
     if (!user) {
-      console.log('⚠️ [AuthContext] checkEmail: пользователь не авторизован');
+      // console.log('⚠️ [AuthContext] checkEmail: пользователь не авторизован');
       return;
     }
-    
+
     const updatedProfile = await checkEmailVerification(user.id);
-    console.log('📊 [AuthContext] checkEmail результат:', {
-      emailVerified: updatedProfile?.emailVerified
-    });
+    // console.log('📊 [AuthContext] checkEmail результат:', {
+    //   emailVerified: updatedProfile?.emailVerified
+    // });
     if (updatedProfile) {
       setUser(updatedProfile);
       localStorage.setItem(STORAGE_KEY_USER, JSON.stringify(updatedProfile));
@@ -144,29 +144,29 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // Отправка повторного письма подтверждения
   const resendVerification = useCallback(async () => {
-    console.log('📧 [AuthContext] resendVerification вызван');
+    // console.log('📧 [AuthContext] resendVerification вызван');
     if (!isFirebaseReady()) {
-      console.log('🔧 [AuthContext] Mock отправка письма подтверждения');
+      // console.log('🔧 [AuthContext] Mock отправка письма подтверждения');
       return;
     }
-    
+
     const currentUser = auth.currentUser;
     if (currentUser) {
       await resendVerificationEmail(currentUser);
-      console.log('✅ [AuthContext] Письмо отправлено');
+      // console.log('✅ [AuthContext] Письмо отправлено');
     } else {
-      console.log('⚠️ [AuthContext] currentUser не найден');
+      // console.log('⚠️ [AuthContext] currentUser не найден');
     }
   }, []);
 
   // Обновление данных пользователя
   const refreshUser = useCallback(async () => {
-    console.log('🔄 [AuthContext] refreshUser вызван');
+    // console.log('🔄 [AuthContext] refreshUser вызван');
     const updatedProfile = await refreshCurrentUser();
-    console.log('📊 [AuthContext] refreshUser результат:', {
-      email: updatedProfile?.email,
-      emailVerified: updatedProfile?.emailVerified
-    });
+    // console.log('📊 [AuthContext] refreshUser результат:', {
+    //   email: updatedProfile?.email,
+    //   emailVerified: updatedProfile?.emailVerified
+    // });
     if (updatedProfile) {
       setUser(updatedProfile);
       localStorage.setItem(STORAGE_KEY_USER, JSON.stringify(updatedProfile));

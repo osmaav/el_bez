@@ -107,8 +107,8 @@ export function LearningSection() {
 
   // Инициализация сессии
   useEffect(() => {
-    console.log('📖 LearningSection mounted, раздел:', currentSection);
-    console.log('📦 Questions loaded:', questions.length);
+    // console.log('📖 LearningSection mounted, раздел:', currentSection);
+    // console.log('📦 Questions loaded:', questions.length);
 
     // Сбрасываем инициализацию при смене раздела
     setIsInitialized(false);
@@ -124,12 +124,12 @@ export function LearningSection() {
     setCurrentPage(savedPage);
 
     if (questions.length === 0) {
-      console.error('❌ No questions loaded!');
+      // console.error('❌ No questions loaded!');
       return;
     }
 
     // Загружаем вопросы для сохранённой страницы
-    console.log(`🆕 Загрузка страницы ${savedPage}`);
+    // console.log(`🆕 Загрузка страницы ${savedPage}`);
     const startIndex = (savedPage - 1) * QUESTIONS_PER_SESSION;
     const selected = questions.slice(startIndex, startIndex + QUESTIONS_PER_SESSION).map(q => ({
       ...q,
@@ -140,7 +140,7 @@ export function LearningSection() {
     const savedState = saved ? saved[savedPage] : null;
 
     if (savedState) {
-      console.log(`♻️ Восстановление состояния для страницы ${savedPage}`);
+      // console.log(`♻️ Восстановление состояния для страницы ${savedPage}`);
       setQuizState({
         currentQuestions: selected,
         shuffledAnswers: savedState.shuffledAnswers,
@@ -148,7 +148,7 @@ export function LearningSection() {
         isComplete: savedState.isComplete,
       });
     } else {
-      console.log(`🆕 Новое состояние для страницы ${savedPage}`);
+      // console.log(`🆕 Новое состояние для страницы ${savedPage}`);
       const shuffledAnswers = selected.map((q) =>
         shuffleArray([...Array(q.answers?.length || 4).keys()])
       );

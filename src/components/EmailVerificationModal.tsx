@@ -56,7 +56,7 @@ export function EmailVerificationModal({
   // Это снижает нагрузку на сервер и базу данных
 
   const handleCheck = async () => {
-    console.log('🔍 [EmailVerificationModal] Проверка email по клику пользователя');
+    // console.log('🔍 [EmailVerificationModal] Проверка email по клику пользователя');
     setIsChecking(true);
     try {
       await onVerify();
@@ -64,12 +64,12 @@ export function EmailVerificationModal({
       const currentUser = localStorage.getItem('elbez_current_user');
       if (currentUser) {
         const user = JSON.parse(currentUser);
-        console.log('📊 [EmailVerificationModal] Статус email после проверки:', {
-          email: user.email,
-          emailVerified: user.emailVerified
-        });
+        // console.log('📊 [EmailVerificationModal] Статус email после проверки:', {
+        //   email: user.email,
+        //   emailVerified: user.emailVerified
+        // });
         if (user.emailVerified) {
-          console.log('✅ [EmailVerificationModal] Email подтверждён!');
+          // console.log('✅ [EmailVerificationModal] Email подтверждён!');
           setIsVerified(true);
           // Вызываем колбэк успешного подтверждения
           if (onVerified) {
@@ -78,7 +78,7 @@ export function EmailVerificationModal({
         }
       }
     } catch (error) {
-      console.error('❌ [EmailVerificationModal] Ошибка проверки email:', error);
+      // console.error('❌ [EmailVerificationModal] Ошибка проверки email:', error);
     } finally {
       setIsChecking(false);
     }
@@ -87,14 +87,14 @@ export function EmailVerificationModal({
   const handleResend = async () => {
     if (resendCountdown > 0) return;
 
-    console.log('📧 [EmailVerificationModal] Запрос повторной отправки письма');
+    // console.log('📧 [EmailVerificationModal] Запрос повторной отправки письма');
     setIsResending(true);
     try {
       await onResend();
       setResendCountdown(60); // 60 секунд между отправками
-      console.log('✅ [EmailVerificationModal] Письмо отправлено, таймер 60 сек');
+      // console.log('✅ [EmailVerificationModal] Письмо отправлено, таймер 60 сек');
     } catch (error) {
-      console.error('❌ [EmailVerificationModal] Ошибка отправки письма:', error);
+      // console.error('❌ [EmailVerificationModal] Ошибка отправки письма:', error);
     } finally {
       setIsResending(false);
     }

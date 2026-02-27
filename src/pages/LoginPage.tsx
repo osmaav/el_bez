@@ -26,7 +26,7 @@ export function LoginPage() {
         try {
           return JSON.parse(saved);
         } catch (e) {
-          console.error('Ошибка парсинга сохранённых данных формы:', e);
+          // console.error('Ошибка парсинга сохранённых данных формы:', e);
         }
       }
     }
@@ -53,21 +53,21 @@ export function LoginPage() {
     setIsLoading(true);
 
     try {
-      console.log('📝 [LoginPage] Вход пользователя:', formData.email);
+      // console.log('📝 [LoginPage] Вход пользователя:', formData.email);
       const user = await loginUser(formData);
-      console.log('✅ [LoginPage] Вход успешен:', {
-        email: user.email,
-        emailVerified: user.emailVerified,
-        provider: user.provider
-      });
-      
+      // console.log('✅ [LoginPage] Вход успешен:', {
+      //   email: user.email,
+      //   emailVerified: user.emailVerified,
+      //   provider: user.provider
+      // });
+
       // ⚠️ ПРОВЕРКА EMAIL ОТКЛЮЧЕНА ВРЕМЕННО
       // Выполняем вход и перенаправляем на главную
       login(user);
-      console.log('⚠️ [LoginPage] Проверка email отключена, перенаправление на главную');
+      // console.log('⚠️ [LoginPage] Проверка email отключена, перенаправление на главную');
       navigate('/');
     } catch (err: any) {
-      console.error('❌ [LoginPage] Ошибка входа:', err);
+      // console.error('❌ [LoginPage] Ошибка входа:', err);
       setError(err.message || 'Ошибка при входе');
     } finally {
       setIsLoading(false);

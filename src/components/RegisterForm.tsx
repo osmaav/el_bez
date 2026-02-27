@@ -28,7 +28,7 @@ export function RegisterForm() {
         try {
           return JSON.parse(saved);
         } catch (e) {
-          console.error('Ошибка парсинга сохранённых данных формы:', e);
+          // console.error('Ошибка парсинга сохранённых данных формы:', e);
         }
       }
     }
@@ -75,23 +75,23 @@ export function RegisterForm() {
     setIsLoading(true);
 
     try {
-      console.log('📝 [RegisterForm] Регистрация пользователя:', formData.email);
+      // console.log('📝 [RegisterForm] Регистрация пользователя:', formData.email);
       const user = await registerUser(formData);
-      console.log('✅ [RegisterForm] Регистрация успешна:', {
-        email: user.email,
-        emailVerified: user.emailVerified,
-        provider: user.provider
-      });
-      
+      // console.log('✅ [RegisterForm] Регистрация успешна:', {
+      //   email: user.email,
+      //   emailVerified: user.emailVerified,
+      //   provider: user.provider
+      // });
+
       // Автоматический вход после регистрации
       login(user);
-      
+
       // ⚠️ ПРОВЕРКА EMAIL ОТКЛЮЧЕНА ВРЕМЕННО
       // Перенаправляем на главную сразу после регистрации
-      console.log('⚠️ [RegisterForm] Проверка email отключена, перенаправление на главную');
+      // console.log('⚠️ [RegisterForm] Проверка email отключена, перенаправление на главную');
       navigate('/');
     } catch (err: any) {
-      console.error('❌ [RegisterForm] Ошибка регистрации:', err);
+      // console.error('❌ [RegisterForm] Ошибка регистрации:', err);
       setError(err.message || 'Ошибка при регистрации');
     } finally {
       setIsLoading(false);

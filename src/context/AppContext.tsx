@@ -138,28 +138,28 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const loadQuestions = async () => {
       try {
-        console.log('🔵 [AppContext] Загрузка вопросов для раздела:', currentSection);
+        // console.log('🔵 [AppContext] Загрузка вопросов для раздела:', currentSection);
         setIsLoading(true);
 
         // Динамическая загрузка вопросов из Firestore (или JSON в mock-режиме)
         const loadedQuestions = await loadQuestionsForSection(currentSection);
-        
-        console.log('🔵 [AppContext] Загружено вопросов:', loadedQuestions.length);
+
+        // console.log('🔵 [AppContext] Загружено вопросов:', loadedQuestions.length);
         setQuestions(loadedQuestions);
 
         // Генерируем билеты на основе поля ticket
         generateTicketsFromData(loadedQuestions, loadedQuestions);
-        
+
         // Сохраняем состояние в Firestore для авторизованных пользователей
         if (user) {
           await saveUserState(user.id, { currentSection });
         }
       } catch (err) {
-        console.error('❌ [AppContext] Ошибка загрузки:', err);
+        // console.error('❌ [AppContext] Ошибка загрузки:', err);
         setError(err instanceof Error ? err.message : 'Ошибка загрузки');
       } finally {
         setIsLoading(false);
-        console.log('🔵 [AppContext] Загрузка завершена, isLoading = false');
+        // console.log('🔵 [AppContext] Загрузка завершена, isLoading = false');
       }
     };
 
@@ -206,7 +206,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const startTrainer = useCallback((questionCount: number = 50) => {
     // console.log('🔵 startTrainer вызван, вопросов:', questions.length);
     if (questions.length === 0) {
-      console.error('❌ Вопросы ещё не загружены');
+      // console.error('❌ Вопросы ещё не загружены');
       return;
     }
     const shuffled = [...questions].sort(() => Math.random() - 0.5);
