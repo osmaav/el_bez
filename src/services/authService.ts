@@ -18,7 +18,12 @@ import {
   doc,
   setDoc,
   getDoc,
-  updateDoc
+  updateDoc,
+  collection,
+  query,
+  where,
+  limit,
+  getDocs
 } from 'firebase/firestore';
 import { auth, db, isFirebaseReady } from '@/lib/firebase';
 import type { RegisterUserData, LoginUserData, UserProfile, OAuthProvider as OAuthProviderType } from '@/types/auth';
@@ -317,6 +322,31 @@ export const getUserProfile = async (uid: string): Promise<UserProfile | null> =
     return null;
   } catch (error: any) {
     throw handleAuthError(error);
+  }
+};
+
+/**
+ * Проверка существования email
+ */
+export const checkEmailExists = async (email: string): Promise<boolean> => {
+  if (!isFirebaseReady()) {
+    // Mock проверка
+    const existingUser = Object.values(mockUsers).find(u => u.email === email.toLowerCase().trim());
+    return !!existingUser;
+  }
+
+  try {
+    const q = query(
+      collection(db, USERS_COLLECTION),
+      where('email', '==', email.toLowerCase().trim()),
+      limit(1)
+    );
+    
+    const querySnapshot = await getDocs(q);
+    return !querySnapshot.empty;
+  } catch (error: any) {
+    // console.error('Ошибка проверки email:', error);
+    return false;
   }
 };
 

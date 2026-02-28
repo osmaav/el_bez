@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { registerUser, validateRegisterData } from '@/services/authService';
+import { registerUser, validateRegisterData, checkEmailExists } from '@/services/authService';
 import { useAuth } from '@/context/AuthContext';
 import type { RegisterUserData, ValidationErrors } from '@/types/auth';
 
@@ -19,6 +19,11 @@ export function RegisterForm() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [validationErrors, setValidationErrors] = useState<ValidationErrors>({});
+  
+  // Состояния для проверки email
+  const [isCheckingEmail, setIsCheckingEmail] = useState(false);
+  const [emailExists, setEmailExists] = useState(false);
+  const [emailTouched, setEmailTouched] = useState(false);
 
   // Автозаполнение из localStorage
   const [formData, setFormData] = useState<RegisterUserData>(() => {
@@ -48,15 +53,51 @@ export function RegisterForm() {
     const { name, value } = e.target;
     const updatedData = { ...formData, [name]: value };
     setFormData(updatedData);
-    
+
     // Сохраняем в localStorage для автозаполнения (кроме пароля)
     if (name !== 'password') {
       localStorage.setItem('elbez_register_form', JSON.stringify(updatedData));
     }
-    
+
     // Очищаем ошибку при изменении поля
     if (validationErrors[name as keyof ValidationErrors]) {
       setValidationErrors(prev => ({ ...prev, [name]: undefined }));
+    }
+    
+    // Сбрасываем статус существования email при изменении поля email
+    if (name === 'email') {
+      setEmailExists(false);
+      setEmailTouched(false);
+    }
+  };
+  
+  // Проверка email на существование
+  const checkEmail = async (email: string) => {
+    if (!email || validationErrors.email) {
+      return;
+    }
+    
+    setIsCheckingEmail(true);
+    try {
+      const exists = await checkEmailExists(email);
+      setEmailExists(exists);
+      // console.log('📧 [RegisterForm] Проверка email:', { email, exists });
+    } catch (err) {
+      // console.error('Ошибка проверки email:', err);
+    } finally {
+      setIsCheckingEmail(false);
+    }
+  };
+  
+  // Обработчик onBlur для проверки email
+  const handleEmailBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+    const email = e.target.value;
+    setEmailTouched(true);
+    
+    // Проверяем email только если он валидный
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (emailRegex.test(email)) {
+      checkEmail(email);
     }
   };
 
@@ -69,6 +110,12 @@ export function RegisterForm() {
     const errors = validateRegisterData(formData);
     if (Object.keys(errors).length > 0) {
       setValidationErrors(errors);
+      return;
+    }
+
+    // Дополнительная проверка: если email существует, блокируем регистрацию
+    if (emailExists) {
+      setError('Этот email уже зарегистрирован. Пожалуйста, войдите или используйте другой email.');
       return;
     }
 
@@ -214,17 +261,31 @@ export function RegisterForm() {
           {/* Email */}
           <div>
             <Label htmlFor="email">Email *</Label>
-            <Input
-              id="email"
-              name="email"
-              type="email"
-              value={formData.email}
-              onChange={handleInputChange}
-              placeholder="example@sb.feorana.ru"
-              disabled={isLoading}
-            />
+            <div className="relative">
+              <Input
+                id="email"
+                name="email"
+                type="email"
+                value={formData.email}
+                onChange={handleInputChange}
+                onBlur={handleEmailBlur}
+                placeholder="example@sb.feorana.ru"
+                disabled={isLoading || isCheckingEmail}
+                className={emailExists && emailTouched ? 'border-red-500 focus:border-red-500' : ''}
+              />
+              {isCheckingEmail && (
+                <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                  <div className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+                </div>
+              )}
+            </div>
             {validationErrors.email && (
               <p className="text-sm text-red-500 mt-1">{validationErrors.email}</p>
+            )}
+            {emailExists && emailTouched && (
+              <p className="text-sm text-red-500 mt-1">
+                Этот email уже зарегистрирован. <a href="/login" className="underline hover:text-blue-600">Войти</a>?
+              </p>
             )}
           </div>
 
@@ -249,9 +310,10 @@ export function RegisterForm() {
           <Button
             type="submit"
             className="w-full"
-            disabled={isLoading}
+            disabled={isLoading || emailExists}
+            title={emailExists ? 'Email уже зарегистрирован' : ''}
           >
-            {isLoading ? 'Регистрация...' : 'Зарегистрироваться'}
+            {isLoading ? 'Регистрация...' : emailExists ? 'Email уже зарегистрирован' : 'Зарегистрироваться'}
           </Button>
 
           {/* Ссылка на вход */}
