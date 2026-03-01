@@ -107,29 +107,38 @@ export function LearningSection() {
 
   // Инициализация сессии
   useEffect(() => {
-    // console.log('📖 LearningSection mounted, раздел:', currentSection);
-    // console.log('📦 Questions loaded:', questions.length);
+    console.log('📖 [LearningSection] Инициализация, раздел:', currentSection);
+    console.log('📦 [LearningSection] Questions loaded:', questions.length);
 
     // Сбрасываем инициализацию при смене раздела
     setIsInitialized(false);
 
     // Читаем сохранённые состояния для текущего раздела
     const saved = loadProgress(currentSection);
-    const savedPage = loadCurrentPage(currentSection);
+    let savedPage = loadCurrentPage(currentSection);
+
+    // Валидация номера страницы (не больше доступного количества)
+    const maxPages = Math.ceil(questions.length / QUESTIONS_PER_SESSION);
+    if (savedPage > maxPages) {
+      console.log('⚠️ [LearningSection] Страница', savedPage, 'недоступна для раздела с', questions.length, 'вопросами. Сброс на 1.');
+      savedPage = 1;
+      saveCurrentPage(savedPage, currentSection);
+    }
 
     if (saved) {
       setSavedStates(saved);
+      console.log('💾 [LearningSection] Загружено сохранённых состояний:', Object.keys(saved).length);
     }
 
     setCurrentPage(savedPage);
 
     if (questions.length === 0) {
-      // console.error('❌ No questions loaded!');
+      console.error('❌ [LearningSection] No questions loaded!');
       return;
     }
 
     // Загружаем вопросы для сохранённой страницы
-    // console.log(`🆕 Загрузка страницы ${savedPage}`);
+    console.log(`🆕 [LearningSection] Загрузка страницы ${savedPage} из ${maxPages}`);
     const startIndex = (savedPage - 1) * QUESTIONS_PER_SESSION;
     const selected = questions.slice(startIndex, startIndex + QUESTIONS_PER_SESSION).map(q => ({
       ...q,
@@ -140,7 +149,7 @@ export function LearningSection() {
     const savedState = saved ? saved[savedPage] : null;
 
     if (savedState) {
-      // console.log(`♻️ Восстановление состояния для страницы ${savedPage}`);
+      console.log(`♻️ [LearningSection] Восстановление состояния для страницы ${savedPage}`);
       setQuizState({
         currentQuestions: selected,
         shuffledAnswers: savedState.shuffledAnswers,
@@ -148,7 +157,7 @@ export function LearningSection() {
         isComplete: savedState.isComplete,
       });
     } else {
-      // console.log(`🆕 Новое состояние для страницы ${savedPage}`);
+      console.log(`🆕 [LearningSection] Новое состояние для страницы ${savedPage}`);
       const shuffledAnswers = selected.map((q) =>
         shuffleArray([...Array(q.answers?.length || 4).keys()])
       );
@@ -162,7 +171,7 @@ export function LearningSection() {
     }
 
     setIsInitialized(true);
-  }, [currentSection, questions]);
+  }, [currentSection, questions, shuffleArray]);
 
   // Обновление статистики
   useEffect(() => {
@@ -237,6 +246,7 @@ export function LearningSection() {
   // Сохранение текущей страницы
   useEffect(() => {
     if (currentPage > 0 && isInitialized) {
+      console.log('💾 [LearningSection] Сохранение страницы', currentPage, 'для раздела', currentSection);
       saveCurrentPage(currentPage, currentSection);
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
@@ -265,8 +275,9 @@ export function LearningSection() {
   // Переход на страницу
   const goToPage = useCallback((page: number) => {
     const newPage = Math.max(1, Math.min(page, TOTAL_PAGES));
+    console.log('📄 [LearningSection] Переход на страницу', newPage, 'из', TOTAL_PAGES, 'в разделе', currentSection);
     setCurrentPage(newPage);
-  }, [TOTAL_PAGES]);
+  }, [TOTAL_PAGES, currentSection]);
 
   const nextPage = useCallback(() => {
     // Сначала прокручиваем к началу
