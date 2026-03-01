@@ -113,7 +113,7 @@ export function LearningSection() {
     // Сбрасываем инициализацию при смене раздела
     setIsInitialized(false);
 
-    // Читаем сохранённые состояния для текущего раздела
+    // Читаем сохранённые состояния ТОЛЬКО для текущего раздела
     const saved = loadProgress(currentSection);
     let savedPage = loadCurrentPage(currentSection);
 
@@ -125,9 +125,13 @@ export function LearningSection() {
       saveCurrentPage(savedPage, currentSection);
     }
 
+    // Сбрасываем savedStates ТОЛЬКО для текущего раздела
     if (saved) {
       setSavedStates(saved);
-      console.log('💾 [LearningSection] Загружено сохранённых состояний:', Object.keys(saved).length);
+      console.log('💾 [LearningSection] Загружено сохранённых состояний для', currentSection, ':', Object.keys(saved).length);
+    } else {
+      setSavedStates({});
+      console.log('🆕 [LearningSection] Нет сохранённых состояний для', currentSection);
     }
 
     setCurrentPage(savedPage);
@@ -322,6 +326,7 @@ export function LearningSection() {
 
   // Сброс прогресса
   const handleReset = () => {
+    console.log('🔄 [LearningSection] Сброс прогресса для раздела:', currentSection);
     clearProgress(currentSection);
     setSavedStates({});
     setCurrentPage(1);
@@ -339,6 +344,7 @@ export function LearningSection() {
       userAnswers: new Array(selected.length).fill(null),
       isComplete: false,
     });
+    console.log('✅ [LearningSection] Прогресс сброшен для раздела:', currentSection);
   };
 
   // Получение цвета для ответа
