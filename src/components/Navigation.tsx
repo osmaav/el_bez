@@ -5,6 +5,7 @@ import { BookOpen, GraduationCap, Dumbbell, School, ChevronDown, LogOut, LogIn }
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { LoginModal } from '@/components/LoginModal';
+import { RegisterModal } from '@/components/RegisterModal';
 
 const navItems: { id: PageType; label: string; icon: React.ElementType }[] = [
   { id: 'theory', label: 'Теория', icon: BookOpen },
@@ -18,6 +19,7 @@ export function Navigation() {
   const { user, logout } = useAuth();
   const [showSectionMenu, setShowSectionMenu] = useState(false);
   const [showLoginModal, setShowLoginModal] = useState(false);
+  const [showRegisterModal, setShowRegisterModal] = useState(false);
 
   const handlePageChange = (page: PageType) => {
     setCurrentPage(page);
@@ -54,7 +56,7 @@ export function Navigation() {
           <div className="flex items-center space-x-2 sm:space-x-4">
             {/* Логотип */}
             <div
-              className="flex items-center space-x-2 transition-opacity"
+              className="flex items-center space-x-2 transition-opacity cursor-default"
             >
               <div className="w-8 h-8 sm:w-10 sm:h-10 bg-yellow-500 rounded-lg flex items-center justify-center flex-shrink-0">
                 <span className="text-slate-900 font-bold text-sm sm:text-lg">ЭБ</span>
@@ -99,7 +101,7 @@ export function Navigation() {
             </div>
 
             {/* Название приложения */}
-            <div className="hidden md:block min-w-0">
+            <div className="hidden md:block min-w-0 cursor-default">
               <h1 className="font-bold text-sm sm:text-lg leading-tight truncate">Электробезопасность</h1>
               <p className="text-xs text-slate-400">{currentSectionInfo?.description}</p>
             </div>
@@ -107,7 +109,7 @@ export function Navigation() {
             {/* Информация о пользователе и кнопка выхода */}
             {user && (
               <div className="flex items-center space-x-2 border-l border-slate-700 pl-4 ml-2">
-                <span className="text-sm text-slate-300 font-medium">
+                <span className="text-sm text-slate-300 font-medium cursor-default">
                   {user.name}
                 </span>
                 <Button
@@ -180,6 +182,20 @@ export function Navigation() {
       <LoginModal
         isOpen={showLoginModal}
         onClose={() => setShowLoginModal(false)}
+        onOpenRegister={() => {
+          setShowLoginModal(false);
+          setShowRegisterModal(true);
+        }}
+      />
+
+      {/* Модальное окно регистрации */}
+      <RegisterModal
+        isOpen={showRegisterModal}
+        onClose={() => setShowRegisterModal(false)}
+        onOpenLogin={() => {
+          setShowRegisterModal(false);
+          setShowLoginModal(true);
+        }}
       />
     </nav>
   );

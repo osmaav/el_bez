@@ -3,7 +3,6 @@
  */
 import type { FormEvent, ChangeEvent } from 'react';
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -17,10 +16,10 @@ import type { LoginUserData } from '@/types/auth';
 interface LoginModalProps {
   isOpen: boolean;
   onClose: () => void;
+  onOpenRegister: () => void;
 }
 
-export function LoginModal({ isOpen, onClose }: LoginModalProps) {
-  const navigate = useNavigate();
+export function LoginModal({ isOpen, onClose, onOpenRegister }: LoginModalProps) {
   const { login } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -67,8 +66,7 @@ export function LoginModal({ isOpen, onClose }: LoginModalProps) {
       console.log('✅ [LoginModal] Вход успешен, email подтверждён:', user.email);
       // Сохраняем пользователя в AuthContext
       login(user);
-      // Перенаправление на приложение после успешного входа
-      navigate('/');
+      // Закрываем модальное окно
       onClose();
     } catch (err: any) {
       console.error('❌ [LoginModal] Ошибка входа:', err);
@@ -184,17 +182,16 @@ export function LoginModal({ isOpen, onClose }: LoginModalProps) {
             {/* Ссылка на регистрацию */}
             <p className="text-center text-sm text-muted-foreground">
               Нет аккаунта?{' '}
-              <a
-                href="/register"
+              <button
+                type="button"
                 className="text-primary hover:underline font-medium"
-                onClick={(e) => {
-                  e.preventDefault();
+                onClick={() => {
                   onClose();
-                  navigate('/register');
+                  onOpenRegister();
                 }}
               >
                 Зарегистрироваться
-              </a>
+              </button>
             </p>
           </form>
 

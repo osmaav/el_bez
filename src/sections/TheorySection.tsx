@@ -12,6 +12,7 @@ import {
   BookOpen,
 } from 'lucide-react';
 import { LoginModal } from '@/components/LoginModal';
+import { RegisterModal } from '@/components/RegisterModal';
 import { useAuth } from '@/context/AuthContext';
 
 const theoryTopics = [
@@ -200,6 +201,7 @@ export function TheorySection() {
   const { isAuthenticated } = useAuth();
   const [selectedTopic, setSelectedTopic] = useState(theoryTopics[0]);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+  const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false);
 
   // Показываем модальное окно входа только если пользователь не авторизован
   useEffect(() => {
@@ -294,6 +296,20 @@ export function TheorySection() {
       <LoginModal
         isOpen={isLoginModalOpen}
         onClose={() => setIsLoginModalOpen(false)}
+        onOpenRegister={() => {
+          setIsLoginModalOpen(false);
+          setIsRegisterModalOpen(true);
+        }}
+      />
+
+      {/* Модальное окно регистрации */}
+      <RegisterModal
+        isOpen={isRegisterModalOpen}
+        onClose={() => setIsRegisterModalOpen(false)}
+        onOpenLogin={() => {
+          setIsRegisterModalOpen(false);
+          setIsLoginModalOpen(true);
+        }}
       />
     </div>
   );
