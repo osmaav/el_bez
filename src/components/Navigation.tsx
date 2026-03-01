@@ -29,7 +29,7 @@ export function Navigation() {
     setCurrentSection(sectionId);
     setShowSectionMenu(false);
     // Сбрасываем на страницу Теория при смене раздела
-    setCurrentPage('theory');
+    // setCurrentPage('theory');
   };
 
   const handleLogout = async () => {

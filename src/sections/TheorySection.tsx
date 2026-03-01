@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Button } from '@/components/ui/button';
 import {
   AlertTriangle,
   Shield,
@@ -202,25 +203,52 @@ export function TheorySection() {
   const [selectedTopic, setSelectedTopic] = useState(theoryTopics[0]);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false);
+  const [hasUserDeclinedLogin, setHasUserDeclinedLogin] = useState(() => {
+    // Проверяем, отказывался ли пользователь от входа
+    if (typeof window !== 'undefined') {
+      const declined = localStorage.getItem('elbez_declined_login');
+      return declined === 'true';
+    }
+    return false;
+  });
 
-  // Показываем модальное окно входа только если пользователь не авторизован
+  // Показываем модальное окно входа только если пользователь не авторизован и не отказывался от входа
   useEffect(() => {
-    if (!isAuthenticated) {
+    if (!isAuthenticated && !hasUserDeclinedLogin) {
       // Небольшая задержка перед показом модального окна
       const timer = setTimeout(() => {
         setIsLoginModalOpen(true);
       }, 500);
       return () => clearTimeout(timer);
     }
-  }, [isAuthenticated]);
+  }, [isAuthenticated, hasUserDeclinedLogin]);
+
+  // Обработчик для повторного показа окна входа
+  const handleOpenLoginModal = () => {
+    setIsLoginModalOpen(true);
+  };
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
       <div className="mb-6">
-        <h2 className="text-3xl font-bold text-slate-900">Теоретические материалы</h2>
-        <p className="text-slate-600 mt-2">
-          Изучите основные положения Правил по охране труда при эксплуатации электроустановок
-        </p>
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-3xl font-bold text-slate-900">Теоретические материалы</h2>
+            <p className="text-slate-600 mt-2">
+              Изучите основные положения Правил по охране труда при эксплуатации электроустановок
+            </p>
+          </div>
+          {!isAuthenticated && (
+            <Button
+              onClick={handleOpenLoginModal}
+              variant="outline"
+              className="hidden sm:flex items-center gap-2"
+            >
+              <BookOpen className="w-4 h-4" />
+              Войти
+            </Button>
+          )}
+        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
@@ -295,7 +323,12 @@ export function TheorySection() {
       {/* Модальное окно входа */}
       <LoginModal
         isOpen={isLoginModalOpen}
-        onClose={() => setIsLoginModalOpen(false)}
+        onClose={() => {
+          setIsLoginModalOpen(false);
+          // Запоминаем, что пользователь отказался от входа
+          setHasUserDeclinedLogin(true);
+          localStorage.setItem('elbez_declined_login', 'true');
+        }}
         onOpenRegister={() => {
           setIsLoginModalOpen(false);
           setIsRegisterModalOpen(true);
@@ -305,7 +338,12 @@ export function TheorySection() {
       {/* Модальное окно регистрации */}
       <RegisterModal
         isOpen={isRegisterModalOpen}
-        onClose={() => setIsRegisterModalOpen(false)}
+        onClose={() => {
+          setIsRegisterModalOpen(false);
+          // Запоминаем, что пользователь отказался от регистрации
+          setHasUserDeclinedLogin(true);
+          localStorage.setItem('elbez_declined_login', 'true');
+        }}
         onOpenLogin={() => {
           setIsRegisterModalOpen(false);
           setIsLoginModalOpen(true);

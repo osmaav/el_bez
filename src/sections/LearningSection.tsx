@@ -371,7 +371,7 @@ export function LearningSection() {
         {/* Заголовок */}
         <div className="mb-6 sm:mb-8">
           <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 mb-2">
-            {currentSectionInfo?.name} Тесты Ростехнадзора
+            Обучение
           </h1>
           <p className="text-xs sm:text-sm text-slate-600">
             {currentSectionInfo?.description} • {TOTAL_QUESTIONS} вопросов • {TOTAL_PAGES} страниц
