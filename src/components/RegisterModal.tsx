@@ -10,7 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { registerUser, validateRegisterData, checkEmailExists } from '@/services/authService';
 import { useAuth } from '@/context/AuthContext';
-import { X } from 'lucide-react';
+import { X, Eye, EyeOff } from 'lucide-react';
 import type { RegisterUserData, ValidationErrors } from '@/types/auth';
 
 interface RegisterModalProps {
@@ -29,6 +29,9 @@ export function RegisterModal({ isOpen, onClose, onOpenLogin }: RegisterModalPro
   const [isCheckingEmail, setIsCheckingEmail] = useState(false);
   const [emailExists, setEmailExists] = useState(false);
   const [emailTouched, setEmailTouched] = useState(false);
+  
+  // Состояния для отображения пароля
+  const [showPassword, setShowPassword] = useState(false);
 
   const [formData, setFormData] = useState<RegisterUserData>({
     surname: '',
@@ -339,15 +342,32 @@ export function RegisterModal({ isOpen, onClose, onOpenLogin }: RegisterModalPro
             {/* Пароль */}
             <div>
               <Label htmlFor="password">Пароль *</Label>
-              <Input
-                id="password"
-                name="password"
-                type="password"
-                value={formData.password}
-                onChange={handleInputChange}
-                placeholder="Минимум 6 символов"
-                disabled={isLoading}
-              />
+              <div className="relative">
+                <Input
+                  id="password"
+                  name="password"
+                  type={showPassword ? 'text' : 'password'}
+                  value={formData.password}
+                  onChange={handleInputChange}
+                  placeholder="Минимум 6 символов"
+                  disabled={isLoading}
+                  className="pr-10"
+                />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="absolute right-0 top-0 h-full px-3 hover:bg-transparent"
+                  onClick={() => setShowPassword(!showPassword)}
+                  disabled={isLoading}
+                >
+                  {showPassword ? (
+                    <EyeOff className="h-4 w-4 text-slate-500" />
+                  ) : (
+                    <Eye className="h-4 w-4 text-slate-500" />
+                  )}
+                </Button>
+              </div>
               {validationErrors.password && (
                 <p className="text-sm text-red-500 mt-1">{validationErrors.password}</p>
               )}
