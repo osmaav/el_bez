@@ -46,8 +46,8 @@ interface AppContextType {
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
-const STORAGE_KEY_PAGE = 'electrospa_current_page';
-const STORAGE_KEY_SECTION = 'electrospa_current_section';
+const STORAGE_KEY_PAGE = 'elbez_current_page';
+const STORAGE_KEY_SECTION = 'elbez_current_section';
 
 // Кэш для вопросов по разделам
 const questionsCache: Map<SectionType, Question[]> = new Map();

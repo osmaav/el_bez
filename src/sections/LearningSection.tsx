@@ -26,8 +26,8 @@ const QUESTIONS_PER_SESSION = 10;
 
 // Функции для работы с localStorage
 const getStorageKeys = (section: string) => ({
-  page: `electrospa_learning_page_${section}`,
-  progress: `electrospa_learning_progress_${section}`
+  page: `elbez_learning_page_${section}`,
+  progress: `elbez_learning_progress_${section}`
 });
 
 const saveProgress = (state: SavedState, section: string) => {
