@@ -219,10 +219,17 @@ export const getUserState = async (userId: string): Promise<UserState | null> =>
 /**
  * Сохранение состояния пользователя
  * Сохраняет состояние ТОЛЬКО в Firebase Firestore
+ * Работает только для авторизованных пользователей
  */
 export const saveUserState = async (userId: string, state: Partial<UserState>): Promise<void> => {
   if (!isFirebaseReady()) {
     // console.warn('⚠️ [QuestionService] Firebase не настроен. Состояние не сохранено.');
+    return;
+  }
+  
+  // Проверка наличия userId (только для авторизованных пользователей)
+  if (!userId) {
+    // console.warn('⚠️ [QuestionService] Пользователь не авторизован. Состояние не сохранено.');
     return;
   }
 

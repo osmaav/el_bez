@@ -1,10 +1,10 @@
 import { useApp } from '@/context/AppContext';
 import { useAuth } from '@/context/AuthContext';
 import type { PageType, SectionType } from '@/types';
-import { BookOpen, GraduationCap, Dumbbell, School, ChevronDown, LogOut } from 'lucide-react';
+import { BookOpen, GraduationCap, Dumbbell, School, ChevronDown, LogOut, LogIn } from 'lucide-react';
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
+import { LoginModal } from '@/components/LoginModal';
 
 const navItems: { id: PageType; label: string; icon: React.ElementType }[] = [
   { id: 'theory', label: 'Теория', icon: BookOpen },
@@ -14,10 +14,10 @@ const navItems: { id: PageType; label: string; icon: React.ElementType }[] = [
 ];
 
 export function Navigation() {
-  const navigate = useNavigate();
   const { currentPage, setCurrentPage, currentSection, setCurrentSection, sections } = useApp();
   const { user, logout } = useAuth();
   const [showSectionMenu, setShowSectionMenu] = useState(false);
+  const [showLoginModal, setShowLoginModal] = useState(false);
 
   const handlePageChange = (page: PageType) => {
     setCurrentPage(page);
@@ -35,6 +35,10 @@ export function Navigation() {
     setCurrentPage('theory');
   };
 
+  const handleLogin = () => {
+    setShowLoginModal(true);
+  };
+
   const currentSectionInfo = sections.find(s => s.id === currentSection);
 
   // Короткие названия для разделов
@@ -50,8 +54,7 @@ export function Navigation() {
           <div className="flex items-center space-x-2 sm:space-x-4">
             {/* Логотип */}
             <div
-              className="flex items-center space-x-2 cursor-pointer hover:opacity-80 transition-opacity"
-              onClick={() => navigate('/app')}
+              className="flex items-center space-x-2 transition-opacity"
             >
               <div className="w-8 h-8 sm:w-10 sm:h-10 bg-yellow-500 rounded-lg flex items-center justify-center flex-shrink-0">
                 <span className="text-slate-900 font-bold text-sm sm:text-lg">ЭБ</span>
@@ -120,7 +123,7 @@ export function Navigation() {
             )}
           </div>
 
-          {/* Правая часть: Навигация */}
+          {/* Правая часть: Навигация + Кнопка входа */}
           <div className="flex items-center space-x-2">
             {/* Навигация */}
             <div className="flex space-x-0.5 sm:space-x-1 overflow-x-auto flex-shrink-0">
@@ -147,6 +150,20 @@ export function Navigation() {
                 );
               })}
             </div>
+
+            {/* Кнопка входа для неавторизованных пользователей */}
+            {!user && (
+              <Button
+                onClick={handleLogin}
+                variant="ghost"
+                size="sm"
+                className="text-slate-300 hover:text-white hover:bg-slate-800 ml-2 hidden md:flex"
+                title="Войти в систему"
+              >
+                <LogIn className="w-4 h-4" />
+                <span className="ml-1 text-sm">Войти</span>
+              </Button>
+            )}
           </div>
         </div>
       </div>
@@ -158,6 +175,12 @@ export function Navigation() {
           onClick={() => setShowSectionMenu(false)}
         />
       )}
+
+      {/* Модальное окно входа */}
+      <LoginModal
+        isOpen={showLoginModal}
+        onClose={() => setShowLoginModal(false)}
+      />
     </nav>
   );
 }

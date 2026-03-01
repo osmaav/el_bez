@@ -50,7 +50,7 @@ const STORAGE_KEY_USER = 'elbez_current_user';
 export const registerUser = async (userData: RegisterUserData): Promise<UserProfile> => {
   // Проверка готовности Firebase
   if (!isFirebaseReady()) {
-    // console.log('🔧 Mock регистрация (Firebase не настроен)');
+    console.log('🔧 Mock регистрация (Firebase не настроен)');
     return mockRegisterUser(userData);
   }
 
@@ -128,7 +128,7 @@ const mockRegisterUser = async (userData: RegisterUserData): Promise<UserProfile
   localStorage.setItem(STORAGE_KEY_USER, JSON.stringify(userProfile));
   localStorage.setItem(STORAGE_KEY_AUTH, 'true');
 
-  // console.log('✅ Mock пользователь создан:', userProfile.email);
+  console.log('✅ Mock пользователь создан:', userProfile.email);
   return userProfile;
 };
 
@@ -138,7 +138,7 @@ const mockRegisterUser = async (userData: RegisterUserData): Promise<UserProfile
 export const loginUser = async (userData: LoginUserData): Promise<UserProfile> => {
   // Проверка готовности Firebase
   if (!isFirebaseReady()) {
-    // console.log('🔧 Mock вход (Firebase не настроен)');
+    console.log('🔧 Mock вход (Firebase не настроен)');
     return mockLoginUser(userData);
   }
 
@@ -281,7 +281,7 @@ const mockOAuthSignIn = async (provider: OAuthProviderType): Promise<UserProfile
   localStorage.setItem(STORAGE_KEY_USER, JSON.stringify(userProfile));
   localStorage.setItem(STORAGE_KEY_AUTH, 'true');
 
-  // console.log(`✅ Mock ${provider} вход выполнен`);
+  console.log(`✅ Mock ${provider} вход выполнен`);
   return userProfile;
 };
 

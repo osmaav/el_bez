@@ -11,6 +11,7 @@ import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { loginUser } from '@/services/authService';
 import { useAuth } from '@/context/AuthContext';
+import { X } from 'lucide-react';
 import type { LoginUserData } from '@/types/auth';
 
 interface LoginModalProps {
@@ -54,12 +55,23 @@ export function LoginModal({ isOpen, onClose }: LoginModalProps) {
 
     try {
       const user = await loginUser(formData);
+      
+      // Проверка подтверждения email
+      if (!user.emailVerified) {
+        console.log('⚠️ [LoginModal] Email не подтверждён:', user.email);
+        setError('Пожалуйста, подтвердите ваш email. Проверьте папку "Спам", если письмо не пришло.');
+        setIsLoading(false);
+        return;
+      }
+      
+      console.log('✅ [LoginModal] Вход успешен, email подтверждён:', user.email);
       // Сохраняем пользователя в AuthContext
       login(user);
       // Перенаправление на приложение после успешного входа
       navigate('/');
       onClose();
     } catch (err: any) {
+      console.error('❌ [LoginModal] Ошибка входа:', err);
       setError(err.message || 'Ошибка при входе');
     } finally {
       setIsLoading(false);
@@ -82,8 +94,18 @@ export function LoginModal({ isOpen, onClose }: LoginModalProps) {
       />
 
       {/* Модальное окно */}
-      <Card className="relative w-full max-w-md bg-white/95 backdrop-blur-md shadow-2xl animate-in fade-in zoom-in duration-200">
-        <div className="p-6">
+      <Card className="relative w-full max-w-lg bg-white/95 backdrop-blur-md shadow-2xl animate-in fade-in zoom-in duration-200">
+        {/* Кнопка закрытия */}
+        <button
+          onClick={onClose}
+          className="absolute top-4 right-4 p-2 text-gray-400 hover:text-red-500 hover:bg-gray-100 rounded-full transition-colors"
+          aria-label="Закрыть"
+          type="button"
+        >
+          <X className="w-5 h-5" />
+        </button>
+        
+        <div className="p-6 pr-14">
           {/* Заголовок */}
           <div className="text-center mb-6">
             <div className="w-16 h-16 bg-yellow-500 rounded-lg flex items-center justify-center mx-auto mb-3">
@@ -95,6 +117,18 @@ export function LoginModal({ isOpen, onClose }: LoginModalProps) {
             >
               Вход в систему
             </h2>
+          </div>
+
+          {/* Информационный текст */}
+          <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+            <p className="text-sm text-slate-700 leading-relaxed">
+              Данный ресурс был разработан для изучения вопросов электробезопасности 
+              для электротехнического персонала и подготовки к сдаче экзаменов по группам.
+            </p>
+            <p className="text-sm text-slate-700 leading-relaxed mt-3">
+              Для ведения вашей личной статистики рекомендуем вам создать учетную запись 
+              или войти с уже существующей. Вы так же можете закрыть это окно и продолжить без входа.
+            </p>
           </div>
 
           {/* Сообщение об ошибке */}
