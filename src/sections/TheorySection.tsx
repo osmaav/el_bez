@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Button } from '@/components/ui/button';
 import {
   AlertTriangle,
   Shield,
@@ -223,32 +222,13 @@ export function TheorySection() {
     }
   }, [isAuthenticated, hasUserDeclinedLogin]);
 
-  // Обработчик для повторного показа окна входа
-  const handleOpenLoginModal = () => {
-    setIsLoginModalOpen(true);
-  };
-
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
       <div className="mb-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h2 className="text-3xl font-bold text-slate-900">Теоретические материалы</h2>
-            <p className="text-slate-600 mt-2">
-              Изучите основные положения Правил по охране труда при эксплуатации электроустановок
-            </p>
-          </div>
-          {!isAuthenticated && (
-            <Button
-              onClick={handleOpenLoginModal}
-              variant="outline"
-              className="hidden sm:flex items-center gap-2"
-            >
-              <BookOpen className="w-4 h-4" />
-              Войти
-            </Button>
-          )}
-        </div>
+        <h2 className="text-3xl font-bold text-slate-900">Теоретические материалы</h2>
+        <p className="text-slate-600 mt-2">
+          Изучите основные положения Правил по охране труда при эксплуатации электроустановок
+        </p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
