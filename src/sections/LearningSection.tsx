@@ -195,9 +195,24 @@ export function LearningSection() {
 
       if (savedState) {
         console.log(`♻️ [LearningSection] Восстановление состояния для страницы ${savedPage}`);
+        
+        // Проверяем, что shuffledAnswers соответствует текущему количеству ответов
+        const validatedShuffledAnswers = selected.map((q, idx) => {
+          const savedShuffled = savedState.shuffledAnswers[idx];
+          const expectedCount = q.answers?.length || 4;
+          
+          // Если сохранённые ответы не соответствуют ожидаемому количеству, перегенерируем
+          if (!savedShuffled || savedShuffled.length !== expectedCount) {
+            console.log(`⚠️ [LearningSection] Вопрос ${q.id}: shuffledAnswers не совпадает (ожидалось ${expectedCount}, получено ${savedShuffled?.length || 0}), перегенерируем`);
+            return shuffleArray([...Array(expectedCount).keys()]);
+          }
+          
+          return savedShuffled;
+        });
+        
         setQuizState({
           currentQuestions: selected,
-          shuffledAnswers: savedState.shuffledAnswers,
+          shuffledAnswers: validatedShuffledAnswers,
           userAnswers: savedState.userAnswers,
           isComplete: savedState.isComplete,
         });
@@ -287,9 +302,23 @@ export function LearningSection() {
       const savedState = savedStates[currentPage];
 
       if (savedState) {
+        // Проверяем, что shuffledAnswers соответствует текущему количеству ответов
+        const validatedShuffledAnswers = selected.map((q, idx) => {
+          const savedShuffled = savedState.shuffledAnswers[idx];
+          const expectedCount = q.answers?.length || 4;
+          
+          // Если сохранённые ответы не соответствуют ожидаемому количеству, перегенерируем
+          if (!savedShuffled || savedShuffled.length !== expectedCount) {
+            console.log(`⚠️ [LearningSection] Страница ${currentPage}, Вопрос ${q.id}: shuffledAnswers не совпадает, перегенерируем`);
+            return shuffleArray([...Array(expectedCount).keys()]);
+          }
+          
+          return savedShuffled;
+        });
+        
         setQuizState({
           currentQuestions: selected,
-          shuffledAnswers: savedState.shuffledAnswers,
+          shuffledAnswers: validatedShuffledAnswers,
           userAnswers: savedState.userAnswers,
           isComplete: savedState.isComplete,
         });
