@@ -190,6 +190,11 @@ export function LearningSection() {
       }));
 
       console.log('📝 [LearningSection] Загружено вопросов:', selected.length);
+      console.log('📝 [LearningSection] Вопросы:', selected.map(q => ({ 
+        id: q.id, 
+        answersCount: q.answers?.length,
+        optionsCount: q.options?.length
+      })));
 
       const savedState = saved ? saved[savedPage] : null;
 
@@ -199,14 +204,15 @@ export function LearningSection() {
         // Проверяем, что shuffledAnswers соответствует текущему количеству ответов
         const validatedShuffledAnswers = selected.map((q, idx) => {
           const savedShuffled = savedState.shuffledAnswers[idx];
+          // Используем реальное количество ответов, fallback на 4 (стандарт для тестов)
           const expectedCount = q.answers?.length || 4;
-          
+
           // Если сохранённые ответы не соответствуют ожидаемому количеству, перегенерируем
           if (!savedShuffled || savedShuffled.length !== expectedCount) {
             console.log(`⚠️ [LearningSection] Вопрос ${q.id}: shuffledAnswers не совпадает (ожидалось ${expectedCount}, получено ${savedShuffled?.length || 0}), перегенерируем`);
             return shuffleArray([...Array(expectedCount).keys()]);
           }
-          
+
           return savedShuffled;
         });
         
@@ -219,8 +225,9 @@ export function LearningSection() {
       } else {
         console.log(`🆕 [LearningSection] Новое состояние для страницы ${savedPage}`);
         const shuffledAnswers = selected.map((q) => {
-          // Используем answers из объекта вопроса (который был создан выше из q.options)
-          const answerCount = q.answers?.length || 4;
+          // Используем реальное количество ответов из вопроса
+          // Вопросы могут иметь 2, 3, 4 или больше вариантов ответа
+          const answerCount = q.answers?.length || 4; // fallback на 4 (стандарт)
           console.log(`📝 [LearningSection] Вопрос ${q.id}: answerCount=${answerCount}, answers=`, q.answers);
           return shuffleArray([...Array(answerCount).keys()]);
         });
