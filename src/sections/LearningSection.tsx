@@ -53,19 +53,24 @@ const loadProgress = (section: string): SavedState | null => {
 const saveCurrentPage = (page: number, section: string) => {
   if (typeof window === 'undefined') return;
   const keys = getStorageKeys(section);
-  localStorage.setItem(keys.page, page.toString());
+  const pageStr = page.toString();
+  localStorage.setItem(keys.page, pageStr);
+  console.log('💾 [LearningSection] saveCurrentPage:', { section, page: pageStr, key: keys.page });
 };
 
 const loadCurrentPage = (section: string): number => {
   if (typeof window === 'undefined') return 1;
   const keys = getStorageKeys(section);
   const saved = localStorage.getItem(keys.page);
+  console.log('📖 [LearningSection] loadCurrentPage:', { section, saved, key: keys.page });
   if (saved) {
     const page = parseInt(saved, 10);
     if (!isNaN(page) && page >= 1) {
+      console.log('✅ [LearningSection] Загружена страница:', page);
       return page;
     }
   }
+  console.log('⚠️ [LearningSection] Страница не найдена, возврат 1');
   return 1;
 };
 
@@ -107,18 +112,30 @@ export function LearningSection() {
 
   // Инициализация сессии
   useEffect(() => {
-    console.log('📖 [LearningSection] Инициализация, раздел:', currentSection);
+    console.log('📖 [LearningSection] === Инициализация ===');
+    console.log('📖 [LearningSection] Раздел:', currentSection);
     console.log('📦 [LearningSection] Questions loaded:', questions.length);
 
     // Сбрасываем инициализацию при смене раздела
     setIsInitialized(false);
 
+    // Если вопросы ещё не загружены, ждём
+    if (questions.length === 0) {
+      console.log('⏳ [LearningSection] Вопросы ещё не загружены, ожидаем...');
+      return;
+    }
+
     // Читаем сохранённые состояния ТОЛЬКО для текущего раздела
     const saved = loadProgress(currentSection);
     let savedPage = loadCurrentPage(currentSection);
 
+    console.log('📄 [LearningSection] Загруженная страница:', savedPage);
+    console.log('💾 [LearningSection] Сохранённые состояния:', saved ? Object.keys(saved).length : 0);
+
     // Валидация номера страницы (не больше доступного количества)
     const maxPages = Math.ceil(questions.length / QUESTIONS_PER_SESSION);
+    console.log('📊 [LearningSection] Максимальное количество страниц:', maxPages);
+    
     if (savedPage > maxPages) {
       console.log('⚠️ [LearningSection] Страница', savedPage, 'недоступна для раздела с', questions.length, 'вопросами. Сброс на 1.');
       savedPage = 1;
@@ -136,11 +153,6 @@ export function LearningSection() {
 
     setCurrentPage(savedPage);
 
-    if (questions.length === 0) {
-      console.error('❌ [LearningSection] No questions loaded!');
-      return;
-    }
-
     // Загружаем вопросы для сохранённой страницы
     console.log(`🆕 [LearningSection] Загрузка страницы ${savedPage} из ${maxPages}`);
     const startIndex = (savedPage - 1) * QUESTIONS_PER_SESSION;
@@ -149,6 +161,8 @@ export function LearningSection() {
       question: q.text,
       answers: q.options
     }));
+
+    console.log('📝 [LearningSection] Загружено вопросов:', selected.length);
 
     const savedState = saved ? saved[savedPage] : null;
 
@@ -174,6 +188,7 @@ export function LearningSection() {
       });
     }
 
+    console.log('✅ [LearningSection] Инициализация завершена');
     setIsInitialized(true);
   }, [currentSection, questions, shuffleArray]);
 
