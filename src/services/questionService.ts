@@ -272,6 +272,9 @@ export const saveUserState = async (userId: string, state: Partial<UserState>): 
 /**
  * Сохранение прогресса обучения в Firestore
  * Сохраняет прогресс для конкретного раздела в user_states.learningProgress
+ * 
+ * ВАЖНО: Firestore не поддерживает вложенные массивы, поэтому shuffledAnswers
+ * сохраняется как JSON-строка
  */
 export const saveLearningProgress = async (
   userId: string,
@@ -296,6 +299,15 @@ export const saveLearningProgress = async (
     const docSnap = await getDoc(docRef);
     const currentState = docSnap.exists() ? docSnap.data() : {};
 
+    // Сериализуем shuffledAnswers в строку для Firestore
+    const serializedProgress: Record<string, any> = {};
+    Object.entries(progress).forEach(([page, state]) => {
+      serializedProgress[page] = {
+        ...state,
+        shuffledAnswers: JSON.stringify(state.shuffledAnswers)
+      };
+    });
+
     console.log('📝 [QuestionService] Текущее состояние:', { 
       hasLearningProgress: !!currentState.learningProgress,
       sections: currentState.learningProgress ? Object.keys(currentState.learningProgress) : []
@@ -306,7 +318,7 @@ export const saveLearningProgress = async (
       ...currentState,
       learningProgress: {
         ...currentState.learningProgress,
-        [section]: progress
+        [section]: serializedProgress
       },
       updatedAt: Timestamp.now()
     });
@@ -320,6 +332,8 @@ export const saveLearningProgress = async (
 /**
  * Загрузка прогресса обучения из Firestore
  * Загружает прогресс для конкретного раздела из user_states.learningProgress
+ * 
+ * ВАЖНО: Десериализуем shuffledAnswers из строки обратно в массив
  */
 export const loadLearningProgress = async (
   userId: string,
@@ -342,12 +356,26 @@ export const loadLearningProgress = async (
     if (docSnap.exists()) {
       const data = docSnap.data() as UserState;
       const progress = data.learningProgress?.[section as keyof typeof data.learningProgress];
-      console.log('📖 [QuestionService] Прогресс обучения загружен из Firestore:', { 
-        userId, 
-        section, 
-        pages: progress ? Object.keys(progress).length : 0 
-      });
-      return progress || null;
+      
+      if (progress) {
+        // Десериализуем shuffledAnswers из строки обратно в массив
+        const deserializedProgress: LearningProgressState = {};
+        Object.entries(progress).forEach(([page, state]: [string, any]) => {
+          deserializedProgress[Number(page)] = {
+            ...state,
+            shuffledAnswers: typeof state.shuffledAnswers === 'string' 
+              ? JSON.parse(state.shuffledAnswers) 
+              : state.shuffledAnswers
+          };
+        });
+        
+        console.log('📖 [QuestionService] Прогресс обучения загружен из Firestore:', { 
+          userId, 
+          section, 
+          pages: Object.keys(deserializedProgress).length 
+        });
+        return deserializedProgress;
+      }
     }
 
     console.log('ℹ️ [QuestionService] Прогресс обучения не найден');
