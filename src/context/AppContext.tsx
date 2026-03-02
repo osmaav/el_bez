@@ -141,13 +141,13 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const loadQuestions = async () => {
       try {
-        console.log('🔵 [AppContext] Загрузка вопросов для раздела:', currentSection);
+        // console.log('🔵 [AppContext] Загрузка вопросов для раздела:', currentSection);
         setIsLoading(true);
 
         // Проверяем кэш сначала
         const cachedQuestions = questionsCache.get(currentSection);
         if (cachedQuestions && cachedQuestions.length > 0) {
-          console.log('✅ [AppContext] Вопросы загружены из кэша:', cachedQuestions.length);
+          // console.log('✅ [AppContext] Вопросы загружены из кэша:', cachedQuestions.length);
           setQuestions(cachedQuestions);
           generateTicketsFromData(cachedQuestions, cachedQuestions);
           setIsLoading(false);
@@ -155,14 +155,14 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         }
 
         // Динамическая загрузка вопросов из Firestore (или JSON в mock-режиме)
-        console.log('📥 [AppContext] Загрузка вопросов из Firestore...');
+        // console.log('📥 [AppContext] Загрузка вопросов из Firestore...');
         const loadedQuestions = await loadQuestionsForSection(currentSection);
 
-        console.log('✅ [AppContext] Загружено вопросов:', loadedQuestions.length);
-        
+        // console.log('✅ [AppContext] Загружено вопросов:', loadedQuestions.length);
+
         // Сохраняем в кэш
         questionsCache.set(currentSection, loadedQuestions);
-        console.log('💾 [AppContext] Вопросы сохранены в кэш');
+        // console.log('💾 [AppContext] Вопросы сохранены в кэш');
 
         setQuestions(loadedQuestions);
 
@@ -174,11 +174,11 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
           await saveUserState(user.id, { currentSection });
         }
       } catch (err) {
-        console.error('❌ [AppContext] Ошибка загрузки:', err);
+        // console.error('❌ [AppContext] Ошибка загрузки:', err);
         setError(err instanceof Error ? err.message : 'Ошибка загрузки');
       } finally {
         setIsLoading(false);
-        console.log('🔵 [AppContext] Загрузка завершена, isLoading = false');
+        // console.log('🔵 [AppContext] Загрузка завершена, isLoading = false');
       }
     };
 

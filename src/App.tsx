@@ -11,7 +11,7 @@ import { Toaster } from '@/components/ui/sonner';
 import { useEffect } from 'react';
 
 function AppContent() {
-  const { currentPage } = useApp();
+  const { currentPage, currentSection } = useApp();
 
   // Плавная прокрутка вверх при изменении страницы
   useEffect(() => {
@@ -22,7 +22,8 @@ function AppContent() {
     <div className="min-h-screen bg-slate-50 flex flex-col">
       <Navigation />
       <main className="pb-12 flex-grow">
-        {currentPage === 'learning' && <LearningSection />}
+        {/* key={currentSection} заставляет компонент пересоздаваться при смене раздела */}
+        {currentPage === 'learning' && <LearningSection key={currentSection} />}
         {currentPage === 'theory' && <TheorySection />}
         {currentPage === 'trainer' && <TrainerSection />}
         {currentPage === 'exam' && <ExamSection />}

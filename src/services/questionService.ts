@@ -77,11 +77,11 @@ export interface LearningProgressState {
  * Загружает вопросы ТОЛЬКО из Firebase Firestore
  */
 export const loadQuestionsForSection = async (sectionId: string): Promise<Question[]> => {
-  console.log('📚 [QuestionService] Загрузка вопросов для раздела:', sectionId);
+  // console.log('📚 [QuestionService] Загрузка вопросов для раздела:', sectionId);
 
   if (!isFirebaseReady()) {
-    console.warn('⚠️ [QuestionService] Firebase не настроен. Вопросы недоступны.');
-    console.warn('📝 Настройте Firebase в .env.local для загрузки вопросов');
+    // console.warn('⚠️ [QuestionService] Firebase не настроен. Вопросы недоступны.');
+    // console.warn('📝 Настройте Firebase в .env.local для загрузки вопросов');
     return [];
   }
 
@@ -94,7 +94,7 @@ export const loadQuestionsForSection = async (sectionId: string): Promise<Questi
       orderBy('id', 'asc')
     );
 
-    console.log('🔍 [QuestionService] Выполнение запроса к Firestore...');
+    // console.log('🔍 [QuestionService] Выполнение запроса к Firestore...');
     const querySnapshot = await getDocs(q);
     
     const questions: Question[] = [];
@@ -113,12 +113,12 @@ export const loadQuestionsForSection = async (sectionId: string): Promise<Questi
       });
     });
 
-    console.log(`✅ [QuestionService] Загружено ${questions.length} вопросов из Firestore`);
+    // console.log(`✅ [QuestionService] Загружено ${questions.length} вопросов из Firestore`);
     return questions;
   } catch (error: any) {
     // Если требуется индекс, пробуем без сортировки (сортируем на клиенте)
     if (error.code === 'failed-precondition') {
-      console.log('⚠️ [QuestionService] Индекс не найден, загрузка без сортировки...');
+      // console.log('⚠️ [QuestionService] Индекс не найден, загрузка без сортировки...');
       try {
         const q = query(
           collection(db, QUESTIONS_COLLECTION),
@@ -145,15 +145,15 @@ export const loadQuestionsForSection = async (sectionId: string): Promise<Questi
         // Сортируем на клиенте
         questions.sort((a, b) => a.id - b.id);
 
-        console.log(`✅ [QuestionService] Загружено ${questions.length} вопросов (без индекса)`);
+        // console.log(`✅ [QuestionService] Загружено ${questions.length} вопросов (без индекса)`);
         return questions;
       } catch (fallbackError: any) {
-        console.error('❌ [QuestionService] Ошибка загрузки вопросов:', fallbackError);
+        // console.error('❌ [QuestionService] Ошибка загрузки вопросов:', fallbackError);
         throw new Error(`Ошибка загрузки вопросов: ${fallbackError.message}`);
       }
     }
 
-    console.error('❌ [QuestionService] Ошибка загрузки вопросов:', error);
+    // console.error('❌ [QuestionService] Ошибка загрузки вопросов:', error);
     throw new Error(`Ошибка загрузки вопросов: ${error.message}`);
   }
 };
@@ -163,10 +163,10 @@ export const loadQuestionsForSection = async (sectionId: string): Promise<Questi
  * Загружает вопросы ТОЛЬКО из Firebase Firestore
  */
 export const loadTicket = async (sectionId: string, ticketId: number): Promise<Question[]> => {
-  console.log('📚 [QuestionService] Загрузка билета:', { sectionId, ticketId });
+  // console.log('📚 [QuestionService] Загрузка билета:', { sectionId, ticketId });
 
   if (!isFirebaseReady()) {
-    console.warn('⚠️ [QuestionService] Firebase не настроен. Вопросы недоступны.');
+    // console.warn('⚠️ [QuestionService] Firebase не настроен. Вопросы недоступны.');
     return [];
   }
 
@@ -196,10 +196,10 @@ export const loadTicket = async (sectionId: string, ticketId: number): Promise<Q
       });
     });
 
-    console.log(`✅ [QuestionService] Загружено ${questions.length} вопросов для билета ${ticketId}`);
+    // console.log(`✅ [QuestionService] Загружено ${questions.length} вопросов для билета ${ticketId}`);
     return questions;
   } catch (error: any) {
-    console.error('❌ [QuestionService] Ошибка загрузки билета:', error);
+    // console.error('❌ [QuestionService] Ошибка загрузки билета:', error);
     throw new Error(`Ошибка загрузки билета: ${error.message}`);
   }
 };
@@ -210,7 +210,7 @@ export const loadTicket = async (sectionId: string, ticketId: number): Promise<Q
  */
 export const getUserState = async (userId: string): Promise<UserState | null> => {
   if (!isFirebaseReady()) {
-    console.warn('⚠️ [QuestionService] Firebase не настроен. Состояние недоступно.');
+    // console.warn('⚠️ [QuestionService] Firebase не настроен. Состояние недоступно.');
     return null;
   }
 
@@ -219,14 +219,14 @@ export const getUserState = async (userId: string): Promise<UserState | null> =>
     const docSnap = await getDoc(docRef);
 
     if (docSnap.exists()) {
-      console.log('✅ [QuestionService] Состояние пользователя загружено из Firestore');
+      // console.log('✅ [QuestionService] Состояние пользователя загружено из Firestore');
       return docSnap.data() as UserState;
     }
 
-    console.log('ℹ️ [QuestionService] Состояние пользователя не найдено, создаём новое');
+    // console.log('ℹ️ [QuestionService] Состояние пользователя не найдено, создаём новое');
     return null;
   } catch (error: any) {
-    console.error('❌ [QuestionService] Ошибка получения состояния пользователя:', error);
+    // console.error('❌ [QuestionService] Ошибка получения состояния пользователя:', error);
     return null;
   }
 };
@@ -238,13 +238,13 @@ export const getUserState = async (userId: string): Promise<UserState | null> =>
  */
 export const saveUserState = async (userId: string, state: Partial<UserState>): Promise<void> => {
   if (!isFirebaseReady()) {
-    console.warn('⚠️ [QuestionService] Firebase не настроен. Состояние не сохранено.');
+    // console.warn('⚠️ [QuestionService] Firebase не настроен. Состояние не сохранено.');
     return;
   }
 
   // Проверка наличия userId (только для авторизованных пользователей)
   if (!userId) {
-    console.warn('⚠️ [QuestionService] Пользователь не авторизован. Состояние не сохранено.');
+    // console.warn('⚠️ [QuestionService] Пользователь не авторизован. Состояние не сохранено.');
     return;
   }
 
@@ -263,9 +263,9 @@ export const saveUserState = async (userId: string, state: Partial<UserState>): 
       updatedAt: Timestamp.now()
     });
 
-    console.log('✅ [QuestionService] Состояние пользователя сохранено в Firestore');
+    // console.log('✅ [QuestionService] Состояние пользователя сохранено в Firestore');
   } catch (error: any) {
-    console.error('❌ [QuestionService] Ошибка сохранения состояния пользователя:', error);
+    // console.error('❌ [QuestionService] Ошибка сохранения состояния пользователя:', error);
   }
 };
 
@@ -281,15 +281,15 @@ export const saveLearningProgress = async (
   section: string,
   progress: LearningProgressState
 ): Promise<void> => {
-  console.log('💾 [QuestionService] saveLearningProgress вызван:', { userId, section, pages: Object.keys(progress).length });
-  
+  // console.log('💾 [QuestionService] saveLearningProgress вызван:', { userId, section, pages: Object.keys(progress).length });
+
   if (!isFirebaseReady()) {
-    console.warn('⚠️ [QuestionService] Firebase не настроен. Прогресс не сохранён.');
+    // console.warn('⚠️ [QuestionService] Firebase не настроен. Прогресс не сохранён.');
     return;
   }
 
   if (!userId) {
-    console.warn('⚠️ [QuestionService] Пользователь не авторизован. Прогресс не сохранён.');
+    // console.warn('⚠️ [QuestionService] Пользователь не авторизован. Прогресс не сохранён.');
     return;
   }
 
@@ -308,10 +308,10 @@ export const saveLearningProgress = async (
       };
     });
 
-    console.log('📝 [QuestionService] Текущее состояние:', { 
-      hasLearningProgress: !!currentState.learningProgress,
-      sections: currentState.learningProgress ? Object.keys(currentState.learningProgress) : []
-    });
+    // console.log('📝 [QuestionService] Текущее состояние:', {
+    //   hasLearningProgress: !!currentState.learningProgress,
+    //   sections: currentState.learningProgress ? Object.keys(currentState.learningProgress) : []
+    // });
 
     // Обновляем learningProgress для текущего раздела
     await setDoc(docRef, {
@@ -323,9 +323,9 @@ export const saveLearningProgress = async (
       updatedAt: Timestamp.now()
     });
 
-    console.log('✅ [QuestionService] Прогресс обучения сохранён в Firestore:', { userId, section });
+    // console.log('✅ [QuestionService] Прогресс обучения сохранён в Firestore:', { userId, section });
   } catch (error: any) {
-    console.error('❌ [QuestionService] Ошибка сохранения прогресса обучения:', error);
+    // console.error('❌ [QuestionService] Ошибка сохранения прогресса обучения:', error);
   }
 };
 
@@ -340,12 +340,12 @@ export const loadLearningProgress = async (
   section: string
 ): Promise<LearningProgressState | null> => {
   if (!isFirebaseReady()) {
-    console.warn('⚠️ [QuestionService] Firebase не настроен. Прогресс недоступен.');
+    // console.warn('⚠️ [QuestionService] Firebase не настроен. Прогресс недоступен.');
     return null;
   }
 
   if (!userId) {
-    console.warn('⚠️ [QuestionService] Пользователь не авторизован. Прогресс недоступен.');
+    // console.warn('⚠️ [QuestionService] Пользователь не авторизован. Прогресс недоступен.');
     return null;
   }
 
@@ -368,20 +368,20 @@ export const loadLearningProgress = async (
               : state.shuffledAnswers
           };
         });
-        
-        console.log('📖 [QuestionService] Прогресс обучения загружен из Firestore:', { 
-          userId, 
-          section, 
-          pages: Object.keys(deserializedProgress).length 
-        });
+
+        // console.log('📖 [QuestionService] Прогресс обучения загружен из Firestore:', {
+        //   userId,
+        //   section,
+        //   pages: Object.keys(deserializedProgress).length
+        // });
         return deserializedProgress;
       }
     }
 
-    console.log('ℹ️ [QuestionService] Прогресс обучения не найден');
+    // console.log('ℹ️ [QuestionService] Прогресс обучения не найден');
     return null;
   } catch (error: any) {
-    console.error('❌ [QuestionService] Ошибка загрузки прогресса обучения:', error);
+    // console.error('❌ [QuestionService] Ошибка загрузки прогресса обучения:', error);
     return null;
   }
 };

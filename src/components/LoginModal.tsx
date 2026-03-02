@@ -58,19 +58,19 @@ export function LoginModal({ isOpen, onClose, onOpenRegister }: LoginModalProps)
       
       // Проверка подтверждения email
       if (!user.emailVerified) {
-        console.log('⚠️ [LoginModal] Email не подтверждён:', user.email);
+        // console.log('⚠️ [LoginModal] Email не подтверждён:', user.email);
         setError('Пожалуйста, подтвердите ваш email. Проверьте папку "Спам", если письмо не пришло.');
         setIsLoading(false);
         return;
       }
-      
-      console.log('✅ [LoginModal] Вход успешен, email подтверждён:', user.email);
+
+      // console.log('✅ [LoginModal] Вход успешен, email подтверждён:', user.email);
       // Сохраняем пользователя в AuthContext
       login(user);
       // Закрываем модальное окно
       onClose();
     } catch (err: any) {
-      console.error('❌ [LoginModal] Ошибка входа:', err);
+      // console.error('❌ [LoginModal] Ошибка входа:', err);
       setError(err.message || 'Ошибка при входе');
     } finally {
       setIsLoading(false);
