@@ -54,7 +54,22 @@ export interface UserState {
     darkMode: boolean;
     notifications: boolean;
   };
+  learningProgress: {
+    '1256-19'?: LearningProgressState;
+    '1258-20'?: LearningProgressState;
+  };
   updatedAt: Timestamp;
+}
+
+/**
+ * Интерфейс прогресса обучения для раздела
+ */
+export interface LearningProgressState {
+  [page: number]: {
+    userAnswers: (number | null)[];
+    shuffledAnswers: number[][];
+    isComplete: boolean;
+  };
 }
 
 /**
@@ -226,7 +241,7 @@ export const saveUserState = async (userId: string, state: Partial<UserState>): 
     console.warn('⚠️ [QuestionService] Firebase не настроен. Состояние не сохранено.');
     return;
   }
-  
+
   // Проверка наличия userId (только для авторизованных пользователей)
   if (!userId) {
     console.warn('⚠️ [QuestionService] Пользователь не авторизован. Состояние не сохранено.');
@@ -251,5 +266,87 @@ export const saveUserState = async (userId: string, state: Partial<UserState>): 
     console.log('✅ [QuestionService] Состояние пользователя сохранено в Firestore');
   } catch (error: any) {
     console.error('❌ [QuestionService] Ошибка сохранения состояния пользователя:', error);
+  }
+};
+
+/**
+ * Сохранение прогресса обучения в Firestore
+ * Сохраняет прогресс для конкретного раздела в user_states.learningProgress
+ */
+export const saveLearningProgress = async (
+  userId: string,
+  section: string,
+  progress: LearningProgressState
+): Promise<void> => {
+  if (!isFirebaseReady()) {
+    console.warn('⚠️ [QuestionService] Firebase не настроен. Прогресс не сохранён.');
+    return;
+  }
+
+  if (!userId) {
+    console.warn('⚠️ [QuestionService] Пользователь не авторизован. Прогресс не сохранён.');
+    return;
+  }
+
+  try {
+    const { setDoc, getDoc } = await import('firebase/firestore');
+    const docRef = doc(db, USER_STATES_COLLECTION, userId);
+    const docSnap = await getDoc(docRef);
+    const currentState = docSnap.exists() ? docSnap.data() : {};
+
+    // Обновляем learningProgress для текущего раздела
+    await setDoc(docRef, {
+      ...currentState,
+      learningProgress: {
+        ...currentState.learningProgress,
+        [section]: progress
+      },
+      updatedAt: Timestamp.now()
+    });
+
+    console.log('✅ [QuestionService] Прогресс обучения сохранён в Firestore:', { userId, section });
+  } catch (error: any) {
+    console.error('❌ [QuestionService] Ошибка сохранения прогресса обучения:', error);
+  }
+};
+
+/**
+ * Загрузка прогресса обучения из Firestore
+ * Загружает прогресс для конкретного раздела из user_states.learningProgress
+ */
+export const loadLearningProgress = async (
+  userId: string,
+  section: string
+): Promise<LearningProgressState | null> => {
+  if (!isFirebaseReady()) {
+    console.warn('⚠️ [QuestionService] Firebase не настроен. Прогресс недоступен.');
+    return null;
+  }
+
+  if (!userId) {
+    console.warn('⚠️ [QuestionService] Пользователь не авторизован. Прогресс недоступен.');
+    return null;
+  }
+
+  try {
+    const docRef = doc(db, USER_STATES_COLLECTION, userId);
+    const docSnap = await getDoc(docRef);
+
+    if (docSnap.exists()) {
+      const data = docSnap.data() as UserState;
+      const progress = data.learningProgress?.[section as keyof typeof data.learningProgress];
+      console.log('📖 [QuestionService] Прогресс обучения загружен из Firestore:', { 
+        userId, 
+        section, 
+        pages: progress ? Object.keys(progress).length : 0 
+      });
+      return progress || null;
+    }
+
+    console.log('ℹ️ [QuestionService] Прогресс обучения не найден');
+    return null;
+  } catch (error: any) {
+    console.error('❌ [QuestionService] Ошибка загрузки прогресса обучения:', error);
+    return null;
   }
 };

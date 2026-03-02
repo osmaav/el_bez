@@ -1,5 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useApp } from '@/context/AppContext';
+import { useAuth } from '@/context/AuthContext';
+import { saveLearningProgress, loadLearningProgress } from '@/services/questionService';
 import { Shuffle, RotateCcw, CheckCircle2, XCircle, Trophy, Target, AlertCircle, ChevronLeft, ChevronRight, BookOpen } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -24,7 +26,7 @@ interface SavedState {
 
 const QUESTIONS_PER_SESSION = 10;
 
-// Функции для работы с localStorage
+// Функции для работы с localStorage (fallback для неавторизованных)
 const getStorageKeys = (section: string) => ({
   page: `elbez_learning_page_${section}`,
   progress: `elbez_learning_progress_${section}`
@@ -34,14 +36,14 @@ const saveProgress = (state: SavedState, section: string) => {
   if (typeof window === 'undefined') return;
   const keys = getStorageKeys(section);
   localStorage.setItem(keys.progress, JSON.stringify(state));
-  console.log('💾 [LearningSection] saveProgress:', { section, pages: Object.keys(state).length });
+  console.log('💾 [LearningSection] saveProgress (localStorage):', { section, pages: Object.keys(state).length });
 };
 
 const loadProgress = (section: string): SavedState | null => {
   if (typeof window === 'undefined') return null;
   const keys = getStorageKeys(section);
   const saved = localStorage.getItem(keys.progress);
-  console.log('📖 [LearningSection] loadProgress:', { section, key: keys.progress, hasData: !!saved });
+  console.log('📖 [LearningSection] loadProgress (localStorage):', { section, key: keys.progress, hasData: !!saved });
   if (saved) {
     try {
       return JSON.parse(saved);
@@ -86,7 +88,8 @@ const clearProgress = (section: string) => {
 
 export function LearningSection() {
   const { questions, currentSection, sections } = useApp();
-  
+  const { user } = useAuth();
+
   const [currentPage, setCurrentPage] = useState(1);
   const [quizState, setQuizState] = useState<QuizState>({
     currentQuestions: [],
@@ -118,6 +121,7 @@ export function LearningSection() {
     console.log('📖 [LearningSection] === Инициализация ===');
     console.log('📖 [LearningSection] Раздел:', currentSection);
     console.log('📦 [LearningSection] Questions loaded:', questions.length);
+    console.log('👤 [LearningSection] Пользователь:', user ? user.email : 'не авторизован');
 
     // Сбрасываем инициализацию при смене раздела
     setIsInitialized(false);
@@ -128,74 +132,96 @@ export function LearningSection() {
       return;
     }
 
-    // Читаем сохранённые состояния ТОЛЬКО для текущего раздела
-    const saved = loadProgress(currentSection);
-    let savedPage = loadCurrentPage(currentSection);
+    // Загружаем прогресс обучения
+    const loadProgressData = async () => {
+      let saved: SavedState | null = null;
 
-    console.log('📄 [LearningSection] Загруженная страница:', savedPage);
-    console.log('💾 [LearningSection] Сохранённые состояния:', saved ? Object.keys(saved).length : 0);
+      // Пробуем загрузить из Firestore для авторизованных пользователей
+      if (user?.id) {
+        console.log('☁️ [LearningSection] Загрузка прогресса из Firestore...');
+        const firestoreProgress = await loadLearningProgress(user.id, currentSection);
+        if (firestoreProgress) {
+          saved = firestoreProgress;
+          console.log('✅ [LearningSection] Прогресс загружен из Firestore');
+        }
+      }
 
-    // Валидация номера страницы (не больше доступного количества)
-    const maxPages = Math.ceil(questions.length / QUESTIONS_PER_SESSION);
-    console.log('📊 [LearningSection] Максимальное количество страниц:', maxPages);
-    
-    if (savedPage > maxPages) {
-      console.log('⚠️ [LearningSection] Страница', savedPage, 'недоступна для раздела с', questions.length, 'вопросами. Сброс на 1.');
-      savedPage = 1;
-      // Не сохраняем страницу 1 при валидации, чтобы не перезаписать корректное значение при переключении
-      // saveCurrentPage(savedPage, currentSection);
-    }
+      // Если не загружено из Firestore, пробуем localStorage
+      if (!saved) {
+        console.log('💾 [LearningSection] Загрузка прогресса из localStorage...');
+        saved = loadProgress(currentSection);
+        if (saved) {
+          console.log('✅ [LearningSection] Прогресс загружен из localStorage');
+        }
+      }
 
-    // Сбрасываем savedStates ТОЛЬКО для текущего раздела
-    if (saved) {
-      setSavedStates(saved);
-      console.log('💾 [LearningSection] Загружено сохранённых состояний для', currentSection, ':', Object.keys(saved).length);
-    } else {
-      setSavedStates({});
-      console.log('🆕 [LearningSection] Нет сохранённых состояний для', currentSection);
-    }
+      let savedPage = loadCurrentPage(currentSection);
 
-    setCurrentPage(savedPage);
+      console.log('📄 [LearningSection] Загруженная страница:', savedPage);
+      console.log('💾 [LearningSection] Сохранённые состояния:', saved ? Object.keys(saved).length : 0);
 
-    // Загружаем вопросы для сохранённой страницы
-    console.log(`🆕 [LearningSection] Загрузка страницы ${savedPage} из ${maxPages}`);
-    const startIndex = (savedPage - 1) * QUESTIONS_PER_SESSION;
-    const selected = questions.slice(startIndex, startIndex + QUESTIONS_PER_SESSION).map(q => ({
-      ...q,
-      question: q.text,
-      answers: q.options
-    }));
+      // Валидация номера страницы (не больше доступного количества)
+      const maxPages = Math.ceil(questions.length / QUESTIONS_PER_SESSION);
+      console.log('📊 [LearningSection] Максимальное количество страниц:', maxPages);
 
-    console.log('📝 [LearningSection] Загружено вопросов:', selected.length);
+      if (savedPage > maxPages) {
+        console.log('⚠️ [LearningSection] Страница', savedPage, 'недоступна для раздела с', questions.length, 'вопросами. Сброс на 1.');
+        savedPage = 1;
+      }
 
-    const savedState = saved ? saved[savedPage] : null;
+      // Сбрасываем savedStates ТОЛЬКО для текущего раздела
+      if (saved) {
+        setSavedStates(saved);
+        console.log('💾 [LearningSection] Загружено сохранённых состояний для', currentSection, ':', Object.keys(saved).length);
+      } else {
+        setSavedStates({});
+        console.log('🆕 [LearningSection] Нет сохранённых состояний для', currentSection);
+      }
 
-    if (savedState) {
-      console.log(`♻️ [LearningSection] Восстановление состояния для страницы ${savedPage}`);
-      setQuizState({
-        currentQuestions: selected,
-        shuffledAnswers: savedState.shuffledAnswers,
-        userAnswers: savedState.userAnswers,
-        isComplete: savedState.isComplete,
-      });
-    } else {
-      console.log(`🆕 [LearningSection] Новое состояние для страницы ${savedPage}`);
-      const shuffledAnswers = selected.map((q) => {
-        const answerCount = q.options?.length || q.answers?.length || 4;
-        return shuffleArray([...Array(answerCount).keys()]);
-      });
+      setCurrentPage(savedPage);
 
-      setQuizState({
-        currentQuestions: selected,
-        shuffledAnswers,
-        userAnswers: new Array(selected.length).fill(null),
-        isComplete: false,
-      });
-    }
+      // Загружаем вопросы для сохранённой страницы
+      console.log(`🆕 [LearningSection] Загрузка страницы ${savedPage} из ${maxPages}`);
+      const startIndex = (savedPage - 1) * QUESTIONS_PER_SESSION;
+      const selected = questions.slice(startIndex, startIndex + QUESTIONS_PER_SESSION).map(q => ({
+        ...q,
+        question: q.text,
+        answers: q.options
+      }));
 
-    console.log('✅ [LearningSection] Инициализация завершена');
-    setIsInitialized(true);
-  }, [currentSection, questions, shuffleArray]);
+      console.log('📝 [LearningSection] Загружено вопросов:', selected.length);
+
+      const savedState = saved ? saved[savedPage] : null;
+
+      if (savedState) {
+        console.log(`♻️ [LearningSection] Восстановление состояния для страницы ${savedPage}`);
+        setQuizState({
+          currentQuestions: selected,
+          shuffledAnswers: savedState.shuffledAnswers,
+          userAnswers: savedState.userAnswers,
+          isComplete: savedState.isComplete,
+        });
+      } else {
+        console.log(`🆕 [LearningSection] Новое состояние для страницы ${savedPage}`);
+        const shuffledAnswers = selected.map((q) => {
+          const answerCount = q.options?.length || q.answers?.length || 4;
+          return shuffleArray([...Array(answerCount).keys()]);
+        });
+
+        setQuizState({
+          currentQuestions: selected,
+          shuffledAnswers,
+          userAnswers: new Array(selected.length).fill(null),
+          isComplete: false,
+        });
+      }
+
+      console.log('✅ [LearningSection] Инициализация завершена');
+      setIsInitialized(true);
+    };
+
+    loadProgressData();
+  }, [currentSection, questions, shuffleArray, user]);
 
   // Обновление статистики
   useEffect(() => {
@@ -232,9 +258,18 @@ export function LearningSection() {
         },
       };
       setSavedStates(newSavedStates);
-      saveProgress(newSavedStates, currentSection);
+      
+      // Сохраняем в Firestore для авторизованных пользователей
+      if (user?.id) {
+        console.log('☁️ [LearningSection] Сохранение прогресса в Firestore...');
+        saveLearningProgress(user.id, currentSection, newSavedStates);
+      } else {
+        // Fallback на localStorage для неавторизованных
+        console.log('💾 [LearningSection] Сохранение прогресса в localStorage...');
+        saveProgress(newSavedStates, currentSection);
+      }
     }
-  }, [quizState, currentPage, isInitialized]);
+  }, [quizState, currentPage, isInitialized, user, currentSection]);
 
   // Подгрузка вопросов при изменении страницы
   useEffect(() => {
