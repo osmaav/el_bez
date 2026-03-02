@@ -34,16 +34,19 @@ const saveProgress = (state: SavedState, section: string) => {
   if (typeof window === 'undefined') return;
   const keys = getStorageKeys(section);
   localStorage.setItem(keys.progress, JSON.stringify(state));
+  console.log('💾 [LearningSection] saveProgress:', { section, pages: Object.keys(state).length });
 };
 
 const loadProgress = (section: string): SavedState | null => {
   if (typeof window === 'undefined') return null;
   const keys = getStorageKeys(section);
   const saved = localStorage.getItem(keys.progress);
+  console.log('📖 [LearningSection] loadProgress:', { section, key: keys.progress, hasData: !!saved });
   if (saved) {
     try {
       return JSON.parse(saved);
     } catch (e) {
+      console.error('Ошибка загрузки прогресса:', e);
       return null;
     }
   }
@@ -177,9 +180,10 @@ export function LearningSection() {
       });
     } else {
       console.log(`🆕 [LearningSection] Новое состояние для страницы ${savedPage}`);
-      const shuffledAnswers = selected.map((q) =>
-        shuffleArray([...Array(q.answers?.length || 4).keys()])
-      );
+      const shuffledAnswers = selected.map((q) => {
+        const answerCount = q.options?.length || q.answers?.length || 4;
+        return shuffleArray([...Array(answerCount).keys()]);
+      });
 
       setQuizState({
         currentQuestions: selected,
@@ -218,6 +222,7 @@ export function LearningSection() {
   // Сохранение прогресса
   useEffect(() => {
     if (quizState.currentQuestions.length > 0 && isInitialized) {
+      console.log('💾 [LearningSection] Сохранение прогресса для раздела:', currentSection);
       const newSavedStates = {
         ...savedStates,
         [currentPage]: {
@@ -229,7 +234,7 @@ export function LearningSection() {
       setSavedStates(newSavedStates);
       saveProgress(newSavedStates, currentSection);
     }
-  }, [quizState, currentPage, isInitialized, currentSection]);
+  }, [quizState, currentPage, isInitialized]);
 
   // Подгрузка вопросов при изменении страницы
   useEffect(() => {
@@ -250,8 +255,10 @@ export function LearningSection() {
           isComplete: savedState.isComplete,
         });
       } else {
-        const shuffledAnswers = selected.map((q) =>
-          shuffleArray([...Array(q.answers?.length || 4).keys()])
+        const firstQuestion = selected[0];
+        const answerCount = firstQuestion?.options?.length || firstQuestion?.answers?.length || 4;
+        const shuffledAnswers = selected.map(() =>
+          shuffleArray([...Array(answerCount).keys()])
         );
         setQuizState({
           currentQuestions: selected,
@@ -351,9 +358,10 @@ export function LearningSection() {
       question: q.text,
       answers: q.options
     }));
-    const shuffledAnswers = selected.map((q) =>
-      shuffleArray([...Array(q.answers?.length || 4).keys()])
-    );
+    const shuffledAnswers = selected.map((q) => {
+      const answerCount = q.options?.length || q.answers?.length || 4;
+      return shuffleArray([...Array(answerCount).keys()]);
+    });
     setQuizState({
       currentQuestions: selected,
       shuffledAnswers,
