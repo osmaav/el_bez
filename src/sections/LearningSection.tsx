@@ -139,7 +139,8 @@ export function LearningSection() {
     if (savedPage > maxPages) {
       console.log('⚠️ [LearningSection] Страница', savedPage, 'недоступна для раздела с', questions.length, 'вопросами. Сброс на 1.');
       savedPage = 1;
-      saveCurrentPage(savedPage, currentSection);
+      // Не сохраняем страницу 1 при валидации, чтобы не перезаписать корректное значение при переключении
+      // saveCurrentPage(savedPage, currentSection);
     }
 
     // Сбрасываем savedStates ТОЛЬКО для текущего раздела
@@ -269,7 +270,7 @@ export function LearningSection() {
       saveCurrentPage(currentPage, currentSection);
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
-  }, [currentPage, isInitialized, currentSection]);
+  }, [currentPage, isInitialized]);
 
   // Глобальный прогресс
   const getGlobalProgress = () => {
