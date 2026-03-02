@@ -204,7 +204,9 @@ export function LearningSection() {
       } else {
         console.log(`🆕 [LearningSection] Новое состояние для страницы ${savedPage}`);
         const shuffledAnswers = selected.map((q) => {
-          const answerCount = q.options?.length || q.answers?.length || 1;
+          // Используем answers из объекта вопроса (который был создан выше из q.options)
+          const answerCount = q.answers?.length || 4;
+          console.log(`📝 [LearningSection] Вопрос ${q.id}: answerCount=${answerCount}, answers=`, q.answers);
           return shuffleArray([...Array(answerCount).keys()]);
         });
 
@@ -292,11 +294,12 @@ export function LearningSection() {
           isComplete: savedState.isComplete,
         });
       } else {
-        const firstQuestion = selected[0];
-        const answerCount = firstQuestion?.options?.length || firstQuestion?.answers?.length || 4;
-        const shuffledAnswers = selected.map(() =>
-          shuffleArray([...Array(answerCount).keys()])
-        );
+        // Вычисляем answerCount для каждого вопроса отдельно
+        const shuffledAnswers = selected.map((q) => {
+          const answerCount = q.answers?.length || 4;
+          console.log(`📝 [LearningSection] Страница ${currentPage}, Вопрос ${q.id}: answerCount=${answerCount}, answers=`, q.answers);
+          return shuffleArray([...Array(answerCount).keys()]);
+        });
         setQuizState({
           currentQuestions: selected,
           shuffledAnswers,
@@ -305,7 +308,7 @@ export function LearningSection() {
         });
       }
     }
-  }, [currentPage, isInitialized, questions, currentSection]);
+  }, [currentPage, isInitialized, questions, currentSection, shuffleArray]);
 
   // Сохранение текущей страницы
   useEffect(() => {
@@ -396,7 +399,8 @@ export function LearningSection() {
       answers: q.options
     }));
     const shuffledAnswers = selected.map((q) => {
-      const answerCount = q.options?.length || q.answers?.length || 4;
+      const answerCount = q.answers?.length || 4;
+      console.log(`📝 [LearningSection] Сброс, Вопрос ${q.id}: answerCount=${answerCount}, answers=`, q.answers);
       return shuffleArray([...Array(answerCount).keys()]);
     });
     setQuizState({
