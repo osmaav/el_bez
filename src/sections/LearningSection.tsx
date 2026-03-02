@@ -249,6 +249,8 @@ export function LearningSection() {
   useEffect(() => {
     if (quizState.currentQuestions.length > 0 && isInitialized) {
       console.log('💾 [LearningSection] Сохранение прогресса для раздела:', currentSection);
+      console.log('👤 [LearningSection] user:', user);
+      console.log('🆔 [LearningSection] user.id:', user?.id);
       const newSavedStates = {
         ...savedStates,
         [currentPage]: {
@@ -258,7 +260,7 @@ export function LearningSection() {
         },
       };
       setSavedStates(newSavedStates);
-      
+
       // Сохраняем в Firestore для авторизованных пользователей
       if (user?.id) {
         console.log('☁️ [LearningSection] Сохранение прогресса в Firestore...');

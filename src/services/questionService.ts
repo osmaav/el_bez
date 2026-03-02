@@ -278,6 +278,8 @@ export const saveLearningProgress = async (
   section: string,
   progress: LearningProgressState
 ): Promise<void> => {
+  console.log('💾 [QuestionService] saveLearningProgress вызван:', { userId, section, pages: Object.keys(progress).length });
+  
   if (!isFirebaseReady()) {
     console.warn('⚠️ [QuestionService] Firebase не настроен. Прогресс не сохранён.');
     return;
@@ -293,6 +295,11 @@ export const saveLearningProgress = async (
     const docRef = doc(db, USER_STATES_COLLECTION, userId);
     const docSnap = await getDoc(docRef);
     const currentState = docSnap.exists() ? docSnap.data() : {};
+
+    console.log('📝 [QuestionService] Текущее состояние:', { 
+      hasLearningProgress: !!currentState.learningProgress,
+      sections: currentState.learningProgress ? Object.keys(currentState.learningProgress) : []
+    });
 
     // Обновляем learningProgress для текущего раздела
     await setDoc(docRef, {
