@@ -3,7 +3,7 @@
 **el_bez** — современное веб-приложение для подготовки к сдаче экзаменов по электробезопасности (III и IV группа до 1000 В).
 
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-[![Version](https://img.shields.io/badge/version-2026.04-green.svg)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-2026.05-green.svg)](CHANGELOG.md)
 
 ## 📖 Описание
 
