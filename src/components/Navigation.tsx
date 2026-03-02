@@ -147,7 +147,7 @@ export function Navigation() {
                     `}
                   >
                     <Icon className="w-4 h-4 sm:w-5 sm:h-5" />
-                    <span className="hidden md:inline text-xs sm:text-sm">{item.label}</span>
+                    <span className="hidden [@media(min-width:930px)]:inline text-xs sm:text-sm">{item.label}</span>
                   </button>
                 );
               })}
@@ -159,11 +159,11 @@ export function Navigation() {
                 onClick={handleLogin}
                 variant="ghost"
                 size="sm"
-                className="text-slate-300 hover:text-white hover:bg-slate-800 ml-2 hidden md:flex"
+                className="text-slate-300 hover:text-white hover:bg-slate-800 ml-2"
                 title="Войти в систему"
               >
                 <LogIn className="w-4 h-4" />
-                <span className="ml-1 text-sm">Войти</span>
+                <span className="ml-1 text-sm hidden [@media(min-width:930px)]:inline">Войти</span>
               </Button>
             )}
           </div>
