@@ -99,7 +99,7 @@ export function LearningSection() {
   });
   const [stats, setStats] = useState({ correct: 0, incorrect: 0, remaining: 0 });
   const [savedStates, setSavedStates] = useState<SavedState>({});
-  const [showSources, setShowSources] = useState<{[key: number]: boolean}>({});
+  const [showSources, setShowSources] = useState<{ [key: number]: boolean }>({});
   const [isInitialized, setIsInitialized] = useState(false);
 
   const currentSectionInfo = sections.find(s => s.id === currentSection);
@@ -204,7 +204,7 @@ export function LearningSection() {
       } else {
         console.log(`🆕 [LearningSection] Новое состояние для страницы ${savedPage}`);
         const shuffledAnswers = selected.map((q) => {
-          const answerCount = q.options?.length || q.answers?.length || 4;
+          const answerCount = q.options?.length || q.answers?.length || 1;
           return shuffleArray([...Array(answerCount).keys()]);
         });
 
@@ -522,7 +522,7 @@ export function LearningSection() {
                     <Badge variant="outline" className="border-0 whitespace-normal">Билет №{question.ticket}</Badge>
                     {quizState.userAnswers[qIdx] !== null && (
                       quizState.userAnswers[qIdx] ===
-                      quizState.shuffledAnswers[qIdx].findIndex((idx) => idx === question.correct)
+                        quizState.shuffledAnswers[qIdx].findIndex((idx) => idx === question.correct)
                         ? <CheckCircle2 className="w-5 h-5 text-green-600" />
                         : <XCircle className="w-5 h-5 text-red-600" />
                     )}
