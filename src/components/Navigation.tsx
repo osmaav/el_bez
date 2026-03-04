@@ -156,8 +156,13 @@ export function Navigation() {
                 // Настройки для каждой подсказки — единый стиль для всех
                 const tooltipSettings = {
                   align: 'center' as const,
-                  maxWidth: 320 // Ширина как у кнопки "Теория"
+                  minWidth: 280, // Минимальная ширина
+                  maxWidth: 320 // Максимальная ширина как у кнопки "Теория"
                 };
+
+                // Специальные настройки для кнопки Статистика (справа)
+                const isStatistics = item.id === 'statistics';
+                const alignValue = isStatistics ? 'end' as const : tooltipSettings.align;
 
                 const ButtonContent = (
                   <button
@@ -182,7 +187,8 @@ export function Navigation() {
                     title={item.label}
                     content={tooltips[item.id]}
                     position="bottom"
-                    align={tooltipSettings.align}
+                    align={alignValue}
+                    minWidth={tooltipSettings.minWidth}
                     maxWidth={tooltipSettings.maxWidth}
                   >
                     {ButtonContent}

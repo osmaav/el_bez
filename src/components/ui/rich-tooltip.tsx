@@ -31,6 +31,7 @@ export interface RichTooltipProps {
   position?: 'top' | 'bottom' | 'left' | 'right';
   align?: 'start' | 'center' | 'end';
   showArrow?: boolean;
+  minWidth?: number;
   maxWidth?: number;
   delay?: number;
   duration?: number;
@@ -102,6 +103,7 @@ export function RichTooltip({
   position = 'top',
   align = 'center',
   showArrow = true,
+  minWidth = 280,
   maxWidth = 320,
   delay = 200,
   duration = 0.2,
@@ -212,6 +214,7 @@ export function RichTooltip({
               )}
               style={{
                 ...positionStyles,
+                minWidth,
                 maxWidth,
               }}
               initial={{ opacity: 0, scale: 0.95 }}
