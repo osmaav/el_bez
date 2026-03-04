@@ -679,3 +679,7 @@ export const SessionsBarChart: React.FC<SessionsBarChartProps> = ({ sessions }) 
     </Card>
   );
 };
+
+// Экспорт ActivityCalendar
+export { ActivityCalendar } from './ActivityCalendar';
+export * from './ActivityCalendar';

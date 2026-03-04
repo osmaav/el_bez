@@ -7,6 +7,7 @@ import {
   ProgressChart,
   ResultsPieChart,
   ActivityHeatmap,
+  ActivityCalendar,
   AttemptHistory,
   SectionProgress,
   WeakTopics,
@@ -230,6 +231,8 @@ export const StatisticsSection: React.FC = () => {
           </div>
 
           <ActivityHeatmap data={statisticsService.getDailyActivity(30)} />
+
+          <ActivityCalendar data={statisticsService.getDailyActivity(90)} />
 
           <div className="grid gap-6 lg:grid-cols-2">
             <SectionProgress
