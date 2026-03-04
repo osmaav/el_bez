@@ -153,6 +153,15 @@ export function Navigation() {
                   statistics: 'Ваша статистика и прогресс обучения'
                 };
 
+                // Настройки для каждой подсказки
+                const tooltipSettings: Record<PageType, { align: 'start' | 'center' | 'end'; maxWidth?: number }> = {
+                  theory: { align: 'center', maxWidth: 280 },
+                  learning: { align: 'center', maxWidth: 280 },
+                  trainer: { align: 'center', maxWidth: 280 },
+                  exam: { align: 'center', maxWidth: 280 },
+                  statistics: { align: 'end', maxWidth: 280 } // Выравнивание от правого края
+                };
+
                 const ButtonContent = (
                   <button
                     onClick={() => handlePageChange(item.id)}
@@ -169,6 +178,8 @@ export function Navigation() {
                   </button>
                 );
 
+                const settings = tooltipSettings[item.id];
+
                 return (
                   <RichTooltip
                     key={item.id}
@@ -176,7 +187,8 @@ export function Navigation() {
                     title={item.label}
                     content={tooltips[item.id]}
                     position="bottom"
-                    align="center"
+                    align={settings.align}
+                    maxWidth={settings.maxWidth}
                   >
                     {ButtonContent}
                   </RichTooltip>
