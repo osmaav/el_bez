@@ -17,6 +17,27 @@ const responsiveStyles = `
   .activity-calendar-container {
     overflow-x: auto;
     overflow-y: hidden;
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE/Edge */
+    max-width: 100%;
+  }
+  
+  .activity-calendar-container::-webkit-scrollbar {
+    display: none; /* Chrome/Safari */
+  }
+  
+  /* Ограничение ширины для больших экранов */
+  @media (min-width: 785px) {
+    .activity-calendar-container {
+      max-width: 720px;
+    }
+  }
+  
+  /* На xl экранах (1280px+) компонент занимает свою ширину, рядом может быть другой компонент */
+  @media (min-width: 1280px) {
+    .activity-calendar-container {
+      width: 720px;
+    }
   }
   
   /* 3 месяца в одну линию (по умолчанию) */

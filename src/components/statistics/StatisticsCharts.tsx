@@ -486,7 +486,7 @@ export const SessionsBarChart: React.FC<SessionsBarChartProps> = ({ sessions }) 
   }
 
   return (
-    <Card>
+    <Card className="xl:col-span-1">
       <CardHeader>
         <CardTitle>Результаты по сессиям</CardTitle>
         <CardDescription>

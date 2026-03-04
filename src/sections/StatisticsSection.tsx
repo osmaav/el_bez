@@ -215,7 +215,11 @@ export const StatisticsSection: React.FC = () => {
             />
           </div>
 
-          <ActivityCalendar data={statisticsService.getDailyActivity(90)} />
+          {/* Активность и сессии */}
+          <div className="grid gap-6 xl:grid-cols-2">
+            <ActivityCalendar data={statisticsService.getDailyActivity(90)} />
+            <SessionsBarChart sessions={statistics.sessions} />
+          </div>
 
           <div className="grid gap-6 lg:grid-cols-2">
             <SectionProgress
