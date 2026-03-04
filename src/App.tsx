@@ -12,7 +12,7 @@ import { StatisticsSection } from '@/sections/StatisticsSection';
 import { ToastContainer } from '@/components/ui/toast-message';
 import { UIPatternsShowcase } from '@/components/ui-showcase/UIPatternsShowcase';
 import { useEffect } from 'react';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, HashRouter, Routes, Route } from 'react-router-dom';
 
 function AppContent() {
   const { currentPage, currentSection } = useApp();
@@ -39,12 +39,15 @@ function AppContent() {
 }
 
 function App() {
+  // Для GitHub Pages используем HashRouter вместо BrowserRouter
+  const Router = window.location.hostname.includes('github.io') ? HashRouter : BrowserRouter;
+  
   return (
     <CookiesProvider>
       <AuthProvider>
         <ToastProvider>
           <AppProvider>
-            <BrowserRouter>
+            <Router>
               <Routes>
                 {/* Основной маршрут приложения */}
                 <Route path="/" element={<AppContent />} />
@@ -56,7 +59,7 @@ function App() {
                 {/* <Route path="*" element={<Navigate to="/" replace />} /> */}
               </Routes>
               <ToastWrapper />
-            </BrowserRouter>
+            </Router>
           </AppProvider>
         </ToastProvider>
       </AuthProvider>

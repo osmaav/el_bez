@@ -119,7 +119,7 @@ export function Navigation() {
                 >
                   <UserCircle className="w-4 h-4" />
                   <span className="hidden sm:inline">
-                    {user.surname || user.name || user.email}
+                    {user.name || user.surname || user.email}
                   </span>
                 </button>
                 <Button

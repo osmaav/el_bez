@@ -251,7 +251,7 @@ export function EditProfileModal({ isOpen, onClose }: EditProfileModalProps) {
               variant="outline"
               onClick={onClose}
               disabled={isLoading}
-              className="flex-1"
+              className="flex-1 text-slate-700"
             >
               <X className="h-4 w-4 mr-2" />
               Отмена
