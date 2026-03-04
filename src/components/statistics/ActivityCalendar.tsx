@@ -26,62 +26,15 @@ const responsiveStyles = `
     display: none; /* Chrome/Safari */
   }
   
-  /* Ограничение ширины для больших экранов */
-  @media (min-width: 785px) {
-    .activity-calendar-container {
-      max-width: 720px;
-    }
+  /* Ограничение ширины компонента */
+  .activity-calendar-card {
+    max-width: 536px;
+    margin: 0 auto;
   }
   
-  /* На xl экранах (1280px+) компонент занимает свою ширину, рядом может быть другой компонент */
-  @media (min-width: 1280px) {
-    .activity-calendar-container {
-      width: 720px;
-    }
-  }
-  
-  /* Масштабирование для экранов уже 600px (для размещения с другими компонентами) */
-  @media (max-width: 600px) {
-    .activity-calendar-grid {
-      transform: scale(0.9);
-      transform-origin: top left;
-    }
-  }
-  
-  /* 3 месяца в одну линию (по умолчанию) */
+  /* 3 месяца в одну линию (всегда) */
   .activity-calendar-grid {
     grid-template-columns: repeat(3, 230px) !important;
-  }
-  
-  /* 2 месяца в первом ряду, 1 во втором */
-  @media (max-width: 740px) {
-    .activity-calendar-grid {
-      grid-template-columns: repeat(2, 230px) !important;
-      justify-content: center;
-    }
-    .activity-calendar-month:nth-child(3) {
-      grid-column: span 2;
-      justify-self: center;
-    }
-  }
-  
-  /* 1 месяц в ряду (вертикально) */
-  @media (max-width: 480px) {
-    .activity-calendar-grid {
-      grid-template-columns: 230px !important;
-      justify-content: center;
-    }
-    .activity-calendar-month:nth-child(3) {
-      grid-column: auto;
-    }
-  }
-  
-  /* Масштабирование для очень маленьких экранов */
-  @media (max-width: 250px) {
-    .activity-calendar-grid {
-      transform: scale(0.85) !important;
-      transform-origin: top center;
-    }
   }
   
   /* Позиционирование для z-index */
@@ -227,7 +180,7 @@ export const ActivityCalendar: React.FC<ActivityCalendarProps> = ({ data }) => {
   };
 
   return (
-    <Card>
+    <Card className="activity-calendar-card">
       <style>{responsiveStyles}</style>
       <CardHeader>
         <CardTitle className="text-xl font-bold">Активность</CardTitle>
@@ -236,8 +189,8 @@ export const ActivityCalendar: React.FC<ActivityCalendarProps> = ({ data }) => {
         </CardDescription>
       </CardHeader>
       <CardContent>
-        {/* Контейнер для 3 месяцев с адаптивной перестройкой */}
-        <div className="w-full overflow-auto activity-calendar-container">
+        {/* Контейнер для 3 месяцев с горизонтальной прокруткой */}
+        <div className="w-full overflow-x-auto activity-calendar-container">
           <div 
             className="grid gap-6 mx-auto activity-calendar-grid"
             style={{ 
