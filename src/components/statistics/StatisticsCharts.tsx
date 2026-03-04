@@ -333,15 +333,27 @@ export const ActivityHeatmap: React.FC<ActivityHeatmapProps> = ({ data }) => {
                     const day = data[dataIndex];
                     if (!day) return <div key={dayIndex} className="w-8 h-8" />;
                     
+                    const date = new Date(day.date);
+                    const dayNumber = date.getDate();
+                    const textColor = day.questionsAnswered === 0 ? 'text-slate-400' : 
+                                      day.questionsAnswered < 10 ? 'text-blue-900 dark:text-blue-100' :
+                                      day.questionsAnswered < 20 ? 'text-white' :
+                                      day.questionsAnswered < 30 ? 'text-white' :
+                                      'text-white';
+                    
                     return (
                       <div
                         key={day.date}
                         className={cn(
-                          'w-8 h-8 rounded-md transition-colors hover:ring-2 hover:ring-ring hover:ring-offset-1 cursor-pointer',
+                          'w-8 h-8 rounded-md transition-colors hover:ring-2 hover:ring-ring hover:ring-offset-1 cursor-pointer flex items-center justify-center',
                           getColorClass(day)
                         )}
                         title={`${new Date(day.date).toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' })}: ${day.questionsAnswered} вопросов`}
-                      />
+                      >
+                        <span className={cn('text-[10px] font-bold', textColor)}>
+                          {dayNumber}
+                        </span>
+                      </div>
                     );
                   })}
                 </React.Fragment>
