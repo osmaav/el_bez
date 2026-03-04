@@ -268,19 +268,22 @@ export const ActivityHeatmap: React.FC<ActivityHeatmapProps> = ({ data }) => {
     return 'bg-blue-800 dark:bg-blue-400';
   };
 
+  // Берём последние 90 дней (3 месяца)
+  const last90Days = data.slice(-90);
+  
   // Группируем данные по месяцам для заголовков
   const monthGroups: { name: string; startCol: number; span: number }[] = [];
   let currentMonth = -1;
   let monthStart = 0;
   
-  data.forEach((day, index) => {
+  last90Days.forEach((day, index) => {
     const month = new Date(day.date).getMonth();
     if (month !== currentMonth) {
       if (currentMonth !== -1) {
         monthGroups[monthGroups.length - 1].span = index - monthStart;
       }
       monthGroups.push({
-        name: new Date(day.date).toLocaleDateString('ru-RU', { month: 'short' }),
+        name: new Date(day.date).toLocaleDateString('ru-RU', { month: 'long' }),
         startCol: index + 1,
         span: 0
       });
@@ -291,11 +294,11 @@ export const ActivityHeatmap: React.FC<ActivityHeatmapProps> = ({ data }) => {
   
   // Завершаем последний месяц
   if (monthGroups.length > 0) {
-    monthGroups[monthGroups.length - 1].span = data.length - monthStart;
+    monthGroups[monthGroups.length - 1].span = last90Days.length - monthStart;
   }
 
   // Максимальное количество недель для отображения
-  const maxWeeks = Math.ceil(data.length / 7);
+  const maxWeeks = Math.ceil(last90Days.length / 7);
 
   return (
     <Card>
@@ -314,7 +317,7 @@ export const ActivityHeatmap: React.FC<ActivityHeatmapProps> = ({ data }) => {
               {monthGroups.map((month, i) => (
                 <div
                   key={i}
-                  className="text-center font-medium"
+                  className="text-center font-medium capitalize"
                   style={{
                     gridColumn: `${month.startCol + 1} / span ${month.span}`
                   }}
@@ -348,7 +351,7 @@ export const ActivityHeatmap: React.FC<ActivityHeatmapProps> = ({ data }) => {
                   {/* 7 дней недели */}
                   {Array.from({ length: 7 }, (_, dayIndex) => {
                     const dataIndex = weekIndex * 7 + dayIndex;
-                    const day = data[dataIndex];
+                    const day = last90Days[dataIndex];
                     if (!day) return <div key={dayIndex} className="w-8 h-8" />;
 
                     const date = new Date(day.date);
