@@ -49,12 +49,19 @@ const generateSession = (section: SectionType, mode: 'learning' | 'trainer' | 'e
   const correctAnswers = attempts.filter(a => a.isCorrect).length;
   const totalTime = attempts.reduce((sum, a) => sum + a.timeSpent, 0);
 
+  // Генерируем startTime и endTime с реалистичной длительностью
+  const now = Date.now();
+  const randomDaysAgo = randomInRange(0, 90);
+  const sessionDurationSeconds = totalTime + randomInRange(60, 300); // Добавляем 1-5 минут на сессию
+  const endTime = now - (randomDaysAgo * 24 * 60 * 60 * 1000);
+  const startTime = endTime - (sessionDurationSeconds * 1000);
+
   return {
     sessionId: `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
     section,
     mode,
-    startTime: Date.now() - randomInRange(1, 60) * 24 * 60 * 60 * 1000,
-    endTime: Date.now() - (randomInRange(0, 59) + 10) * 24 * 60 * 60 * 1000,
+    startTime,
+    endTime,
     totalQuestions: questionCount,
     correctAnswers,
     incorrectAnswers: questionCount - correctAnswers,
@@ -80,7 +87,10 @@ const generateSectionStats = (section: SectionType): SectionStats => {
 
   const totalAttempts = sessions.reduce((sum, s) => sum + s.totalQuestions, 0);
   const correctAnswers = sessions.reduce((sum, s) => sum + s.correctAnswers, 0);
-  const totalTime = sessions.reduce((sum, s) => sum + (s.endTime - s.startTime), 0);
+  const totalTimeSeconds = sessions.reduce((sum, s) => {
+    // totalTimeSpent уже в секундах из statisticsService
+    return sum + (s.endTime > s.startTime ? Math.round((s.endTime - s.startTime) / 1000) : 0);
+  }, 0);
 
   // Находим слабые темы (билеты с низкой точностью)
   const ticketAccuracy: Record<number, number> = {};
@@ -104,7 +114,7 @@ const generateSectionStats = (section: SectionType): SectionStats => {
     accuracy: Math.round((correctAnswers / totalAttempts) * 100),
     lastAttempt: sessions[sessions.length - 1]?.endTime,
     bestScore: Math.max(...sessions.map(s => s.accuracy)),
-    totalTimeSpent: Math.round(totalTime / 1000), // в секундах
+    totalTimeSpent: totalTimeSeconds, // в секундах
     weakTopics
   };
 };

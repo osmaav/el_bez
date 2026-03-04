@@ -95,8 +95,10 @@ export const statisticsService = {
     sectionStats.accuracy = Math.round(
       (sectionStats.correctAnswers / (sectionStats.correctAnswers + sectionStats.incorrectAnswers)) * 100
     );
+    // Обновляем время обучения (в секундах)
+    const sessionDuration = Math.round((session.endTime - session.startTime) / 1000);
+    sectionStats.totalTimeSpent += sessionDuration;
     sectionStats.lastAttempt = session.endTime;
-    sectionStats.totalTimeSpent += session.endTime - session.startTime;
 
     // Обновляем слабые темы
     sectionStats.weakTopics = this.calculateWeakTopics(

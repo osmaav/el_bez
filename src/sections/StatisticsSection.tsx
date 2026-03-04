@@ -201,7 +201,9 @@ export const StatisticsSection: React.FC = () => {
               value={`${Math.round(
                 ((section1256Stats?.totalTimeSpent || 0) + (section1258Stats?.totalTimeSpent || 0)) / 3600
               )}ч`}
-              description="Общее время"
+              description={`${Math.round(
+                ((section1256Stats?.totalTimeSpent || 0) + (section1258Stats?.totalTimeSpent || 0)) / 60
+              )}мин всего`}
               icon={<Clock className="w-4 h-4" />}
             />
           </div>
