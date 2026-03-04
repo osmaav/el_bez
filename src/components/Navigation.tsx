@@ -1,7 +1,7 @@
 import { useApp } from '@/context/AppContext';
 import { useAuth } from '@/context/AuthContext';
 import type { PageType, SectionType } from '@/types';
-import { BookOpen, GraduationCap, Dumbbell, School, ChevronDown, LogOut, LogIn } from 'lucide-react';
+import { BookOpen, GraduationCap, Dumbbell, School, ChevronDown, LogOut, LogIn, BarChart3 } from 'lucide-react';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { LoginModal } from '@/components/LoginModal';
@@ -12,6 +12,7 @@ const navItems: { id: PageType; label: string; icon: React.ElementType }[] = [
   { id: 'learning', label: 'Обучение', icon: School },
   { id: 'trainer', label: 'Тренажер', icon: Dumbbell },
   { id: 'exam', label: 'Экзамен', icon: GraduationCap },
+  { id: 'statistics', label: 'Статистика', icon: BarChart3 },
 ];
 
 export function Navigation() {
@@ -34,7 +35,7 @@ export function Navigation() {
 
   const handleLogout = async () => {
     await logout();
-    setCurrentPage('theory');
+    // setCurrentPage('theory');
   };
 
   const handleLogin = () => {
@@ -53,7 +54,7 @@ export function Navigation() {
       <div className="max-w-7xl mx-auto px-2 sm:px-4">
         <div className="flex items-center justify-between h-16">
           {/* Левая часть: Логотип + Выбор раздела + Информация о пользователе */}
-          <div className="flex items-center space-x-2 sm:space-x-4">
+          <div className="flex items-center space-x-2">
             {/* Логотип */}
             <div
               className="flex items-center space-x-2 transition-opacity cursor-default"
@@ -128,7 +129,7 @@ export function Navigation() {
           {/* Правая часть: Навигация + Кнопка входа */}
           <div className="flex items-center space-x-2">
             {/* Навигация */}
-            <div className="flex space-x-0.5 sm:space-x-1 overflow-x-auto flex-shrink-0">
+            <div className="flex space-x-0.5 sm:space-x-1 flex-shrink-0">
               {navItems.map((item) => {
                 const Icon = item.icon;
                 const isActive = currentPage === item.id;
@@ -139,7 +140,7 @@ export function Navigation() {
                     onClick={() => handlePageChange(item.id)}
                     title={item.label}
                     className={`
-                      flex items-center space-x-1 sm:space-x-2 px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg transition-all duration-200 whitespace-nowrap flex-shrink-0
+                      flex items-center space-x-1 px-2 py-1.5 rounded-lg transition-all duration-200 whitespace-nowrap flex-shrink-0
                       ${isActive
                         ? 'bg-yellow-500 text-slate-900 font-medium'
                         : 'text-slate-300 hover:bg-slate-800 hover:text-white'
@@ -147,7 +148,7 @@ export function Navigation() {
                     `}
                   >
                     <Icon className="w-4 h-4 sm:w-5 sm:h-5" />
-                    <span className="hidden [@media(min-width:930px)]:inline text-xs sm:text-sm">{item.label}</span>
+                    <span className="hidden [@media(min-width:960px)]:inline text-xs sm:text-sm">{item.label}</span>
                   </button>
                 );
               })}

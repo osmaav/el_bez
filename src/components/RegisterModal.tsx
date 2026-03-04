@@ -1,16 +1,21 @@
 /**
- * Модальное окно регистрации
+ * Модальное окно регистрации — современный дизайн
+ * 
+ * @description Обновлённое модальное окно регистрации с использованием AnimatedModal
+ * @author el-bez UI Team
+ * @version 2.0.0
  */
+
 import type { FormEvent, ChangeEvent } from 'react';
-import { useState } from 'react';
-import { Card } from '@/components/ui/card';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { AnimatedModal } from '@/components/ui/animated-modal';
 import { registerUser, validateRegisterData, checkEmailExists } from '@/services/authService';
 import { useAuth } from '@/context/AuthContext';
-import { X, Eye, EyeOff } from 'lucide-react';
+import { Eye, EyeOff, UserPlus, Mail, Lock, User, Calendar, Building, Briefcase } from 'lucide-react';
 import type { RegisterUserData, ValidationErrors } from '@/types/auth';
 
 interface RegisterModalProps {
@@ -29,7 +34,7 @@ export function RegisterModal({ isOpen, onClose, onOpenLogin }: RegisterModalPro
   const [isCheckingEmail, setIsCheckingEmail] = useState(false);
   const [emailExists, setEmailExists] = useState(false);
   const [emailTouched, setEmailTouched] = useState(false);
-  
+
   // Состояния для отображения пароля
   const [showPassword, setShowPassword] = useState(false);
 
@@ -44,18 +49,18 @@ export function RegisterModal({ isOpen, onClose, onOpenLogin }: RegisterModalPro
     password: ''
   });
 
-  // Блокировка прокрутки фона при открытом модальном окне
-  useState(() => {
-    if (isOpen) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = 'unset';
+  // Автозаполнение из localStorage
+  useEffect(() => {
+    const savedForm = localStorage.getItem('elbez_register_form');
+    if (savedForm) {
+      try {
+        const parsed = JSON.parse(savedForm);
+        setFormData(prev => ({ ...prev, ...parsed }));
+      } catch (e) {
+        localStorage.removeItem('elbez_register_form');
+      }
     }
-
-    return () => {
-      document.body.style.overflow = 'unset';
-    };
-  });
+  }, []);
 
   const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -89,7 +94,6 @@ export function RegisterModal({ isOpen, onClose, onOpenLogin }: RegisterModalPro
     try {
       const exists = await checkEmailExists(email);
       setEmailExists(exists);
-      console.log('📧 [RegisterModal] Проверка email:', { email, exists });
     } catch (err) {
       console.error('Ошибка проверки email:', err);
     } finally {
@@ -102,7 +106,6 @@ export function RegisterModal({ isOpen, onClose, onOpenLogin }: RegisterModalPro
     const email = e.target.value;
     setEmailTouched(true);
 
-    // Проверяем email только если он валидный
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (emailRegex.test(email)) {
       checkEmail(email);
@@ -130,81 +133,57 @@ export function RegisterModal({ isOpen, onClose, onOpenLogin }: RegisterModalPro
     setIsLoading(true);
 
     try {
-      console.log('📝 [RegisterModal] Регистрация пользователя:', formData.email);
       const user = await registerUser(formData);
-      console.log('✅ [RegisterModal] Регистрация успешна:', {
-        email: user.email,
-        emailVerified: user.emailVerified,
-        provider: user.provider
-      });
 
       // Автоматический вход после регистрации
       login(user);
-
-      // Закрываем модальное окно
       onClose();
     } catch (err: any) {
-      console.error('❌ [RegisterModal] Ошибка регистрации:', err);
       setError(err.message || 'Ошибка при регистрации');
     } finally {
       setIsLoading(false);
     }
   };
 
-  if (!isOpen) return null;
-
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4"
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="modal-title"
+    <AnimatedModal
+      isOpen={isOpen}
+      onClose={onClose}
+      animation="scale"
+      size="lg"
+      showCloseButton={true}
     >
-      {/* Затемнение фона */}
-      <div
-        className="absolute inset-0 bg-black/60 backdrop-blur-sm"
-        aria-hidden="true"
-      />
-
-      {/* Модальное окно */}
-      <Card className="relative w-full max-w-lg bg-white/95 backdrop-blur-md shadow-2xl animate-in fade-in zoom-in duration-200">
-        {/* Кнопка закрытия */}
-        <button
-          onClick={onClose}
-          className="absolute top-4 right-4 p-2 text-gray-400 hover:text-red-500 hover:bg-gray-100 rounded-full transition-colors"
-          aria-label="Закрыть"
-          type="button"
-        >
-          <X className="w-5 h-5" />
-        </button>
-
-        <div className="p-6 pr-14">
-          {/* Заголовок */}
-          <div className="text-center mb-6">
-            <div className="w-16 h-16 bg-yellow-500 rounded-lg flex items-center justify-center mx-auto mb-3">
-              <span className="text-slate-900 font-bold text-2xl">ЭБ</span>
-            </div>
-            <h2
-              id="modal-title"
-              className="text-2xl font-bold text-slate-900"
-            >
-              Регистрация пользователя
-            </h2>
+      <div className="space-y-6">
+        {/* Заголовок с иконкой */}
+        <div className="text-center space-y-2">
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 shadow-lg shadow-emerald-500/25">
+            <UserPlus className="h-8 w-8 text-white" />
           </div>
+          <h2 className="text-2xl font-bold text-slate-900">
+            Создание аккаунта
+          </h2>
+          <p className="text-sm text-slate-600">
+            Заполните форму для регистрации
+          </p>
+        </div>
 
-          {/* Сообщение об ошибке */}
-          {error && (
-            <Alert variant="destructive" className="mb-6">
-              <AlertDescription>{error}</AlertDescription>
-            </Alert>
-          )}
+        {/* Сообщение об ошибке */}
+        {error && (
+          <Alert variant="destructive">
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        )}
 
-          {/* Форма регистрации */}
-          <form onSubmit={handleSubmit} className="space-y-4">
-            {/* Имя и Фамилия */}
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="surname">Фамилия *</Label>
+        {/* Форма регистрации */}
+        <form onSubmit={handleSubmit} className="space-y-4">
+          {/* Имя и Фамилия */}
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="surname" className="text-sm font-medium text-slate-700">
+                Фамилия *
+              </Label>
+              <div className="relative">
+                <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
                 <Input
                   id="surname"
                   name="surname"
@@ -212,13 +191,19 @@ export function RegisterModal({ isOpen, onClose, onOpenLogin }: RegisterModalPro
                   onChange={handleInputChange}
                   placeholder="Иванов"
                   disabled={isLoading}
+                  className="pl-10 bg-white/50 text-slate-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:border-0"
                 />
-                {validationErrors.surname && (
-                  <p className="text-sm text-red-500 mt-1">{validationErrors.surname}</p>
-                )}
               </div>
-              <div>
-                <Label htmlFor="name">Имя *</Label>
+              {validationErrors.surname && (
+                <p className="text-xs text-red-500">{validationErrors.surname}</p>
+              )}
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="name" className="text-sm font-medium text-slate-700">
+                Имя *
+              </Label>
+              <div className="relative">
+                <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
                 <Input
                   id="name"
                   name="name"
@@ -226,32 +211,41 @@ export function RegisterModal({ isOpen, onClose, onOpenLogin }: RegisterModalPro
                   onChange={handleInputChange}
                   placeholder="Иван"
                   disabled={isLoading}
+                  className="pl-10 bg-white/50 text-slate-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:border-0"
                 />
-                {validationErrors.name && (
-                  <p className="text-sm text-red-500 mt-1">{validationErrors.name}</p>
-                )}
               </div>
-            </div>
-
-            {/* Отчество */}
-            <div>
-              <Label htmlFor="patronymic">Отчество</Label>
-              <Input
-                id="patronymic"
-                name="patronymic"
-                value={formData.patronymic}
-                onChange={handleInputChange}
-                placeholder="Иванович"
-                disabled={isLoading}
-              />
-              {validationErrors.patronymic && (
-                <p className="text-sm text-red-500 mt-1">{validationErrors.patronymic}</p>
+              {validationErrors.name && (
+                <p className="text-xs text-red-500">{validationErrors.name}</p>
               )}
             </div>
+          </div>
 
-            {/* Дата рождения */}
-            <div>
-              <Label htmlFor="birthDate">Дата рождения *</Label>
+          {/* Отчество */}
+          <div className="space-y-2">
+            <Label htmlFor="patronymic" className="text-sm font-medium text-slate-700">
+              Отчество
+            </Label>
+            <Input
+              id="patronymic"
+              name="patronymic"
+              value={formData.patronymic}
+              onChange={handleInputChange}
+              placeholder="Иванович"
+              disabled={isLoading}
+              className="bg-white/50 text-slate-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:border-0"
+            />
+            {validationErrors.patronymic && (
+              <p className="text-xs text-red-500">{validationErrors.patronymic}</p>
+            )}
+          </div>
+
+          {/* Дата рождения */}
+          <div className="space-y-2">
+            <Label htmlFor="birthDate" className="text-sm font-medium text-slate-700">
+              Дата рождения *
+            </Label>
+            <div className="relative">
+              <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
               <Input
                 id="birthDate"
                 name="birthDate"
@@ -259,16 +253,22 @@ export function RegisterModal({ isOpen, onClose, onOpenLogin }: RegisterModalPro
                 value={formData.birthDate}
                 onChange={handleInputChange}
                 disabled={isLoading}
+                className="pl-10 bg-white/50 text-slate-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:border-0 [&::-webkit-calendar-picker-indicator]:text-slate-400 [&::-webkit-calendar-picker-indicator]:cursor-pointer"
               />
-              {validationErrors.birthDate && (
-                <p className="text-sm text-red-500 mt-1">{validationErrors.birthDate}</p>
-              )}
             </div>
+            {validationErrors.birthDate && (
+              <p className="text-xs text-red-500">{validationErrors.birthDate}</p>
+            )}
+          </div>
 
-            {/* Место работы и Должность */}
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="workplace">Место работы *</Label>
+          {/* Место работы и Должность */}
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="workplace" className="text-sm font-medium text-slate-700">
+                Место работы *
+              </Label>
+              <div className="relative">
+                <Building className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
                 <Input
                   id="workplace"
                   name="workplace"
@@ -276,13 +276,19 @@ export function RegisterModal({ isOpen, onClose, onOpenLogin }: RegisterModalPro
                   onChange={handleInputChange}
                   placeholder="ООО «Феорана-СБ»"
                   disabled={isLoading}
+                  className="pl-10 bg-white/50 text-slate-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:border-0"
                 />
-                {validationErrors.workplace && (
-                  <p className="text-sm text-red-500 mt-1">{validationErrors.workplace}</p>
-                )}
               </div>
-              <div>
-                <Label htmlFor="position">Должность *</Label>
+              {validationErrors.workplace && (
+                <p className="text-xs text-red-500">{validationErrors.workplace}</p>
+              )}
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="position" className="text-sm font-medium text-slate-700">
+                Должность *
+              </Label>
+              <div className="relative">
+                <Briefcase className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
                 <Input
                   id="position"
                   name="position"
@@ -290,116 +296,134 @@ export function RegisterModal({ isOpen, onClose, onOpenLogin }: RegisterModalPro
                   onChange={handleInputChange}
                   placeholder="Инженер"
                   disabled={isLoading}
+                  className="pl-10 bg-white/50 text-slate-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:border-0"
                 />
-                {validationErrors.position && (
-                  <p className="text-sm text-red-500 mt-1">{validationErrors.position}</p>
-                )}
               </div>
-            </div>
-
-            {/* Email */}
-            <div>
-              <Label htmlFor="email">Email *</Label>
-              <div className="relative">
-                <Input
-                  id="email"
-                  name="email"
-                  type="email"
-                  value={formData.email}
-                  onChange={handleInputChange}
-                  onBlur={handleEmailBlur}
-                  placeholder="example@sb.feorana.ru"
-                  disabled={isLoading || isCheckingEmail}
-                  className={emailExists && emailTouched ? 'border-red-500 focus:border-red-500' : ''}
-                />
-                {isCheckingEmail && (
-                  <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                    <div className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
-                  </div>
-                )}
-              </div>
-              {validationErrors.email && (
-                <p className="text-sm text-red-500 mt-1">{validationErrors.email}</p>
-              )}
-              {emailExists && emailTouched && (
-                <p className="text-sm text-red-500 mt-1">
-                  Этот email уже зарегистрирован.{' '}
-                  <button
-                    type="button"
-                    className="underline hover:text-blue-600"
-                    onClick={() => {
-                      onClose();
-                      onOpenLogin();
-                    }}
-                  >
-                    Войти
-                  </button>
-                  ?
-                </p>
+              {validationErrors.position && (
+                <p className="text-xs text-red-500">{validationErrors.position}</p>
               )}
             </div>
+          </div>
 
-            {/* Пароль */}
-            <div>
-              <Label htmlFor="password">Пароль *</Label>
-              <div className="relative">
-                <Input
-                  id="password"
-                  name="password"
-                  type={showPassword ? 'text' : 'password'}
-                  value={formData.password}
-                  onChange={handleInputChange}
-                  placeholder="Минимум 6 символов"
-                  disabled={isLoading}
-                  className="pr-10"
-                />
-                <Button
+          {/* Email */}
+          <div className="space-y-2">
+            <Label htmlFor="email" className="text-sm font-medium text-slate-700">
+              Email *
+            </Label>
+            <div className="relative">
+              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+              <Input
+                id="email"
+                name="email"
+                type="email"
+                value={formData.email}
+                onChange={handleInputChange}
+                onBlur={handleEmailBlur}
+                placeholder="example@mail.ru"
+                disabled={isLoading || isCheckingEmail}
+                className={`pl-10 bg-white/50 text-slate-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:border-0 ${emailExists && emailTouched ? 'border-red-500 focus:border-red-500' : ''}`}
+              />
+              {isCheckingEmail && (
+                <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                  <div className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+                </div>
+              )}
+            </div>
+            {validationErrors.email && (
+              <p className="text-xs text-red-500">{validationErrors.email}</p>
+            )}
+            {emailExists && emailTouched && (
+              <p className="text-xs text-red-500">
+                Этот email уже зарегистрирован.{' '}
+                <button
                   type="button"
-                  variant="ghost"
-                  size="sm"
-                  className="absolute right-0 top-0 h-full px-3 hover:bg-transparent"
-                  onClick={() => setShowPassword(!showPassword)}
-                  disabled={isLoading}
+                  className="underline hover:text-blue-600 font-medium"
+                  onClick={() => {
+                    onClose();
+                    onOpenLogin();
+                  }}
                 >
-                  {showPassword ? (
-                    <EyeOff className="h-4 w-4 text-slate-500" />
-                  ) : (
-                    <Eye className="h-4 w-4 text-slate-500" />
-                  )}
-                </Button>
-              </div>
-              {validationErrors.password && (
-                <p className="text-sm text-red-500 mt-1">{validationErrors.password}</p>
-              )}
-            </div>
+                  Войти
+                </button>
+                ?
+              </p>
+            )}
+          </div>
 
-            {/* Кнопка регистрации */}
-            <Button
-              type="submit"
-              className="w-full"
-              disabled={isLoading || emailExists}
-              title={emailExists ? 'Email уже зарегистрирован' : ''}
-            >
-              {isLoading ? 'Регистрация...' : emailExists ? 'Email уже зарегистрирован' : 'Зарегистрироваться'}
-            </Button>
-
-            {/* Ссылка на вход */}
-            <p className="text-center text-sm text-muted-foreground">
-              Уже есть аккаунт?{' '}
-              <button
+          {/* Пароль */}
+          <div className="space-y-2">
+            <Label htmlFor="password" className="text-sm font-medium text-slate-700">
+              Пароль *
+            </Label>
+            <div className="relative">
+              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+              <Input
+                id="password"
+                name="password"
+                type={showPassword ? 'text' : 'password'}
+                value={formData.password}
+                onChange={handleInputChange}
+                placeholder="Минимум 6 символов"
+                disabled={isLoading}
+                className="pl-10 pr-10 bg-white/50 text-slate-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:border-0"
+              />
+              <Button
                 type="button"
-                className="text-primary hover:underline font-medium"
-                onClick={() => {
-                  onClose();
-                  onOpenLogin();
-                }}
+                variant="ghost"
+                size="sm"
+                className="absolute right-0 top-0 h-full px-3 hover:bg-transparent"
+                onClick={() => setShowPassword(!showPassword)}
+                disabled={isLoading}
               >
-                Войти
-              </button>
-            </p>
-          </form>
-        </div>
-      </Card>
-    </div>
+                {showPassword ? (
+                  <EyeOff className="h-4 w-4 text-slate-500" />
+                ) : (
+                  <Eye className="h-4 w-4 text-slate-500" />
+                )}
+              </Button>
+            </div>
+            {validationErrors.password && (
+              <p className="text-xs text-red-500">{validationErrors.password}</p>
+            )}
+          </div>
+
+          {/* Кнопка регистрации */}
+          <Button
+            type="submit"
+            className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-semibold shadow-lg shadow-emerald-500/25"
+            disabled={isLoading || emailExists}
+            title={emailExists ? 'Email уже зарегистрирован' : ''}
+          >
+            {isLoading ? (
+              <span className="flex items-center gap-2">
+                <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                Регистрация...
+              </span>
+            ) : emailExists ? (
+              'Email уже зарегистрирован'
+            ) : (
+              'Зарегистрироваться'
+            )}
+          </Button>
+
+          {/* Ссылка на вход */}
+          <p className="text-center text-sm text-slate-600">
+            Уже есть аккаунт?{' '}
+            <button
+              type="button"
+              className="text-blue-600 hover:text-blue-700 font-semibold hover:underline transition-all"
+              onClick={() => {
+                onClose();
+                onOpenLogin();
+              }}
+            >
+              Войти
+            </button>
+          </p>
+        </form>
+      </div>
+    </AnimatedModal>
   );
 }
+
+export default RegisterModal;

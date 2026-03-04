@@ -1,7 +1,8 @@
-import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
+import React, { createContext, useContext, useState, useCallback, useEffect, useRef } from 'react';
 import type { Question, Ticket, TestStats, PageType, SectionType, SectionInfo } from '@/types';
 import { loadQuestionsForSection, saveUserState } from '@/services/questionService';
 import { useAuth } from './AuthContext';
+import { SessionTracker } from '@/services/statisticsService';
 
 interface AppContextType {
   // Навигация
@@ -44,6 +45,11 @@ interface AppContextType {
   getExamStats: () => { correct: number; total: number; percentage: number };
 }
 
+// Добавляем тип для расширенного контекста со статистикой
+export interface AppContextWithStats extends AppContextType {
+  // Статистика будет добавлена в будущем
+}
+
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
 const STORAGE_KEY_PAGE = 'elbez_current_page';
@@ -72,7 +78,10 @@ const SECTIONS: SectionInfo[] = [
 
 export function AppProvider({ children }: { children: React.ReactNode }) {
   const { user } = useAuth();
-  
+
+  // Session tracker для отслеживания статистики
+  const sessionTrackerRef = useRef<SessionTracker | null>(null);
+
   // Навигация - загружаем сохранённую страницу из localStorage
   const [currentPage, setCurrentPageState] = useState<PageType>(() => {
     if (typeof window !== 'undefined') {
@@ -235,7 +244,10 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     setTrainerCurrentIndex(0);
     setTrainerAnswers({});
     setIsTrainerFinished(false);
-  }, [questions]);
+    
+    // Инициализируем SessionTracker для тренажёра
+    sessionTrackerRef.current = new SessionTracker(currentSection, 'trainer');
+  }, [questions, currentSection]);
 
   const answerTrainerQuestion = useCallback((answerIndex: number) => {
     const currentQuestion = trainerQuestions[trainerCurrentIndex];
@@ -245,6 +257,17 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       ...prev,
       [currentQuestion.id]: answerIndex
     }));
+    
+    // Записываем ответ в SessionTracker
+    if (sessionTrackerRef.current) {
+      sessionTrackerRef.current.recordAnswer(
+        currentQuestion.id,
+        currentQuestion.ticket,
+        answerIndex,
+        currentQuestion.correct_index,
+        0 // Время будет рассчитано позже
+      );
+    }
   }, [trainerQuestions, trainerCurrentIndex]);
 
   const nextTrainerQuestion = useCallback(() => {
@@ -261,6 +284,12 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
   const finishTrainer = useCallback(() => {
     setIsTrainerFinished(true);
+    
+    // Завершаем сессию и сохраняем статистику
+    if (sessionTrackerRef.current) {
+      sessionTrackerRef.current.finish();
+      sessionTrackerRef.current = null;
+    }
   }, []);
 
   const resetTrainer = useCallback(() => {
@@ -268,6 +297,12 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     setTrainerCurrentIndex(0);
     setTrainerAnswers({});
     setIsTrainerFinished(false);
+    
+    // Отменяем сессию
+    if (sessionTrackerRef.current) {
+      sessionTrackerRef.current.cancel();
+      sessionTrackerRef.current = null;
+    }
   }, []);
 
   // Экзамен функции
@@ -276,7 +311,10 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     setExamAnswers({});
     setExamResults({});
     setIsExamFinished(false);
-  }, []);
+    
+    // Инициализируем SessionTracker для экзамена
+    sessionTrackerRef.current = new SessionTracker(currentSection, 'exam');
+  }, [currentSection]);
 
   const answerExamQuestion = useCallback((questionId: number, answerIndex: number) => {
     setExamAnswers(prev => ({
@@ -293,10 +331,27 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     ticket.questions.forEach(q => {
       const userAnswer = examAnswers[q.id];
       results[q.id] = userAnswer === q.correct_index;
+      
+      // Записываем ответ в SessionTracker
+      if (sessionTrackerRef.current) {
+        sessionTrackerRef.current.recordAnswer(
+          q.id,
+          q.ticket,
+          userAnswer,
+          q.correct_index,
+          0
+        );
+      }
     });
 
     setExamResults(results);
     setIsExamFinished(true);
+    
+    // Завершаем сессию и сохраняем статистику
+    if (sessionTrackerRef.current) {
+      sessionTrackerRef.current.finish();
+      sessionTrackerRef.current = null;
+    }
   }, [tickets, currentTicketId, examAnswers]);
 
   const resetExam = useCallback(() => {
@@ -304,6 +359,12 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     setExamAnswers({});
     setExamResults({});
     setIsExamFinished(false);
+    
+    // Отменяем сессию
+    if (sessionTrackerRef.current) {
+      sessionTrackerRef.current.cancel();
+      sessionTrackerRef.current = null;
+    }
   }, []);
 
   const getExamStats = useCallback(() => {

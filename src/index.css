@@ -107,9 +107,3 @@ html {
 ::selection {
   background: rgba(234, 179, 8, 0.3);
 }
-
-/* Focus styles */
-*:focus-visible {
-  outline: 2px solid #eab308;
-  outline-offset: 2px;
-}

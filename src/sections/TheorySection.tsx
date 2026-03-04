@@ -21,10 +21,10 @@ const theoryTopics = [
     title: 'Общие положения',
     icon: BookOpen,
     content: `
-      <h3 class="text-lg font-semibold mb-3">Область применения правил</h3>
+      <h3 class="text-lg font-semibold mb-1">Область применения правил</h3>
       <p class="mb-4">Правила по охране труда при эксплуатации электроустановок распространяются на работодателей - юридических и физических лиц независимо от их организационно-правовых форм и работников из числа электротехнического, электротехнологического и неэлектротехнического персонала.</p>
       
-      <h3 class="text-lg font-semibold mb-3">Группы по электробезопасности</h3>
+      <h3 class="text-lg font-semibold mb-1">Группы по электробезопасности</h3>
       <ul class="list-disc pl-5 space-y-2 mb-4">
         <li><strong>I группа</strong> - для неэлектротехнического персонала</li>
         <li><strong>II группа</strong> - для электротехнического персонала (вспомогательный)</li>
@@ -231,14 +231,14 @@ export function TheorySection() {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+      <div style={{ columnGap: '12px' }} className="grid grid-cols-1 lg:grid-cols-4">
         {/* Список тем */}
-        <Card className="lg:col-span-1 h-fit">
+        <Card className="lg:col-span-1 h-fit gap-0">
           <CardHeader>
             <CardTitle className="text-lg">Разделы</CardTitle>
           </CardHeader>
           <CardContent className="p-0">
-            <ScrollArea className="h-[500px]">
+            <ScrollArea className="h-[470px]">
               <div className="space-y-1 p-4">
                 {theoryTopics.map((topic) => {
                   const Icon = topic.icon;
@@ -268,7 +268,7 @@ export function TheorySection() {
         </Card>
 
         {/* Содержимое темы */}
-        <Card className="lg:col-span-3">
+        <Card className="lg:col-span-3 gap-0">
           <CardHeader className="border-b bg-slate-50">
             <div className="flex items-center space-x-3">
               {(() => {
@@ -278,8 +278,8 @@ export function TheorySection() {
               <CardTitle>{selectedTopic.title}</CardTitle>
             </div>
           </CardHeader>
-          <CardContent className="p-6">
-            <ScrollArea className="h-[500px]">
+          <CardContent className="p-4 mt-0">
+            <ScrollArea className="h-[440px]">
               <div
                 className="prose prose-slate max-w-none"
                 dangerouslySetInnerHTML={{ __html: selectedTopic.content }}
@@ -329,6 +329,6 @@ export function TheorySection() {
           setIsLoginModalOpen(true);
         }}
       />
-    </div>
+    </div >
   );
 }

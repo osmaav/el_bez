@@ -1,7 +1,11 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useApp } from '@/context/AppContext';
 import { useAuth } from '@/context/AuthContext';
+import { useToast } from '@/context/ToastContext';
 import { saveLearningProgress, loadLearningProgress } from '@/services/questionService';
+import { SessionTracker } from '@/services/statisticsService';
+import { LoadingModal } from '@/components/ui/loading-modal';
+import { ConfirmModal } from '@/components/ui/confirm-modal';
 import { Shuffle, RotateCcw, CheckCircle2, XCircle, Trophy, Target, AlertCircle, ChevronLeft, ChevronRight, BookOpen } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -89,8 +93,23 @@ const clearProgress = (section: string) => {
 export function LearningSection() {
   const { questions, currentSection, sections } = useApp();
   const { user } = useAuth();
+  const { success, error: toastError, loading, updateToast } = useToast();
 
   const [currentPage, setCurrentPage] = useState(1);
+  const [showResetConfirm, setShowResetConfirm] = useState(false);
+  const [loadingModal, setLoadingModal] = useState<{
+    isOpen: boolean;
+    status: 'loading' | 'success' | 'error';
+    progress: number;
+    title: string;
+    description: string;
+  }>({
+    isOpen: false,
+    status: 'loading',
+    progress: 0,
+    title: '',
+    description: ''
+  });
   const [quizState, setQuizState] = useState<QuizState>({
     currentQuestions: [],
     shuffledAnswers: [],
@@ -103,7 +122,10 @@ export function LearningSection() {
   const [isInitialized, setIsInitialized] = useState(false);
   const [lastSection, setLastSection] = useState<SectionType | null>(null);
   const [isSectionChanging, setIsSectionChanging] = useState(false);
-  
+
+  // SessionTracker для статистики обучения
+  const sessionTrackerRef = useRef<SessionTracker | null>(null);
+
   // Ref для хранения актуального раздела (для предотвращения гонок)
   const currentSectionRef = useRef<SectionType>(currentSection);
   const savedStatesRef = useRef<SavedState>({});
@@ -117,6 +139,24 @@ export function LearningSection() {
     // console.log('🔄 [LearningSection] Обнаружена смена раздела:', { from: lastSection, to: currentSection });
     if (lastSection !== null && lastSection !== currentSection) {
       // console.log('⚠️ [LearningSection] Смена раздела! Сброс всех состояний...');
+      
+      // Показываем LoadingModal
+      setLoadingModal({
+        isOpen: true,
+        status: 'loading',
+        progress: 0,
+        title: 'Загрузка раздела',
+        description: `Переход к разделу ${currentSection}...`
+      });
+      
+      // Показываем Toast
+      const loadingId = loading('Загрузка раздела', 'Пожалуйста, подождите...');
+
+      // Сбрасываем SessionTracker
+      if (sessionTrackerRef.current) {
+        sessionTrackerRef.current.cancel();
+        sessionTrackerRef.current = null;
+      }
 
       // Обновляем ref для нового раздела
       currentSectionRef.current = currentSection;
@@ -133,6 +173,15 @@ export function LearningSection() {
       setCurrentPage(1);
       setIsInitialized(false);
       setIsSectionChanging(true);
+      
+      // Скрываем LoadingModal через 1 секунду
+      setTimeout(() => {
+        setLoadingModal(prev => ({ ...prev, status: 'success', progress: 100 }));
+        updateToast(loadingId, { type: 'success', title: 'Раздел загружен' });
+        setTimeout(() => {
+          setLoadingModal(prev => ({ ...prev, isOpen: false }));
+        }, 1000);
+      }, 1000);
     }
     setLastSection(currentSection);
   }, [currentSection]);
@@ -171,24 +220,34 @@ export function LearningSection() {
     // Загружаем прогресс обучения
     const loadProgressData = async () => {
       let saved: SavedState | null = null;
+      const loadingId = loading('Загрузка прогресса', 'Пожалуйста, подождите...');
 
-      // Пробуем загрузить из Firestore для авторизованных пользователей
-      if (user?.id) {
-        // console.log('☁️ [LearningSection] Загрузка прогресса из Firestore...');
-        const firestoreProgress = await loadLearningProgress(user.id, currentSection);
-        if (firestoreProgress) {
-          saved = firestoreProgress;
-          // console.log('✅ [LearningSection] Прогресс загружен из Firestore');
+      try {
+        // Пробуем загрузить из Firestore для авторизованных пользователей
+        if (user?.id) {
+          // console.log('☁️ [LearningSection] Загрузка прогресса из Firestore...');
+          const firestoreProgress = await loadLearningProgress(user.id, currentSection);
+          if (firestoreProgress) {
+            saved = firestoreProgress;
+            // console.log('✅ [LearningSection] Прогресс загружен из Firestore');
+          }
         }
-      }
 
-      // Если не загружено из Firestore, пробуем localStorage
-      if (!saved) {
-        // console.log('💾 [LearningSection] Загрузка прогресса из localStorage...');
-        saved = loadProgress(currentSection);
-        if (saved) {
-          // console.log('✅ [LearningSection] Прогресс загружен из localStorage');
+        // Если не загружено из Firestore, пробуем localStorage
+        if (!saved) {
+          // console.log('💾 [LearningSection] Загрузка прогресса из localStorage...');
+          saved = loadProgress(currentSection);
+          if (saved) {
+            // console.log('✅ [LearningSection] Прогресс загружен из localStorage');
+          }
         }
+
+        updateToast(loadingId, { type: 'success', title: 'Прогресс загружен' });
+      } catch (err: any) {
+        console.error('❌ [LearningSection] Ошибка загрузки прогресса:', err);
+        updateToast(loadingId, { type: 'error', title: 'Ошибка загрузки' });
+        toastError('Ошибка загрузки', 'Не удалось загрузить прогресс обучения');
+        saved = null;
       }
 
       let savedPage = loadCurrentPage(currentSection);
@@ -236,7 +295,7 @@ export function LearningSection() {
 
       if (savedState) {
         // console.log(`♻️ [LearningSection] Восстановление состояния для страницы ${savedPage}`);
-        
+
         // Проверяем, что shuffledAnswers соответствует текущему количеству ответов
         const validatedShuffledAnswers = selected.map((q, idx) => {
           const savedShuffled = savedState.shuffledAnswers[idx];
@@ -251,13 +310,19 @@ export function LearningSection() {
 
           return savedShuffled;
         });
-        
+
         setQuizState({
           currentQuestions: selected,
           shuffledAnswers: validatedShuffledAnswers,
           userAnswers: savedState.userAnswers,
           isComplete: savedState.isComplete,
         });
+        
+        // Если страница не завершена, создаём SessionTracker для продолжения
+        if (!savedState.isComplete) {
+          sessionTrackerRef.current = new SessionTracker(currentSection, 'learning');
+          // console.log('📊 [LearningSection] SessionTracker создан для продолжения страницы');
+        }
       } else {
         // console.log(`🆕 [LearningSection] Новое состояние для страницы ${savedPage}`);
         const shuffledAnswers = selected.map((q) => {
@@ -274,6 +339,9 @@ export function LearningSection() {
           userAnswers: new Array(selected.length).fill(null),
           isComplete: false,
         });
+        
+        // Инициализируем SessionTracker для новой страницы
+        sessionTrackerRef.current = new SessionTracker(currentSection, 'learning');
       }
 
       // console.log('✅ [LearningSection] Инициализация завершена');
@@ -354,7 +422,14 @@ export function LearningSection() {
     // Сохраняем в Firestore для авторизованных пользователей
     if (user?.id) {
       // console.log('☁️ [LearningSection] Сохранение прогресса в Firestore...');
-      saveLearningProgress(user.id, currentSection, newSavedStates);
+      saveLearningProgress(user.id, currentSection, newSavedStates)
+        .then(() => {
+          // console.log('✅ [LearningSection] Прогресс сохранён в Firestore');
+        })
+        .catch((err: any) => {
+          console.error('❌ [LearningSection] Ошибка сохранения прогресса:', err);
+          toastError('Ошибка сохранения', 'Не удалось сохранить прогресс в облако');
+        });
     } else {
       // Fallback на localStorage для неавторизованных
       // console.log('💾 [LearningSection] Сохранение прогресса в localStorage...');
@@ -460,6 +535,11 @@ export function LearningSection() {
   const nextPage = useCallback(() => {
     // Сначала прокручиваем к началу
     window.scrollTo({ top: 0, behavior: 'smooth' });
+    // Отменяем текущую сессию при переходе на другую страницу
+    if (sessionTrackerRef.current) {
+      sessionTrackerRef.current.cancel();
+      sessionTrackerRef.current = null;
+    }
     // Затем обновляем страницу с небольшой задержкой
     setTimeout(() => {
       goToPage(currentPage + 1);
@@ -469,6 +549,11 @@ export function LearningSection() {
   const prevPage = useCallback(() => {
     // Сначала прокручиваем к началу
     window.scrollTo({ top: 0, behavior: 'smooth' });
+    // Отменяем текущую сессию при переходе на другую страницу
+    if (sessionTrackerRef.current) {
+      sessionTrackerRef.current.cancel();
+      sessionTrackerRef.current = null;
+    }
     // Затем обновляем страницу с небольшой задержкой
     setTimeout(() => {
       goToPage(currentPage - 1);
@@ -485,7 +570,27 @@ export function LearningSection() {
     const newState = { ...quizState, userAnswers: newAnswers };
     setQuizState(newState);
 
+    // Записываем ответ в SessionTracker
+    const question = quizState.currentQuestions[questionIndex];
+    if (sessionTrackerRef.current && question) {
+      const shuffledIndex = quizState.shuffledAnswers[questionIndex][answerIndex];
+      console.log('📝 [LearningSection] Запись ответа:', {
+        questionId: question.id,
+        ticket: question.ticket,
+        userAnswer: shuffledIndex,
+        correctAnswer: question.correct_index
+      });
+      sessionTrackerRef.current.recordAnswer(
+        question.id,
+        question.ticket,
+        shuffledIndex, // Индекс ответа в оригинальном списке (0-3)
+        question.correct_index, // Правильный индекс
+        0
+      );
+    }
+
     if (newAnswers.every(a => a !== null)) {
+      console.log('✅ [LearningSection] Все вопросы отвечены, завершение сессии');
       setQuizState({ ...newState, isComplete: true });
       setSavedStates(prev => ({
         ...prev,
@@ -495,15 +600,34 @@ export function LearningSection() {
           isComplete: true
         }
       }));
+      
+      // Завершаем сессию и сохраняем статистику при завершении билета
+      if (sessionTrackerRef.current) {
+        console.log('📊 [LearningSection] Вызов finish() для SessionTracker');
+        sessionTrackerRef.current.finish();
+        sessionTrackerRef.current = null;
+      }
     }
   };
 
   // Сброс прогресса
   const handleReset = () => {
+    setShowResetConfirm(true);
+  };
+
+  const confirmReset = () => {
+    setShowResetConfirm(false);
     // console.log('🔄 [LearningSection] Сброс прогресса для раздела:', currentSection);
     clearProgress(currentSection);
     setSavedStates({});
     setCurrentPage(1);
+
+    // Отменяем текущую сессию
+    if (sessionTrackerRef.current) {
+      sessionTrackerRef.current.cancel();
+      sessionTrackerRef.current = null;
+    }
+
     const selected = questions.slice(0, QUESTIONS_PER_SESSION).map(q => ({
       ...q,
       question: q.text,
@@ -520,6 +644,7 @@ export function LearningSection() {
       userAnswers: new Array(selected.length).fill(null),
       isComplete: false,
     });
+    success('Прогресс сброшен', 'Все ответы очищены');
     // console.log('✅ [LearningSection] Прогресс сброшен для раздела:', currentSection);
   };
 
@@ -559,7 +684,8 @@ export function LearningSection() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <>
+      <div className="min-h-screen bg-slate-50">
       <div className="max-w-6xl mx-auto px-4 py-3">
         {/* Заголовок */}
         <div className="mb-6 sm:mb-8">
@@ -715,6 +841,31 @@ export function LearningSection() {
           </Card>
         )}
       </div>
-    </div>
+      </div>
+      
+      {/* ConfirmModal для сброса прогресса */}
+      <ConfirmModal
+        isOpen={showResetConfirm}
+        onClose={() => setShowResetConfirm(false)}
+        onConfirm={confirmReset}
+        title="Сброс прогресса"
+        description="Вы уверены, что хотите сбросить весь прогресс обучения? Это действие нельзя отменить."
+        type="warning"
+        confirmLabel="Сбросить"
+        cancelLabel="Отмена"
+      />
+      
+      {/* LoadingModal для загрузки раздела */}
+      <LoadingModal
+        isOpen={loadingModal.isOpen}
+        onClose={() => setLoadingModal(prev => ({ ...prev, isOpen: false }))}
+        title={loadingModal.title}
+        description={loadingModal.description}
+        type="default"
+        status={loadingModal.status}
+        progress={loadingModal.progress}
+        showProgress={true}
+      />
+    </>
   );
 }

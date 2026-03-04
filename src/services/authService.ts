@@ -12,7 +12,8 @@ import {
   sendEmailVerification,
   OAuthProvider,
   signInWithPopup,
-  reload
+  reload,
+  sendPasswordResetEmail
 } from 'firebase/auth';
 import {
   doc,
@@ -162,9 +163,45 @@ export const loginUser = async (userData: LoginUserData): Promise<UserProfile> =
       });
       return userProfile;
     }
-    
+
     throw new Error('Профиль пользователя не найден');
   } catch (error: any) {
+    // Полная обработка ошибок Firebase REST API
+    const errorMessage = error?.message || '';
+    const errorData = error?.response?.data || error?.response || null;
+    
+    // Парсинг ошибок из Firebase REST API (JSON формат)
+    if (errorData) {
+      const restMessage = errorData?.error?.message || errorData?.message || '';
+      if (restMessage.includes('EMAIL_NOT_FOUND')) {
+        throw Object.assign(new Error('Пользователь не найден'), { code: 'EMAIL_NOT_FOUND' });
+      }
+      if (restMessage.includes('INVALID_PASSWORD')) {
+        throw Object.assign(new Error('Неверный пароль'), { code: 'INVALID_PASSWORD' });
+      }
+      if (restMessage.includes('INVALID_EMAIL')) {
+        throw Object.assign(new Error('Неверный формат email'), { code: 'INVALID_EMAIL' });
+      }
+      if (restMessage.includes('USER_DISABLED')) {
+        throw Object.assign(new Error('Аккаунт отключён'), { code: 'USER_DISABLED' });
+      }
+    }
+    
+    // Прямая проверка сообщения об ошибке
+    if (errorMessage.includes('EMAIL_NOT_FOUND')) {
+      throw Object.assign(new Error('Пользователь не найден'), { code: 'EMAIL_NOT_FOUND' });
+    }
+    if (errorMessage.includes('INVALID_PASSWORD')) {
+      throw Object.assign(new Error('Неверный пароль'), { code: 'INVALID_PASSWORD' });
+    }
+    if (errorMessage.includes('INVALID_EMAIL')) {
+      throw Object.assign(new Error('Неверный формат email'), { code: 'INVALID_EMAIL' });
+    }
+    if (errorMessage.includes('USER_DISABLED')) {
+      throw Object.assign(new Error('Аккаунт отключён'), { code: 'USER_DISABLED' });
+    }
+    
+    // Стандартная обработка ошибок Firebase Auth
     throw handleAuthError(error);
   }
 };
@@ -421,10 +458,37 @@ const handleAuthError = (error: any): Error => {
     'auth/wrong-password': 'Неверный пароль',
     'auth/popup-closed-by-user': 'Всплывающее окно закрыто',
     'auth/invalid-credential': 'Неверные учётные данные',
-    'auth/invalid-api-key': 'Неверный API ключ Firebase'
+    'auth/invalid-api-key': 'Неверный API ключ Firebase',
+    'auth/too-many-requests': 'Слишком много попыток входа. Попробуйте позже.',
+    'auth/network-request-failed': 'Ошибка сети. Проверьте подключение к интернету.'
   };
 
-  const message = errorMessages[error.code] || error.message || 'Произошла ошибка';
+  // Получаем код ошибки
+  const errorCode = error.code || '';
+  const errorMessage = error.message || '';
+  
+  // Обработка ошибок Firebase REST API
+  if (errorMessage.includes('INVALID_PASSWORD')) {
+    return new Error('Неверный пароль');
+  }
+  if (errorMessage.includes('EMAIL_NOT_FOUND') || errorCode === 'auth/user-not-found') {
+    return new Error('Пользователь не найден');
+  }
+  if (errorMessage.includes('INVALID_EMAIL')) {
+    return new Error('Неверный формат email');
+  }
+  if (errorMessage.includes('USER_DISABLED')) {
+    return new Error('Аккаунт отключён');
+  }
+  if (errorMessage.includes('TOO_MANY_REQUESTS')) {
+    return new Error('Слишком много попыток входа. Попробуйте позже.');
+  }
+  if (errorMessage.includes('NETWORK_REQUEST_FAILED')) {
+    return new Error('Ошибка сети. Проверьте подключение к интернету.');
+  }
+  
+  // Стандартные ошибки Firebase Auth
+  const message = errorMessages[errorCode] || error.message || 'Произошла ошибка при входе';
   return new Error(message);
 };
 
@@ -609,4 +673,46 @@ export const refreshCurrentUser = async (): Promise<UserProfile | null> => {
     return await getUserProfile(currentUser.uid);
   }
   return null;
+};
+
+/**
+ * Отправка письма для сброса пароля
+ */
+export const sendPasswordResetEmailService = async (email: string): Promise<void> => {
+  if (!isFirebaseReady()) {
+    throw new Error('Firebase не настроен. Отправка письма невозможна.');
+  }
+
+  try {
+    await sendPasswordResetEmail(auth, email, {
+      url: window.location.origin, // URL для перенаправления после сброса
+      handleCodeInApp: true
+    });
+    // console.log('✅ [sendPasswordResetEmail] Письмо отправлено на:', email);
+  } catch (error: any) {
+    // console.error('❌ [sendPasswordResetEmail] Ошибка отправки:', error);
+    
+    // Обработка ошибок Firebase Auth
+    const errorCode = error.code;
+    const errorMessage = error.message || '';
+    
+    // Парсинг ошибок Firebase REST API
+    let userFriendlyMessage = 'Не удалось отправить письмо. Попробуйте позже.';
+    
+    if (errorCode === 'auth/user-not-found' || errorMessage.includes('EMAIL_NOT_FOUND')) {
+      userFriendlyMessage = 'Пользователь с таким email не найден. Проверьте email или зарегистрируйтесь.';
+    } else if (errorCode === 'auth/invalid-email' || errorMessage.includes('INVALID_EMAIL')) {
+      userFriendlyMessage = 'Некорректный формат email. Введите правильный email адрес.';
+    } else if (errorCode === 'auth/too-many-requests' || errorMessage.includes('TOO_MANY_REQUESTS')) {
+      userFriendlyMessage = 'Слишком много запросов. Попробуйте через несколько минут.';
+    } else if (errorMessage.includes('INVALID_PASSWORD')) {
+      userFriendlyMessage = 'Неверный пароль. Попробуйте восстановить пароль ещё раз.';
+    } else if (errorMessage.includes('USER_DISABLED')) {
+      userFriendlyMessage = 'Аккаунт заблокирован. Обратитесь в поддержку.';
+    } else if (errorMessage.includes('OPERATION_NOT_ALLOWED')) {
+      userFriendlyMessage = 'Функция сброса пароля временно недоступна.';
+    }
+    
+    throw new Error(userFriendlyMessage);
+  }
 };
