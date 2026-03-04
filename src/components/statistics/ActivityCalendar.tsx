@@ -239,7 +239,7 @@ export const ActivityCalendar: React.FC<ActivityCalendarProps> = ({ data }) => {
         {/* Контейнер для 3 месяцев с адаптивной перестройкой */}
         <div className="w-full overflow-auto activity-calendar-container">
           <div 
-            className="grid gap-4 mx-auto activity-calendar-grid"
+            className="grid gap-6 mx-auto activity-calendar-grid"
             style={{ 
               width: 'fit-content',
             }}
@@ -252,7 +252,7 @@ export const ActivityCalendar: React.FC<ActivityCalendarProps> = ({ data }) => {
                 </div>
                 
                 {/* Таблица календаря */}
-                <div className="overflow-hidden">
+                <div>
                   <table className="border-collapse" style={{ tableLayout: 'fixed', width: '230px' }}>
                     <thead>
                       <tr className="text-slate-500 dark:text-slate-400">
