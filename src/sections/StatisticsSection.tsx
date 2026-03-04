@@ -9,7 +9,7 @@ import {
   ActivityCalendar,
   AttemptHistory,
   SectionProgress,
-  WeakTopics,
+  WeakTopicsDetail,
   SessionsBarChart,
 } from '@/components/statistics/StatisticsCharts';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -228,7 +228,13 @@ export const StatisticsSection: React.FC = () => {
               stats1256={section1256Stats}
               stats1258={section1258Stats}
             />
-            <AttemptHistory sessions={statistics.sessions} />
+            <WeakTopicsDetail
+              weakTopics={statisticsService.getWeakTopicsStats()}
+              onFilterByTicket={(ticket) => {
+                console.log('Filter by ticket:', ticket);
+                // TODO: Интеграция с фильтром вопросов
+              }}
+            />
           </div>
 
           <SessionsBarChart sessions={statistics.sessions} />
@@ -271,8 +277,11 @@ export const StatisticsSection: React.FC = () => {
             />
           </div>
 
-          <WeakTopics
-            weakTopics={section1256Data.stats?.weakTopics || []}
+          <WeakTopicsDetail
+            weakTopics={statisticsService.getWeakTopicsStats('1256-19')}
+            onFilterByTicket={(ticket) => {
+              console.log('Filter by ticket:', ticket);
+            }}
           />
 
           <AttemptHistory
@@ -317,8 +326,11 @@ export const StatisticsSection: React.FC = () => {
             />
           </div>
 
-          <WeakTopics
-            weakTopics={section1258Data.stats?.weakTopics || []}
+          <WeakTopicsDetail
+            weakTopics={statisticsService.getWeakTopicsStats('1258-20')}
+            onFilterByTicket={(ticket) => {
+              console.log('Filter by ticket:', ticket);
+            }}
           />
 
           <AttemptHistory

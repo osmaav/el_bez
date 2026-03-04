@@ -166,6 +166,124 @@ export const statisticsService = {
   },
 
   /**
+   * Получение статистики по вопросам для фильтрации
+   */
+  getQuestionStats(section?: SectionType): Array<{
+    questionId: number;
+    ticket: number;
+    section: SectionType;
+    totalAttempts: number;
+    correctAnswers: number;
+    accuracy: number;
+    isKnown: boolean;
+    isWeak: boolean;
+  }> {
+    const stats = this.load();
+    if (!stats) return [];
+
+    const sessions = section
+      ? stats.sessions.filter(s => s.section === section)
+      : stats.sessions;
+
+    // Агрегируем статистику по вопросам
+    const questionMap: Record<number, {
+      questionId: number;
+      ticket: number;
+      section: SectionType;
+      totalAttempts: number;
+      correctAnswers: number;
+    }> = {};
+
+    sessions.forEach(session => {
+      session.questions.forEach(q => {
+        if (!questionMap[q.questionId]) {
+          questionMap[q.questionId] = {
+            questionId: q.questionId,
+            ticket: q.ticket,
+            section: q.section,
+            totalAttempts: 0,
+            correctAnswers: 0,
+          };
+        }
+        questionMap[q.questionId].totalAttempts++;
+        if (q.isCorrect) {
+          questionMap[q.questionId].correctAnswers++;
+        }
+      });
+    });
+
+    // Преобразуем в массив с вычислением точности
+    return Object.values(questionMap).map(q => {
+      const accuracy = Math.round((q.correctAnswers / q.totalAttempts) * 100);
+      return {
+        ...q,
+        accuracy,
+        isKnown: accuracy === 100,
+        isWeak: accuracy < 70,
+      };
+    }).sort((a, b) => a.accuracy - b.accuracy);
+  },
+
+  /**
+   * Получение детальной статистики по слабым темам
+   */
+  getWeakTopicsStats(section?: SectionType): Array<{
+    ticket: number;
+    accuracy: number;
+    attempts: number;
+    correctAnswers: number;
+    totalAnswers: number;
+    section: SectionType;
+  }> {
+    const stats = this.load();
+    if (!stats) return [];
+
+    const sessions = section
+      ? stats.sessions.filter(s => s.section === section)
+      : stats.sessions;
+
+    // Агрегируем по билетам
+    const ticketMap: Record<number, {
+      ticket: number;
+      section: SectionType;
+      totalAnswers: number;
+      correctAnswers: number;
+      attempts: number;
+    }> = {};
+
+    sessions.forEach(session => {
+      session.questions.forEach(q => {
+        if (!ticketMap[q.ticket]) {
+          ticketMap[q.ticket] = {
+            ticket: q.ticket,
+            section: q.section,
+            totalAnswers: 0,
+            correctAnswers: 0,
+            attempts: 0,
+          };
+        }
+        ticketMap[q.ticket].totalAnswers++;
+        ticketMap[q.ticket].attempts++;
+        if (q.isCorrect) {
+          ticketMap[q.ticket].correctAnswers++;
+        }
+      });
+    });
+
+    // Фильтруем билеты с точностью < 70% и минимум 3 попытками
+    return Object.values(ticketMap)
+      .filter(t => {
+        const accuracy = (t.correctAnswers / t.totalAnswers) * 100;
+        return accuracy < 70 && t.attempts >= 3;
+      })
+      .map(t => ({
+        ...t,
+        accuracy: Math.round((t.correctAnswers / t.totalAnswers) * 100),
+      }))
+      .sort((a, b) => a.accuracy - b.accuracy);
+  },
+
+  /**
    * Получение статистики по разделу
    */
   getSectionStats(section: SectionType): SectionStats | undefined {
