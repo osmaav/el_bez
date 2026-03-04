@@ -85,6 +85,11 @@ export const StatisticsSection: React.FC = () => {
     }
   };
 
+  const handleRefresh = () => {
+    loadStatistics();
+    sonnerToast.success('Статистика обновлена');
+  };
+
   if (!statistics) {
     return (
       <div className="flex items-center justify-center h-[400px]">
@@ -131,6 +136,15 @@ export const StatisticsSection: React.FC = () => {
           >
             <Database className="w-4 h-4" />
             Тестовые данные
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleRefresh}
+            className="gap-2"
+          >
+            <RotateCcw className="w-4 h-4" />
+            Обновить
           </Button>
           <Button
             variant="outline"

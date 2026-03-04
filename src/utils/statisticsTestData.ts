@@ -161,8 +161,8 @@ const generateSessionsForSection = (section: SectionType): SessionStats[] => {
 export const importTestData = (userId: string = 'test_user'): UserStatistics => {
   const testData = generateTestData(userId);
   
-  // Сохраняем в localStorage
-  localStorage.setItem(`elbez_statistics_${userId}`, JSON.stringify(testData));
+  // Сохраняем в localStorage с правильным ключом для statisticsService
+  localStorage.setItem('elbez_user_statistics', JSON.stringify(testData));
   
   console.log('✅ [TestData] Тестовые данные импортированы:', {
     userId,
