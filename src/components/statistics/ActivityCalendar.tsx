@@ -12,28 +12,50 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { cn } from '@/lib/utils';
 import type { DailyActivity } from '@/types';
 
-// Стили для адаптивного масштабирования
+// Стили для адаптивного масштабирования и перестроения
 const responsiveStyles = `
-  @media (max-width: 768px) {
+  .activity-calendar-container {
+    overflow-x: auto;
+    overflow-y: hidden;
+  }
+  
+  /* 3 месяца в одну линию (по умолчанию) */
+  .activity-calendar-grid {
+    grid-template-columns: repeat(3, 230px) !important;
+  }
+  
+  /* 2 месяца в первом ряду, 1 во втором */
+  @media (max-width: 740px) {
     .activity-calendar-grid {
-      transform: scale(0.95) !important;
+      grid-template-columns: repeat(2, 230px) !important;
+      justify-content: center;
+    }
+    .activity-calendar-month:nth-child(3) {
+      grid-column: span 2;
+      justify-self: center;
     }
   }
-  @media (max-width: 640px) {
+  
+  /* 1 месяц в ряду (вертикально) */
+  @media (max-width: 480px) {
+    .activity-calendar-grid {
+      grid-template-columns: 230px !important;
+      justify-content: center;
+    }
+    .activity-calendar-month:nth-child(3) {
+      grid-column: auto;
+    }
+  }
+  
+  /* Масштабирование для очень маленьких экранов */
+  @media (max-width: 250px) {
     .activity-calendar-grid {
       transform: scale(0.85) !important;
+      transform-origin: top center;
     }
   }
-  @media (max-width: 520px) {
-    .activity-calendar-grid {
-      transform: scale(0.75) !important;
-    }
-  }
-  @media (max-width: 420px) {
-    .activity-calendar-grid {
-      transform: scale(0.65) !important;
-    }
-  }
+  
+  /* Позиционирование для z-index */
   .activity-calendar-month table {
     position: relative;
   }
@@ -185,14 +207,12 @@ export const ActivityCalendar: React.FC<ActivityCalendarProps> = ({ data }) => {
         </CardDescription>
       </CardHeader>
       <CardContent>
-        {/* Контейнер для 3 месяцев в одну линию с адаптивным масштабированием */}
-        <div className="w-full overflow-x-auto">
+        {/* Контейнер для 3 месяцев с адаптивной перестройкой */}
+        <div className="w-full overflow-auto activity-calendar-container">
           <div 
-            className="grid grid-cols-3 gap-4 mx-auto activity-calendar-grid"
+            className="grid gap-4 mx-auto activity-calendar-grid"
             style={{ 
-              maxWidth: '690px', 
               width: 'fit-content',
-              transformOrigin: 'left center'
             }}
           >
             {monthsData.map((monthData, monthIndex) => (
