@@ -243,62 +243,72 @@ interface ActivityHeatmapProps {
 }
 
 export const ActivityHeatmap: React.FC<ActivityHeatmapProps> = ({ data }) => {
+  // Берём последние 90 дней (3 месяца)
+  const last90Days = data.slice(-90);
+  
+  // Группируем по месяцам для заголовков
+  const monthHeaders: { name: string; days: number }[] = [];
+  let currentMonth = -1;
+  let dayCount = 0;
+  let monthName = '';
+  
+  last90Days.forEach((day) => {
+    const month = new Date(day.date).getMonth();
+    if (month !== currentMonth) {
+      if (currentMonth !== -1) {
+        monthHeaders.push({ name: monthName, days: dayCount });
+      }
+      monthName = new Date(day.date).toLocaleDateString('ru-RU', { month: 'long', year: '2-digit' });
+      currentMonth = month;
+      dayCount = 1;
+    } else {
+      dayCount++;
+    }
+  });
+  
+  // Добавляем последний месяц
+  if (currentMonth !== -1 && monthName) {
+    monthHeaders.push({ name: monthName, days: dayCount });
+  }
+  
+  // Разбиваем на недели для отображения
   const weeks: DailyActivity[][] = [];
-  const currentWeek: DailyActivity[] = [];
-
-  // Разбиваем данные по неделям
-  data.forEach((day) => {
+  let currentWeek: DailyActivity[] = [];
+  
+  // Добавляем пустые ячейки для начала первой недели (если нужно)
+  const firstDay = last90Days.length > 0 ? new Date(last90Days[0].date) : null;
+  if (firstDay) {
+    const dayOfWeek = firstDay.getDay(); // 0 = Вс, 1 = Пн, ...
+    const emptyDays = dayOfWeek === 0 ? 6 : dayOfWeek - 1; // Коррекция для Пн=0
+    for (let i = 0; i < emptyDays; i++) {
+      currentWeek.push(null as any);
+    }
+  }
+  
+  last90Days.forEach((day) => {
     currentWeek.push(day);
     if (currentWeek.length === 7) {
       weeks.push([...currentWeek]);
-      currentWeek.length = 0;
+      currentWeek = [];
     }
   });
-
-  // Добавляем оставшиеся дни
+  
+  // Добавляем последнюю неделю
   if (currentWeek.length > 0) {
+    while (currentWeek.length < 7) {
+      currentWeek.push(null as any);
+    }
     weeks.push([...currentWeek]);
   }
 
   const getColorClass = (activity: DailyActivity) => {
+    if (!activity) return 'bg-transparent';
     if (activity.questionsAnswered === 0) return 'bg-muted';
     if (activity.questionsAnswered < 10) return 'bg-blue-200 dark:bg-blue-900';
     if (activity.questionsAnswered < 20) return 'bg-blue-400 dark:bg-blue-700';
     if (activity.questionsAnswered < 30) return 'bg-blue-600 dark:bg-blue-500';
     return 'bg-blue-800 dark:bg-blue-400';
   };
-
-  // Берём последние 90 дней (3 месяца)
-  const last90Days = data.slice(-90);
-  
-  // Группируем данные по месяцам для заголовков
-  const monthGroups: { name: string; startCol: number; span: number }[] = [];
-  let currentMonth = -1;
-  let monthStart = 0;
-  
-  last90Days.forEach((day, index) => {
-    const month = new Date(day.date).getMonth();
-    if (month !== currentMonth) {
-      if (currentMonth !== -1) {
-        monthGroups[monthGroups.length - 1].span = index - monthStart;
-      }
-      monthGroups.push({
-        name: new Date(day.date).toLocaleDateString('ru-RU', { month: 'long' }),
-        startCol: index + 1,
-        span: 0
-      });
-      currentMonth = month;
-      monthStart = index;
-    }
-  });
-  
-  // Завершаем последний месяц
-  if (monthGroups.length > 0) {
-    monthGroups[monthGroups.length - 1].span = last90Days.length - monthStart;
-  }
-
-  // Максимальное количество недель для отображения
-  const maxWeeks = Math.ceil(last90Days.length / 7);
 
   return (
     <Card>
@@ -312,23 +322,20 @@ export const ActivityHeatmap: React.FC<ActivityHeatmapProps> = ({ data }) => {
         <div className="overflow-x-auto">
           <div className="min-w-[700px]">
             {/* Месяцы над календарём */}
-            <div className="grid gap-1 mb-2 text-xs text-muted-foreground" style={{ gridTemplateColumns: '40px repeat(7, 32px)' }}>
-              <div /> {/* Пустая ячейка для дней недели */}
-              {monthGroups.map((month, i) => (
+            <div className="flex mb-2 text-xs text-muted-foreground pl-[40px]">
+              {monthHeaders.map((month, i) => (
                 <div
                   key={i}
-                  className="text-center font-medium capitalize"
-                  style={{
-                    gridColumn: `${month.startCol + 1} / span ${month.span}`
-                  }}
+                  className="text-center font-medium"
+                  style={{ width: `${month.days * 32}px`, minWidth: `${month.days * 32}px` }}
                 >
                   {month.name}
                 </div>
               ))}
             </div>
 
-            {/* Grid для дней недели и ячеек */}
-            <div className="grid gap-1" style={{ gridTemplateColumns: '40px repeat(7, 32px)' }}>
+            {/* Сетка календаря */}
+            <div className="grid gap-0.5" style={{ gridTemplateColumns: '40px repeat(7, 32px)' }}>
               {/* Дни недели */}
               {['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'].map((day, index) => (
                 <div
@@ -340,23 +347,23 @@ export const ActivityHeatmap: React.FC<ActivityHeatmapProps> = ({ data }) => {
                 </div>
               ))}
 
-              {/* Ячейки активности по дням - рендерим по неделям */}
-              {Array.from({ length: maxWeeks }, (_, weekIndex) => (
+              {/* Недели с ячейками */}
+              {weeks.map((week, weekIndex) => (
                 <React.Fragment key={weekIndex}>
                   {/* Номер недели */}
-                  <div className="text-xs text-muted-foreground text-right pr-2 py-1">
+                  <div className="text-xs text-muted-foreground text-right pr-2 py-1 flex items-center">
                     {weekIndex + 1}
                   </div>
-
-                  {/* 7 дней недели */}
-                  {Array.from({ length: 7 }, (_, dayIndex) => {
-                    const dataIndex = weekIndex * 7 + dayIndex;
-                    const day = last90Days[dataIndex];
-                    if (!day) return <div key={dayIndex} className="w-8 h-8" />;
-
+                  
+                  {/* 7 дней */}
+                  {week.map((day, dayIndex) => {
+                    if (!day) {
+                      return <div key={dayIndex} className="w-8 h-8" />;
+                    }
+                    
                     const date = new Date(day.date);
                     const dayNumber = date.getDate();
-                    const textColor = day.questionsAnswered === 0 ? 'text-slate-400' :
+                    const textColor = day.questionsAnswered === 0 ? 'text-slate-500' :
                       day.questionsAnswered < 10 ? 'text-blue-900 dark:text-blue-100' :
                         'text-white';
 
