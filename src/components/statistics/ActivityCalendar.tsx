@@ -148,12 +148,12 @@ export const ActivityCalendar: React.FC<ActivityCalendarProps> = ({ data }) => {
         </CardDescription>
       </CardHeader>
       <CardContent>
-        {/* Контейнер для 3 месяцев */}
-        <div className="space-y-6">
+        {/* Контейнер для 3 месяцев в одну линию */}
+        <div className="grid grid-cols-3 gap-4">
           {monthsData.map((monthData, monthIndex) => (
             <div key={monthIndex} className="space-y-2">
               {/* Заголовок месяца */}
-              <div className="text-sm font-semibold text-slate-700 dark:text-slate-300 capitalize">
+              <div className="text-sm font-semibold text-slate-700 dark:text-slate-300 capitalize text-center">
                 {monthData.name}
               </div>
               
@@ -207,21 +207,21 @@ export const ActivityCalendar: React.FC<ActivityCalendarProps> = ({ data }) => {
               </div>
             </div>
           ))}
-          
-          {/* Легенда */}
-          <div className="flex items-center justify-end gap-2 pt-4 border-t border-slate-200 dark:border-slate-700">
-            <span className="text-xs text-slate-500">Меньше</span>
-            <div className="flex gap-1">
-              <div className="w-3 h-3 rounded bg-slate-100 dark:bg-slate-800" />
-              <div className="w-3 h-3 rounded bg-blue-100 dark:bg-blue-900/30" />
-              <div className="w-3 h-3 rounded bg-blue-200 dark:bg-blue-800/40" />
-              <div className="w-3 h-3 rounded bg-blue-300 dark:bg-blue-700/50" />
-              <div className="w-3 h-3 rounded bg-blue-400 dark:bg-blue-600/60" />
-              <div className="w-3 h-3 rounded bg-blue-500 dark:bg-blue-500/70" />
-              <div className="w-3 h-3 rounded bg-blue-600 dark:bg-blue-400/80" />
-            </div>
-            <span className="text-xs text-slate-500">Больше</span>
+        </div>
+        
+        {/* Легенда */}
+        <div className="flex items-center justify-center gap-2 pt-4 mt-4 border-t border-slate-200 dark:border-slate-700">
+          <span className="text-xs text-slate-500">Меньше</span>
+          <div className="flex gap-1">
+            <div className="w-3 h-3 rounded bg-slate-100 dark:bg-slate-800" />
+            <div className="w-3 h-3 rounded bg-blue-100 dark:bg-blue-900/30" />
+            <div className="w-3 h-3 rounded bg-blue-200 dark:bg-blue-800/40" />
+            <div className="w-3 h-3 rounded bg-blue-300 dark:bg-blue-700/50" />
+            <div className="w-3 h-3 rounded bg-blue-400 dark:bg-blue-600/60" />
+            <div className="w-3 h-3 rounded bg-blue-500 dark:bg-blue-500/70" />
+            <div className="w-3 h-3 rounded bg-blue-600 dark:bg-blue-400/80" />
           </div>
+          <span className="text-xs text-slate-500">Больше</span>
         </div>
       </CardContent>
     </Card>

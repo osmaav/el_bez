@@ -21,7 +21,7 @@ const randomInRange = (min: number, max: number): number => {
  */
 const generateAttempt = (section: SectionType): QuestionAttempt => {
   const ticket = randomInRange(1, 25);
-  const isCorrect = Math.random() > 0.1; // 90% правильных ответов
+  const isCorrect = Math.random() > 0.3; // 70% правильных ответов
 
   return {
     questionId: randomInRange(1, 250),
@@ -74,7 +74,7 @@ const generateSectionStats = (section: SectionType): SectionStats => {
   const sessionCount = randomInRange(10, 80);
 
   for (let i = 0; i < sessionCount; i++) {
-    const mode = Math.random() > 0.8 ? 'exam' : Math.random() > 0.3 ? 'trainer' : 'learning';
+    const mode = Math.random() > 0.6 ? 'exam' : Math.random() > 0.3 ? 'trainer' : 'learning';
     sessions.push(generateSession(section, mode));
   }
 
