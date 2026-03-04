@@ -275,43 +275,65 @@ export const ActivityHeatmap: React.FC<ActivityHeatmapProps> = ({ data }) => {
       index: data.indexOf(day),
     }));
 
+  // Максимальное количество недель для отображения
+  const maxWeeks = Math.ceil(data.length / 7);
+
   return (
     <Card>
       <CardHeader>
         <CardTitle>Активность</CardTitle>
         <CardDescription>
-          Heatmap вашей активности за последние 30 дней
+          Heatmap вашей активности за последние 90 дней
         </CardDescription>
       </CardHeader>
       <CardContent>
         <div className="overflow-x-auto">
-          <div className="min-w-[600px]">
+          <div className="min-w-[700px]">
             {/* Месяцы */}
-            <div className="flex mb-2 text-xs text-muted-foreground">
-              {monthLabels.map((month, i) => (
-                <div
-                  key={i}
-                  className="flex-1 text-left"
-                  style={{ marginLeft: i === 0 ? '0' : '0' }}
-                >
-                  {month.name}
-                </div>
-              ))}
+            <div className="flex mb-2 text-xs text-muted-foreground pl-[40px]">
+              {monthLabels.map((month, i) => {
+                const nextMonth = monthLabels[i + 1];
+                const span = nextMonth ? nextMonth.index - month.index : data.length - month.index;
+                return (
+                  <div
+                    key={i}
+                    className="text-left"
+                    style={{ width: `${span * 32}px` }}
+                  >
+                    {month.name}
+                  </div>
+                );
+              })}
             </div>
 
-            {/* Дни недели */}
-            <div className="flex gap-1">
+            {/* Grid для дней недели и ячеек */}
+            <div className="grid gap-1" style={{ gridTemplateColumns: '40px repeat(7, 32px)' }}>
+              {/* Дни недели */}
               {['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'].map((day) => (
-                <div key={day} className="w-8 text-xs text-muted-foreground text-right pr-1">
+                <div
+                  key={day}
+                  className="text-xs text-muted-foreground text-right pr-2 py-1 col-start-[var(--col)]"
+                  style={{ '--col': ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'].indexOf(day) + 2 } as React.CSSProperties}
+                >
                   {day}
                 </div>
               ))}
 
-              {/* Недели */}
-              <div className="flex gap-1 ml-2">
-                {weeks.map((week, weekIndex) => (
-                  <div key={weekIndex} className="flex flex-col gap-1">
-                    {week.map((day) => (
+              {/* Ячейки активности по дням - рендерим по неделям */}
+              {Array.from({ length: maxWeeks }, (_, weekIndex) => (
+                <React.Fragment key={weekIndex}>
+                  {/* Номер недели (опционально) */}
+                  <div className="text-xs text-muted-foreground text-right pr-2 py-1">
+                    {weekIndex + 1}
+                  </div>
+                  
+                  {/* 7 дней недели */}
+                  {Array.from({ length: 7 }, (_, dayIndex) => {
+                    const dataIndex = weekIndex * 7 + dayIndex;
+                    const day = data[dataIndex];
+                    if (!day) return <div key={dayIndex} className="w-8 h-8" />;
+                    
+                    return (
                       <div
                         key={day.date}
                         className={cn(
@@ -320,10 +342,10 @@ export const ActivityHeatmap: React.FC<ActivityHeatmapProps> = ({ data }) => {
                         )}
                         title={`${new Date(day.date).toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' })}: ${day.questionsAnswered} вопросов`}
                       />
-                    ))}
-                  </div>
-                ))}
-              </div>
+                    );
+                  })}
+                </React.Fragment>
+              ))}
             </div>
 
             {/* Легенда */}
