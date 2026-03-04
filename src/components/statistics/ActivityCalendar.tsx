@@ -49,43 +49,43 @@ export const ActivityCalendar: React.FC<ActivityCalendarProps> = ({ data }) => {
   const monthsData = useMemo((): MonthData[] => {
     const result: MonthData[] = [];
     const today = new Date();
-    
+
     // Текущий месяц и 2 предыдущих
     for (let monthOffset = 2; monthOffset >= 0; monthOffset--) {
       const targetDate = new Date(today.getFullYear(), today.getMonth() - monthOffset, 1);
       const year = targetDate.getFullYear();
       const month = targetDate.getMonth();
-      
+
       // Название месяца
       const name = targetDate.toLocaleDateString('ru-RU', { month: 'long', year: 'numeric' });
       const shortName = targetDate.toLocaleDateString('ru-RU', { month: 'short' });
-      
+
       // Первый день месяца
       const firstDay = new Date(year, month, 1);
       const lastDay = new Date(year, month + 1, 0);
-      
+
       // День недели первого дня (0 = Вс, 1 = Пн, ...)
       let startDayOfWeek = firstDay.getDay();
       startDayOfWeek = startDayOfWeek === 0 ? 6 : startDayOfWeek - 1; // Пн = 0, ..., Вс = 6
-      
+
       // Количество дней в месяце
       const daysInMonth = lastDay.getDate();
-      
+
       // Создаём недели
       const weeks: DayCell[][] = [];
       let currentWeek: DayCell[] = [];
-      
+
       // Пустые ячейки до первого дня месяца
       for (let i = 0; i < startDayOfWeek; i++) {
         currentWeek.push(null as any);
       }
-      
+
       // Дни месяца
       for (let day = 1; day <= daysInMonth; day++) {
         const date = new Date(year, month, day);
         const dateStr = date.toISOString().split('T')[0];
         const questionsAnswered = activityMap.get(dateStr) || 0;
-        
+
         currentWeek.push({
           date: dateStr,
           day,
@@ -94,13 +94,13 @@ export const ActivityCalendar: React.FC<ActivityCalendarProps> = ({ data }) => {
           questionsAnswered,
           isCurrentMonth: monthOffset === 0
         });
-        
+
         if (currentWeek.length === 7) {
           weeks.push([...currentWeek]);
           currentWeek = [];
         }
       }
-      
+
       // Добавляем последнюю неделю
       if (currentWeek.length > 0) {
         while (currentWeek.length < 7) {
@@ -108,10 +108,10 @@ export const ActivityCalendar: React.FC<ActivityCalendarProps> = ({ data }) => {
         }
         weeks.push([...currentWeek]);
       }
-      
+
       result.push({ name, shortName, year, weeks });
     }
-    
+
     return result;
   }, [activityMap]);
 
@@ -149,9 +149,9 @@ export const ActivityCalendar: React.FC<ActivityCalendarProps> = ({ data }) => {
       </CardHeader>
       <CardContent>
         {/* Контейнер для 3 месяцев в одну линию */}
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-3 gap-4" style={{ maxWidth: '690px', margin: '0 auto' }}>
           {monthsData.map((monthData, monthIndex) => (
-            <div key={monthIndex} className="space-y-2">
+            <div key={monthIndex} className="space-y-2" style={{ width: '230px' }}>
               {/* Заголовок месяца */}
               <div className="text-sm font-semibold text-slate-700 dark:text-slate-300 capitalize text-center">
                 {monthData.name}
@@ -159,16 +159,16 @@ export const ActivityCalendar: React.FC<ActivityCalendarProps> = ({ data }) => {
               
               {/* Таблица календаря */}
               <div className="overflow-x-auto">
-                <table className="w-full border-collapse">
+                <table className="w-full border-collapse" style={{ tableLayout: 'fixed', width: '230px' }}>
                   <thead>
                     <tr className="text-xs text-slate-500 dark:text-slate-400">
-                      <th className="w-8 h-8 font-normal">Пн</th>
-                      <th className="w-8 h-8 font-normal">Вт</th>
-                      <th className="w-8 h-8 font-normal">Ср</th>
-                      <th className="w-8 h-8 font-normal">Чт</th>
-                      <th className="w-8 h-8 font-normal">Пт</th>
-                      <th className="w-8 h-8 font-normal">Сб</th>
-                      <th className="w-8 h-8 font-normal">Вс</th>
+                      <th className="h-8 font-normal text-[10px]">Пн</th>
+                      <th className="h-8 font-normal text-[10px]">Вт</th>
+                      <th className="h-8 font-normal text-[10px]">Ср</th>
+                      <th className="h-8 font-normal text-[10px]">Чт</th>
+                      <th className="h-8 font-normal text-[10px]">Пт</th>
+                      <th className="h-8 font-normal text-[10px]">Сб</th>
+                      <th className="h-8 font-normal text-[10px]">Вс</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -176,17 +176,17 @@ export const ActivityCalendar: React.FC<ActivityCalendarProps> = ({ data }) => {
                       <tr key={weekIndex}>
                         {week.map((day, dayIndex) => {
                           if (!day) {
-                            return <td key={dayIndex} className="w-8 h-8" />;
+                            return <td key={dayIndex} className="w-[32.86px] h-[32.86px]" />;
                           }
                           
                           return (
                             <td
                               key={day.date}
-                              className="w-8 h-8 p-0.5"
+                              className="w-[32.86px] h-[32.86px] p-0.5"
                             >
                               <div
                                 className={cn(
-                                  'w-full h-full rounded-md flex items-center justify-center text-xs font-medium',
+                                  'w-full h-full rounded-md flex items-center justify-center text-[10px] font-medium',
                                   'transition-all duration-300 ease-out',
                                   'hover:scale-110 hover:shadow-lg hover:ring-2 hover:ring-blue-400 hover:ring-offset-1',
                                   'cursor-default',
@@ -208,7 +208,7 @@ export const ActivityCalendar: React.FC<ActivityCalendarProps> = ({ data }) => {
             </div>
           ))}
         </div>
-        
+
         {/* Легенда */}
         <div className="flex items-center justify-center gap-2 pt-4 mt-4 border-t border-slate-200 dark:border-slate-700">
           <span className="text-xs text-slate-500">Меньше</span>
