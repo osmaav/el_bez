@@ -15,17 +15,19 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { 
-  TrendingUp, 
-  Target, 
-  Clock, 
-  Award, 
-  BookOpen, 
+import {
+  TrendingUp,
+  Target,
+  Clock,
+  Award,
+  BookOpen,
   AlertCircle,
   Download,
   RotateCcw,
+  Database,
 } from 'lucide-react';
-import { toast } from 'sonner';
+import { toast as sonnerToast } from 'sonner';
+import { importTestData } from '@/utils/statisticsTestData';
 
 export const StatisticsSection: React.FC = () => {
   const { user } = useAuth();
@@ -63,14 +65,23 @@ export const StatisticsSection: React.FC = () => {
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
-    toast.success('Статистика экспортирована');
+    sonnerToast.success('Статистика экспортирована');
   };
 
   const handleClear = () => {
     if (confirm('Вы уверены, что хотите очистить всю статистику? Это действие необратимо.')) {
       statisticsService.clear();
       loadStatistics();
-      toast.success('Статистика очищена');
+      sonnerToast.success('Статистика очищена');
+    }
+  };
+
+  const handleLoadTestData = () => {
+    if (confirm('Загрузить тестовые данные для демонстрации статистики? Это перезапишет текущие данные.')) {
+      const userId = user?.id || 'anonymous';
+      importTestData(userId);
+      loadStatistics();
+      sonnerToast.success('Тестовые данные загружены');
     }
   };
 
@@ -112,6 +123,15 @@ export const StatisticsSection: React.FC = () => {
           </p>
         </div>
         <div className="flex gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleLoadTestData}
+            className="gap-2"
+          >
+            <Database className="w-4 h-4" />
+            Тестовые данные
+          </Button>
           <Button
             variant="outline"
             size="sm"
