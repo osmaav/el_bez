@@ -153,16 +153,20 @@ export function Navigation() {
                   statistics: 'Ваша статистика и прогресс обучения по разделам'
                 };
 
-                // Настройки для каждой подсказки — единый стиль для всех
-                const tooltipSettings = {
-                  align: 'center' as const,
-                  minWidth: 320, // Фиксированная ширина 320px
-                  maxWidth: 320 // Фиксированная ширина 320px
+                // Настройки выравнивания для каждой кнопки
+                const alignSettings: Record<PageType, 'start' | 'center' | 'end'> = {
+                  theory: 'start',      // Левая часть - от левого края
+                  learning: 'start',    // Левая часть - от левого края
+                  trainer: 'end',       // Правая часть - от правого края
+                  exam: 'end',          // Правая часть - от правого края
+                  statistics: 'end'     // Правая часть - от правого края
                 };
 
-                // Специальные настройки для кнопки Статистика (справа)
-                const isStatistics = item.id === 'statistics';
-                const alignValue = isStatistics ? 'end' as const : tooltipSettings.align;
+                // Настройки ширины для всех подсказок
+                const tooltipSettings = {
+                  minWidth: 250,
+                  maxWidth: 320
+                };
 
                 const ButtonContent = (
                   <button
@@ -187,7 +191,7 @@ export function Navigation() {
                     title={item.label}
                     content={tooltips[item.id]}
                     position="bottom"
-                    align={alignValue}
+                    align={alignSettings[item.id]}
                     minWidth={tooltipSettings.minWidth}
                     maxWidth={tooltipSettings.maxWidth}
                   >
