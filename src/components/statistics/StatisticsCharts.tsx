@@ -268,12 +268,31 @@ export const ActivityHeatmap: React.FC<ActivityHeatmapProps> = ({ data }) => {
     return 'bg-blue-800 dark:bg-blue-400';
   };
 
-  const monthLabels = data
-    .filter((_, i) => i === 0 || new Date(data[i].date).getMonth() !== new Date(data[i - 1]?.date).getMonth())
-    .map((day) => ({
-      name: new Date(day.date).toLocaleDateString('ru-RU', { month: 'short' }),
-      index: data.indexOf(day),
-    }));
+  // Группируем данные по месяцам для заголовков
+  const monthGroups: { name: string; startCol: number; span: number }[] = [];
+  let currentMonth = -1;
+  let monthStart = 0;
+  
+  data.forEach((day, index) => {
+    const month = new Date(day.date).getMonth();
+    if (month !== currentMonth) {
+      if (currentMonth !== -1) {
+        monthGroups[monthGroups.length - 1].span = index - monthStart;
+      }
+      monthGroups.push({
+        name: new Date(day.date).toLocaleDateString('ru-RU', { month: 'short' }),
+        startCol: index + 1,
+        span: 0
+      });
+      currentMonth = month;
+      monthStart = index;
+    }
+  });
+  
+  // Завершаем последний месяц
+  if (monthGroups.length > 0) {
+    monthGroups[monthGroups.length - 1].span = data.length - monthStart;
+  }
 
   // Максимальное количество недель для отображения
   const maxWeeks = Math.ceil(data.length / 7);
@@ -283,37 +302,36 @@ export const ActivityHeatmap: React.FC<ActivityHeatmapProps> = ({ data }) => {
       <CardHeader>
         <CardTitle>Активность</CardTitle>
         <CardDescription>
-          Heatmap вашей активности за последние 90 дней
+          Карта вашей активности за последние 90 дней
         </CardDescription>
       </CardHeader>
       <CardContent>
         <div className="overflow-x-auto">
           <div className="min-w-[700px]">
-            {/* Месяцы */}
-            <div className="flex mb-2 text-xs text-muted-foreground pl-[40px]">
-              {monthLabels.map((month, i) => {
-                const nextMonth = monthLabels[i + 1];
-                const span = nextMonth ? nextMonth.index - month.index : data.length - month.index;
-                return (
-                  <div
-                    key={i}
-                    className="text-left"
-                    style={{ width: `${span * 32}px` }}
-                  >
-                    {month.name}
-                  </div>
-                );
-              })}
+            {/* Месяцы над календарём */}
+            <div className="grid gap-1 mb-2 text-xs text-muted-foreground" style={{ gridTemplateColumns: '40px repeat(7, 32px)' }}>
+              <div /> {/* Пустая ячейка для дней недели */}
+              {monthGroups.map((month, i) => (
+                <div
+                  key={i}
+                  className="text-center font-medium"
+                  style={{
+                    gridColumn: `${month.startCol + 1} / span ${month.span}`
+                  }}
+                >
+                  {month.name}
+                </div>
+              ))}
             </div>
 
             {/* Grid для дней недели и ячеек */}
             <div className="grid gap-1" style={{ gridTemplateColumns: '40px repeat(7, 32px)' }}>
               {/* Дни недели */}
-              {['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'].map((day) => (
+              {['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'].map((day, index) => (
                 <div
                   key={day}
-                  className="text-xs text-muted-foreground text-right pr-2 py-1 col-start-[var(--col)]"
-                  style={{ '--col': ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'].indexOf(day) + 2 } as React.CSSProperties}
+                  className="text-xs text-muted-foreground text-right pr-2 py-1"
+                  style={{ gridColumn: index + 2 }}
                 >
                   {day}
                 </div>
@@ -322,25 +340,23 @@ export const ActivityHeatmap: React.FC<ActivityHeatmapProps> = ({ data }) => {
               {/* Ячейки активности по дням - рендерим по неделям */}
               {Array.from({ length: maxWeeks }, (_, weekIndex) => (
                 <React.Fragment key={weekIndex}>
-                  {/* Номер недели (опционально) */}
+                  {/* Номер недели */}
                   <div className="text-xs text-muted-foreground text-right pr-2 py-1">
                     {weekIndex + 1}
                   </div>
-                  
+
                   {/* 7 дней недели */}
                   {Array.from({ length: 7 }, (_, dayIndex) => {
                     const dataIndex = weekIndex * 7 + dayIndex;
                     const day = data[dataIndex];
                     if (!day) return <div key={dayIndex} className="w-8 h-8" />;
-                    
+
                     const date = new Date(day.date);
                     const dayNumber = date.getDate();
-                    const textColor = day.questionsAnswered === 0 ? 'text-slate-400' : 
-                                      day.questionsAnswered < 10 ? 'text-blue-900 dark:text-blue-100' :
-                                      day.questionsAnswered < 20 ? 'text-white' :
-                                      day.questionsAnswered < 30 ? 'text-white' :
-                                      'text-white';
-                    
+                    const textColor = day.questionsAnswered === 0 ? 'text-slate-400' :
+                      day.questionsAnswered < 10 ? 'text-blue-900 dark:text-blue-100' :
+                        'text-white';
+
                     return (
                       <div
                         key={day.date}
@@ -348,7 +364,7 @@ export const ActivityHeatmap: React.FC<ActivityHeatmapProps> = ({ data }) => {
                           'w-8 h-8 rounded-md transition-colors hover:ring-2 hover:ring-ring hover:ring-offset-1 cursor-pointer flex items-center justify-center',
                           getColorClass(day)
                         )}
-                        title={`${new Date(day.date).toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' })}: ${day.questionsAnswered} вопросов`}
+                        title={`${day.date}: ${day.questionsAnswered} вопросов`}
                       >
                         <span className={cn('text-[10px] font-bold', textColor)}>
                           {dayNumber}
@@ -440,8 +456,8 @@ export const AttemptHistory: React.FC<AttemptHistoryProps> = ({ sessions }) => {
                     session.accuracy >= 80
                       ? 'bg-green-500'
                       : session.accuracy >= 60
-                      ? 'bg-yellow-500'
-                      : 'bg-red-500'
+                        ? 'bg-yellow-500'
+                        : 'bg-red-500'
                   )}
                 >
                   {session.accuracy}%
