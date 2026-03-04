@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { LoginModal } from '@/components/LoginModal';
 import { RegisterModal } from '@/components/RegisterModal';
 import { EditProfileModal } from '@/components/EditProfileModal';
+import { RichTooltip } from '@/components/ui/rich-tooltip';
 
 const navItems: { id: PageType; label: string; icon: React.ElementType }[] = [
   { id: 'theory', label: 'Теория', icon: BookOpen },
@@ -143,11 +144,18 @@ export function Navigation() {
                 const Icon = item.icon;
                 const isActive = currentPage === item.id;
 
-                return (
+                // Описания для подсказок
+                const tooltips: Record<PageType, string> = {
+                  theory: 'Изучите теоретические материалы по электробезопасности',
+                  learning: 'Обучение по 10 вопросов на странице с сохранением прогресса',
+                  trainer: 'Тренировка со случайной выборкой из 20 или 50 вопросов',
+                  exam: 'Имитация реального экзамена по билетам',
+                  statistics: 'Ваша статистика и прогресс обучения'
+                };
+
+                const ButtonContent = (
                   <button
-                    key={item.id}
                     onClick={() => handlePageChange(item.id)}
-                    title={item.label}
                     className={`
                       flex items-center space-x-1 px-2 py-1.5 rounded-lg transition-all duration-200 whitespace-nowrap flex-shrink-0
                       ${isActive
@@ -160,21 +168,41 @@ export function Navigation() {
                     <span className="hidden [@media(min-width:960px)]:inline text-xs sm:text-sm">{item.label}</span>
                   </button>
                 );
+
+                return (
+                  <RichTooltip
+                    key={item.id}
+                    type="info"
+                    title={item.label}
+                    content={tooltips[item.id]}
+                    position="bottom"
+                    align="center"
+                  >
+                    {ButtonContent}
+                  </RichTooltip>
+                );
               })}
             </div>
 
             {/* Кнопка входа для неавторизованных пользователей */}
             {!user && (
-              <Button
-                onClick={handleLogin}
-                variant="ghost"
-                size="sm"
-                className="text-slate-300 hover:text-white hover:bg-slate-800 ml-2"
-                title="Войти в систему"
+              <RichTooltip
+                type="info"
+                title="Вход в систему"
+                content="Войдите для сохранения статистики и прогресса обучения"
+                position="bottom"
+                align="center"
               >
-                <LogIn className="w-4 h-4" />
-                <span className="ml-1 text-sm hidden [@media(min-width:930px)]:inline">Войти</span>
-              </Button>
+                <Button
+                  onClick={handleLogin}
+                  variant="ghost"
+                  size="sm"
+                  className="text-slate-300 hover:text-white hover:bg-slate-800 ml-2"
+                >
+                  <LogIn className="w-4 h-4" />
+                  <span className="ml-1 text-sm hidden [@media(min-width:930px)]:inline">Войти</span>
+                </Button>
+              </RichTooltip>
             )}
           </div>
         </div>
