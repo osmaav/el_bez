@@ -40,6 +40,14 @@ const responsiveStyles = `
     }
   }
   
+  /* Масштабирование для экранов уже 600px (для размещения с другими компонентами) */
+  @media (max-width: 600px) {
+    .activity-calendar-grid {
+      transform: scale(0.9);
+      transform-origin: top left;
+    }
+  }
+  
   /* 3 месяца в одну линию (по умолчанию) */
   .activity-calendar-grid {
     grid-template-columns: repeat(3, 230px) !important;

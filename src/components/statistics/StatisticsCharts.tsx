@@ -120,7 +120,7 @@ export const ProgressChart: React.FC<ProgressChartProps> = ({ data }) => {
   }
 
   return (
-    <Card>
+    <Card className="xl:col-span-1">
       <CardHeader>
         <CardTitle>Прогресс обучения</CardTitle>
         <CardDescription>
@@ -188,7 +188,7 @@ export const ResultsPieChart: React.FC<ResultsPieChartProps> = ({ correct, incor
   const accuracy = total > 0 ? Math.round((correct / total) * 100) : 0;
 
   return (
-    <Card>
+    <Card className="xl:col-span-1">
       <CardHeader>
         <CardTitle>Результаты</CardTitle>
         <CardDescription>
