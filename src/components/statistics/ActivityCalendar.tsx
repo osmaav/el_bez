@@ -12,6 +12,42 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { cn } from '@/lib/utils';
 import type { DailyActivity } from '@/types';
 
+// Стили для адаптивного масштабирования
+const responsiveStyles = `
+  @media (max-width: 768px) {
+    .activity-calendar-grid {
+      transform: scale(0.95) !important;
+    }
+  }
+  @media (max-width: 640px) {
+    .activity-calendar-grid {
+      transform: scale(0.85) !important;
+    }
+  }
+  @media (max-width: 520px) {
+    .activity-calendar-grid {
+      transform: scale(0.75) !important;
+    }
+  }
+  @media (max-width: 420px) {
+    .activity-calendar-grid {
+      transform: scale(0.65) !important;
+    }
+  }
+  .activity-calendar-month table {
+    position: relative;
+  }
+  .activity-calendar-month td {
+    position: relative;
+  }
+  .activity-calendar-month td > div {
+    position: relative;
+  }
+  .activity-calendar-month td:hover > div {
+    z-index: 100;
+  }
+`;
+
 interface ActivityCalendarProps {
   data: DailyActivity[];
 }
@@ -141,6 +177,7 @@ export const ActivityCalendar: React.FC<ActivityCalendarProps> = ({ data }) => {
 
   return (
     <Card>
+      <style>{responsiveStyles}</style>
       <CardHeader>
         <CardTitle className="text-xl font-bold">Активность</CardTitle>
         <CardDescription>
@@ -151,7 +188,7 @@ export const ActivityCalendar: React.FC<ActivityCalendarProps> = ({ data }) => {
         {/* Контейнер для 3 месяцев в одну линию с адаптивным масштабированием */}
         <div className="w-full overflow-x-auto">
           <div 
-            className="grid grid-cols-3 gap-4 mx-auto" 
+            className="grid grid-cols-3 gap-4 mx-auto activity-calendar-grid"
             style={{ 
               maxWidth: '690px', 
               width: 'fit-content',
@@ -159,7 +196,7 @@ export const ActivityCalendar: React.FC<ActivityCalendarProps> = ({ data }) => {
             }}
           >
             {monthsData.map((monthData, monthIndex) => (
-              <div key={monthIndex} className="space-y-2" style={{ width: '230px', flexShrink: 0 }}>
+              <div key={monthIndex} className="space-y-2 activity-calendar-month" style={{ width: '230px', flexShrink: 0 }}>
                 {/* Заголовок месяца */}
                 <div className="text-sm font-semibold text-slate-700 dark:text-slate-300 capitalize text-center whitespace-nowrap">
                   {monthData.name}
@@ -190,13 +227,13 @@ export const ActivityCalendar: React.FC<ActivityCalendarProps> = ({ data }) => {
                             return (
                               <td
                                 key={day.date}
-                                className="w-[32.86px] h-[32.86px] p-0.5"
+                                className="w-[32.86px] h-[32.86px] p-0.5 relative"
                               >
                                 <div
                                   className={cn(
                                     'w-full h-full rounded-md flex items-center justify-center text-[9px] font-medium',
                                     'transition-all duration-300 ease-out',
-                                    'hover:scale-110 hover:shadow-lg hover:ring-2 hover:ring-blue-400 hover:ring-offset-1',
+                                    'hover:scale-125 hover:shadow-xl hover:ring-2 hover:ring-blue-400 hover:ring-offset-1',
                                     'cursor-default',
                                     getColorClass(day.questionsAnswered),
                                     getTextColorClass(day.questionsAnswered)
