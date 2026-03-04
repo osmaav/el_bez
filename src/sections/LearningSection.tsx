@@ -6,12 +6,14 @@ import { saveLearningProgress, loadLearningProgress } from '@/services/questionS
 import { SessionTracker } from '@/services/statisticsService';
 import { LoadingModal } from '@/components/ui/loading-modal';
 import { ConfirmModal } from '@/components/ui/confirm-modal';
-import { Shuffle, RotateCcw, CheckCircle2, XCircle, Trophy, Target, AlertCircle, ChevronLeft, ChevronRight, BookOpen } from 'lucide-react';
+import { Shuffle, RotateCcw, CheckCircle2, XCircle, Trophy, Target, AlertCircle, ChevronLeft, ChevronRight, BookOpen, Download } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import type { Question, SectionType } from '@/types';
+import jsPDF from 'jspdf';
+import 'jspdf-autotable';
 
 interface QuizState {
   currentQuestions: Question[];
@@ -615,6 +617,76 @@ export function LearningSection() {
     setShowResetConfirm(true);
   };
 
+  // Сохранение результатов в PDF
+  const handleSaveToPDF = () => {
+    const loadingId = loading('Генерация PDF', 'Пожалуйста, подождите...');
+    
+    try {
+      const doc = new jsPDF();
+      
+      // Заголовок
+      doc.setFontSize(18);
+      doc.setTextColor(15, 23, 42);
+      doc.text('Результаты обучения', 14, 20);
+      
+      // Информация
+      doc.setFontSize(12);
+      doc.setTextColor(100, 116, 139);
+      doc.text(`Раздел: ${currentSectionInfo?.name || currentSection}`, 14, 30);
+      doc.text(`Страница: ${currentPage} из ${TOTAL_PAGES}`, 14, 36);
+      doc.text(`Дата: ${new Date().toLocaleDateString('ru-RU')}`, 14, 42);
+      
+      // Статистика
+      doc.setFontSize(14);
+      doc.setTextColor(15, 23, 42);
+      doc.text(`Результат: ${stats.correct} из ${QUESTIONS_PER_SESSION} (${Math.round((stats.correct / QUESTIONS_PER_SESSION) * 100)}%)`, 14, 52);
+      
+      // Таблица с вопросами
+      const tableData = quizState.currentQuestions.map((q, idx) => {
+        const userAnswer = quizState.userAnswers[idx];
+        const correctAnswer = q.correct_index;
+        const isCorrect = userAnswer === correctAnswer;
+        const shuffledIndex = quizState.shuffledAnswers[idx][userAnswer ?? 0];
+        const originalAnswer = q.answers?.[shuffledIndex] || q.options[shuffledIndex];
+        
+        return [
+          idx + 1,
+          q.text.substring(0, 80) + (q.text.length > 80 ? '...' : ''),
+          originalAnswer?.substring(0, 50) + (originalAnswer?.length > 50 ? '...' : '') || 'Нет ответа',
+          isCorrect ? '✓' : '✗'
+        ];
+      });
+      
+      (doc as any).autoTable({
+        startY: 60,
+        head: [['№', 'Вопрос', 'Ваш ответ', '✓/✗']],
+        body: tableData,
+        theme: 'striped',
+        headStyles: { fillColor: [59, 130, 246] },
+        didParseCell: (data: any) => {
+          if (data.section === 'body' && data.column.index === 3) {
+            if (data.cell.raw === '✓') {
+              data.cell.styles.textColor = [34, 197, 94];
+            } else {
+              data.cell.styles.textColor = [239, 68, 68];
+            }
+          }
+        }
+      });
+      
+      // Сохранение
+      const fileName = `результаты_${currentSection}_стр${currentPage}_${new Date().getTime()}.pdf`;
+      doc.save(fileName);
+      
+      updateToast(loadingId, { type: 'success', title: 'PDF сохранён' });
+      success('PDF сохранён', `Файл ${fileName} загружен`);
+    } catch (err: any) {
+      console.error('❌ [LearningSection] Ошибка сохранения PDF:', err);
+      updateToast(loadingId, { type: 'error', title: 'Ошибка сохранения' });
+      toastError('Ошибка сохранения', 'Не удалось сохранить PDF');
+    }
+  };
+
   const confirmReset = () => {
     setShowResetConfirm(false);
     // console.log('🔄 [LearningSection] Сброс прогресса для раздела:', currentSection);
@@ -821,9 +893,25 @@ export function LearningSection() {
                   {currentPage === TOTAL_PAGES ? "Сессия завершена!" : "Вы ответили на все вопросы текущей страницы."}
                 </h2>
                 <p className="text-slate-600 mb-6">
-                  Правильных ответов: {stats.correct} из {QUESTIONS_PER_SESSION}
+                  Правильных ответов: {stats.correct} из {QUESTIONS_PER_SESSION} ({Math.round((stats.correct / QUESTIONS_PER_SESSION) * 100)}%)
                 </p>
-                <div className="flex justify-center gap-4">
+                
+                {/* Прогресс бар результата */}
+                <div className="max-w-md mx-auto mb-6">
+                  <Progress value={(stats.correct / QUESTIONS_PER_SESSION) * 100} className="h-3" />
+                </div>
+                
+                <div className="flex justify-center gap-4 flex-wrap">
+                  {/* Кнопка сохранения в PDF */}
+                  <Button 
+                    onClick={handleSaveToPDF} 
+                    size="lg" 
+                    className="gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-lg shadow-blue-500/25"
+                  >
+                    <Download className="w-5 h-5" />
+                    Сохранить в PDF
+                  </Button>
+                  
                   {currentPage === TOTAL_PAGES ? (
                     <Button onClick={handleReset} size="lg" className="gap-2">
                       <Shuffle className="w-5 h-5" />

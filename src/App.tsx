@@ -12,7 +12,7 @@ import { StatisticsSection } from '@/sections/StatisticsSection';
 import { ToastContainer } from '@/components/ui/toast-message';
 import { UIPatternsShowcase } from '@/components/ui-showcase/UIPatternsShowcase';
 import { useEffect } from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
 
 function AppContent() {
   const { currentPage, currentSection } = useApp();
@@ -53,7 +53,7 @@ function App() {
                 <Route path="/ui-demo" element={<UIPatternsShowcase />} />
 
                 {/* Редирект с любых других путей на главную */}
-                <Route path="*" element={<Navigate to="/" replace />} />
+                {/* <Route path="*" element={<Navigate to="/" replace />} /> */}
               </Routes>
               <ToastWrapper />
             </BrowserRouter>
