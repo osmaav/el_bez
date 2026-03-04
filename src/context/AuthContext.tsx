@@ -22,6 +22,7 @@ interface AuthContextType {
   checkEmail: () => Promise<void>;
   resendVerification: () => Promise<void>;
   refreshUser: () => Promise<void>;
+  updateUser: (user: UserProfile) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -173,6 +174,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
+  // Обновление данных пользователя (синхронное)
+  const updateUser = useCallback((updatedUser: UserProfile) => {
+    setUser(updatedUser);
+    localStorage.setItem(STORAGE_KEY_USER, JSON.stringify(updatedUser));
+  }, []);
+
   return (
     <AuthContext.Provider value={{
       isAuthenticated: !!user,
@@ -183,7 +190,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       logout,
       checkEmail,
       resendVerification,
-      refreshUser
+      refreshUser,
+      updateUser
     }}>
       {children}
     </AuthContext.Provider>

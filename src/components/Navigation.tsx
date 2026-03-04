@@ -1,11 +1,12 @@
 import { useApp } from '@/context/AppContext';
 import { useAuth } from '@/context/AuthContext';
 import type { PageType, SectionType } from '@/types';
-import { BookOpen, GraduationCap, Dumbbell, School, ChevronDown, LogOut, LogIn, BarChart3 } from 'lucide-react';
+import { BookOpen, GraduationCap, Dumbbell, School, ChevronDown, LogOut, LogIn, BarChart3, UserCircle } from 'lucide-react';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { LoginModal } from '@/components/LoginModal';
 import { RegisterModal } from '@/components/RegisterModal';
+import { EditProfileModal } from '@/components/EditProfileModal';
 
 const navItems: { id: PageType; label: string; icon: React.ElementType }[] = [
   { id: 'theory', label: 'Теория', icon: BookOpen },
@@ -21,6 +22,7 @@ export function Navigation() {
   const [showSectionMenu, setShowSectionMenu] = useState(false);
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [showRegisterModal, setShowRegisterModal] = useState(false);
+  const [showEditProfileModal, setShowEditProfileModal] = useState(false);
 
   const handlePageChange = (page: PageType) => {
     setCurrentPage(page);
@@ -110,9 +112,16 @@ export function Navigation() {
             {/* Информация о пользователе и кнопка выхода */}
             {user && (
               <div className="flex items-center space-x-2 border-l border-slate-700 pl-4 ml-2">
-                <span className="text-sm text-slate-300 font-medium cursor-default">
-                  {user.name}
-                </span>
+                <button
+                  onClick={() => setShowEditProfileModal(true)}
+                  className="flex items-center space-x-2 text-sm text-slate-300 hover:text-white hover:bg-slate-800 px-2 py-1 rounded-lg transition-all font-medium cursor-pointer"
+                  title="Редактировать профиль"
+                >
+                  <UserCircle className="w-4 h-4" />
+                  <span className="hidden sm:inline">
+                    {user.surname || user.name || user.email}
+                  </span>
+                </button>
                 <Button
                   variant="ghost"
                   size="sm"
@@ -197,6 +206,12 @@ export function Navigation() {
           setShowRegisterModal(false);
           setShowLoginModal(true);
         }}
+      />
+
+      {/* Модальное окно редактирования профиля */}
+      <EditProfileModal
+        isOpen={showEditProfileModal}
+        onClose={() => setShowEditProfileModal(false)}
       />
     </nav>
   );
