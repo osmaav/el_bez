@@ -80,7 +80,7 @@ export function Navigation() {
     title: string,
     content: string,
     children: React.ReactNode,
-    align: 'start' | 'center' | 'end' = 'center'
+    align: 'start' | 'center' | 'end' = 'end'
   ) => (
     <RichTooltip
       {...defaultTooltipProps}
