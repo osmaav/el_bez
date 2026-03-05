@@ -6,6 +6,7 @@ import { saveLearningProgress, loadLearningProgress } from '@/services/questionS
 import { SessionTracker, statisticsService } from '@/services/statisticsService';
 import { questionFilterService } from '@/services/questionFilterService';
 import { QuestionFilter } from '@/components/statistics/QuestionFilter';
+import { RichTooltip } from '@/components/ui/rich-tooltip';
 import { LoadingModal } from '@/components/ui/loading-modal';
 import { ConfirmModal } from '@/components/ui/confirm-modal';
 import { Shuffle, RotateCcw, CheckCircle2, XCircle, Trophy, Target, AlertCircle, ChevronLeft, ChevronRight, BookOpen, Download, Filter } from 'lucide-react';
@@ -130,6 +131,12 @@ export function LearningSection() {
   // Состояния для фильтра вопросов
   const [hiddenQuestionIds, setHiddenQuestionIds] = useState<number[]>([]);
   const [showFilter, setShowFilter] = useState(false);
+  const [filteredQuestions, setFilteredQuestions] = useState<Question[]>([]);
+  const [filteredTotalPages, setFilteredTotalPages] = useState(0);
+
+  // Ref для прокрутки к фильтру
+  const filterRef = useRef<HTMLDivElement>(null);
+  const filterButtonRef = useRef<HTMLButtonElement>(null);
 
   // SessionTracker для статистики обучения
   const sessionTrackerRef = useRef<SessionTracker | null>(null);
@@ -140,7 +147,40 @@ export function LearningSection() {
 
   const currentSectionInfo = sections.find(s => s.id === currentSection);
   const TOTAL_QUESTIONS = questions.length;
-  const TOTAL_PAGES = Math.ceil(TOTAL_QUESTIONS / QUESTIONS_PER_SESSION);
+  
+  // Используем отфильтрованные вопросы если фильтр активен
+  const activeQuestions = filteredQuestions.length > 0 ? filteredQuestions : questions;
+  const TOTAL_PAGES = filteredTotalPages > 0 ? filteredTotalPages : Math.ceil(TOTAL_QUESTIONS / QUESTIONS_PER_SESSION);
+  
+  // Функция применения фильтра
+  const applyFilter = useCallback(() => {
+    const filterSettings = questionFilterService.getSettings(currentSection);
+    const questionStats = statisticsService.getQuestionStats(currentSection);
+    const allQuestionIds = questions.map(q => q.id);
+    const filteredIds = questionFilterService.filterQuestions(allQuestionIds, questionStats, filterSettings);
+    
+    const filtered = questions.filter(q => filteredIds.includes(q.id));
+    setFilteredQuestions(filtered);
+    setFilteredTotalPages(Math.ceil(filtered.length / QUESTIONS_PER_SESSION));
+    
+    // Сбрасываем на первую страницу при применении фильтра
+    setCurrentPage(1);
+    
+    console.log('🔍 [LearningSection] Фильтр применён:', {
+      total: questions.length,
+      filtered: filtered.length,
+      pages: Math.ceil(filtered.length / QUESTIONS_PER_SESSION)
+    });
+  }, [currentSection, questions]);
+  
+  // Загрузка настроек фильтра при инициализации
+  useEffect(() => {
+    if (questions.length > 0) {
+      const filterSettings = questionFilterService.getSettings(currentSection);
+      setHiddenQuestionIds(filterSettings.hiddenQuestionIds);
+      applyFilter();
+    }
+  }, [currentSection, questions.length]);
 
   // Отслеживание смены раздела - сброс всех состояний
   useEffect(() => {
@@ -268,11 +308,11 @@ export function LearningSection() {
       // console.log('💾 [LearningSection] Сохранённые состояния:', saved ? Object.keys(saved).length : 0);
 
       // Валидация номера страницы (не больше доступного количества)
-      const maxPages = Math.ceil(questions.length / QUESTIONS_PER_SESSION);
+      const maxPages = TOTAL_PAGES;
       // console.log('📊 [LearningSection] Максимальное количество страниц:', maxPages);
 
       if (savedPage > maxPages) {
-        // console.log('⚠️ [LearningSection] Страница', savedPage, 'недоступна для раздела с', questions.length, 'вопросами. Сброс на 1.');
+        // console.log('⚠️ [LearningSection] Страница', savedPage, 'недоступна для раздела с', activeQuestions.length, 'вопросами. Сброс на 1.');
         savedPage = 1;
       }
 
@@ -287,10 +327,10 @@ export function LearningSection() {
 
       setCurrentPage(savedPage);
 
-      // Загружаем вопросы для сохранённой страницы
+      // Загружаем вопросы для сохранённой страницы из отфильтрованных
       // console.log(`🆕 [LearningSection] Загрузка страницы ${savedPage} из ${maxPages}`);
       const startIndex = (savedPage - 1) * QUESTIONS_PER_SESSION;
-      const selected = questions.slice(startIndex, startIndex + QUESTIONS_PER_SESSION).map(q => ({
+      const selected = activeQuestions.slice(startIndex, startIndex + QUESTIONS_PER_SESSION).map(q => ({
         ...q,
         question: q.text,
         answers: q.options
@@ -818,15 +858,33 @@ export function LearningSection() {
                   <RotateCcw className="w-4 h-4" />
                   <span className="hidden md:inline ml-1">Сброс</span>
                 </Button>
-                <Button
-                  variant={showFilter ? 'default' : 'outline'}
-                  size="sm"
-                  onClick={() => setShowFilter(!showFilter)}
-                  className={showFilter ? 'bg-blue-600 hover:bg-blue-700' : ''}
+                <RichTooltip
+                  type="info"
+                  title="Фильтр вопросов"
+                  content="Исключите известные вопросы (100% точность) для эффективного обучения"
+                  position="bottom"
+                  align="end"
+                  maxWidth={280}
                 >
-                  <Filter className="w-4 h-4" />
-                  <span className="hidden md:inline ml-1">Фильтр</span>
-                </Button>
+                  <Button
+                    ref={filterButtonRef}
+                    variant={showFilter ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => {
+                      setShowFilter(!showFilter);
+                      if (!showFilter) {
+                        // Прокрутка к фильтру
+                        setTimeout(() => {
+                          filterRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                        }, 100);
+                      }
+                    }}
+                    className={showFilter ? 'bg-blue-600 hover:bg-blue-700' : ''}
+                  >
+                    <Filter className="w-4 h-4" />
+                    <span className="hidden md:inline ml-1">Фильтр</span>
+                  </Button>
+                </RichTooltip>
               </div>
             </div>
             <div className="mb-2">
@@ -838,7 +896,7 @@ export function LearningSection() {
             </div>
             <Progress value={progress} className="h-2" />
             <p className="text-xs text-slate-500 mt-2 text-right">
-              {((currentPage - 1) * QUESTIONS_PER_SESSION) + 1}-{Math.min(currentPage * QUESTIONS_PER_SESSION, TOTAL_QUESTIONS)} из {TOTAL_QUESTIONS} • {progress}%
+              {((currentPage - 1) * QUESTIONS_PER_SESSION) + 1}-{Math.min(currentPage * QUESTIONS_PER_SESSION, activeQuestions.length)} из {activeQuestions.length} • {progress}%
             </p>
           </CardContent>
         </Card>
@@ -904,11 +962,11 @@ export function LearningSection() {
 
         {/* Фильтр вопросов */}
         {showFilter && (
-          <div className="mb-6">
+          <div ref={filterRef} className="mb-6 scroll-mt-20">
             <QuestionFilter
               questionStats={statisticsService.getQuestionStats(currentSection)}
               onFilterChange={(filteredIds) => {
-                // Фильтрация будет применяться при загрузке вопросов
+                applyFilter();
                 console.log('Filtered questions:', filteredIds.length);
               }}
               hiddenQuestionIds={hiddenQuestionIds}
@@ -917,6 +975,8 @@ export function LearningSection() {
                 const settings = questionFilterService.getSettings(currentSection);
                 settings.hiddenQuestionIds = newHiddenIds;
                 questionFilterService.saveSettings(settings);
+                // Применяем фильтр после сохранения
+                setTimeout(() => applyFilter(), 100);
               }}
             />
           </div>

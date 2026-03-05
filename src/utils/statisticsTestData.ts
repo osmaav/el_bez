@@ -31,7 +31,7 @@ const generateAttempt = (section: SectionType): QuestionAttempt => {
     userAnswer: randomInRange(0, 3),
     correctAnswer: randomInRange(0, 3),
     timestamp: Date.now() - randomInRange(0, 90) * 24 * 60 * 60 * 1000,// 90 дней назад
-    timeSpent: randomInRange(10, 120)
+    timeSpent: randomInRange(1, 5) //длительность
   };
 };
 
