@@ -51,9 +51,14 @@ export const QuestionFilter: React.FC<QuestionFilterProps> = ({
     const known = questionStats.filter(q => q.isKnown).length;
     const weak = questionStats.filter(q => q.isWeak).length;
     const normal = total - known - weak;
-    
+
     return { total, known, weak, normal };
   }, [questionStats]);
+
+  // Применяем фильтры при изменении переключателей
+  React.useEffect(() => {
+    applyFilters();
+  }, [excludeKnown, excludeWeak, hiddenQuestionIds]);
 
   // Применяем фильтры
   const applyFilters = () => {
