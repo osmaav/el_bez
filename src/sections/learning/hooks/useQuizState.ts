@@ -14,12 +14,14 @@ export interface QuizState {
   shuffledAnswers: number[][];
   userAnswers: (number | null)[];
   isComplete: boolean;
+  questionIds?: number[];
 }
 
 export interface QuestionState {
   userAnswers: (number | null)[];
   shuffledAnswers: number[][];
   isComplete: boolean;
+  questionIds?: number[]; // ID вопросов для проверки актуальности
 }
 
 interface UseQuizStateOptions {
@@ -87,19 +89,13 @@ export function useQuizState({
 
     // Проверяем можно ли восстановить состояние
     // Сравниваем ID вопросов чтобы убедиться что это те же вопросы
-    const canRestore = savedState && 
-                       savedState.shuffledAnswers.length === selected.length &&
-                       selected.every((_, idx) => {
-                         // Если вопрос был отвечен, проверяем что это тот же вопрос
-                         if (savedState.userAnswers[idx] !== null) {
-                           // Упрощённая проверка: если длина shuffledAnswers совпадает, восстанавливаем
-                           return true;
-                         }
-                         // Для неотвеченных вопросов просто проверяем длину
-                         return true;
-                       });
+    const currentQuestionIds = selected.map(q => q.id);
+    const savedQuestionIds = savedState?.questionIds || [];
+    const questionsMatch = savedState && 
+                           savedQuestionIds.length === currentQuestionIds.length &&
+                           savedQuestionIds.every((id, idx) => id === currentQuestionIds[idx]);
 
-    if (canRestore) {
+    if (savedState && questionsMatch) {
       // Восстанавливаем сохранённое состояние
       console.log('💾 [useQuizState] Восстановление состояния для страницы', currentPage);
       setQuizStateState({
@@ -109,7 +105,7 @@ export function useQuizState({
         isComplete: savedState.isComplete,
       });
     } else {
-      // Создаём новое состояние
+      // Создаём новое состояние с ID вопросов
       const shuffledAnswers = selected.map((q) => {
         const expectedCount = q.answers?.length || 2;
         return shuffleArray([...Array(expectedCount).keys()]);
@@ -120,6 +116,7 @@ export function useQuizState({
         shuffledAnswers,
         userAnswers: new Array(selected.length).fill(null),
         isComplete: false,
+        questionIds: currentQuestionIds, // Сохраняем ID вопросов
       });
     }
 

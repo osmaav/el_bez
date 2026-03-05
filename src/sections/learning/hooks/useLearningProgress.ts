@@ -20,6 +20,7 @@ interface UseLearningProgressReturn {
     userAnswers: (number | null)[];
     shuffledAnswers: number[][];
     isComplete: boolean;
+    questionIds?: number[];
   }>;
   isLoading: boolean;
   error: string | null;
@@ -27,6 +28,7 @@ interface UseLearningProgressReturn {
     userAnswers: (number | null)[];
     shuffledAnswers: number[][];
     isComplete: boolean;
+    questionIds?: number[];
   }) => Promise<void>;
   loadProgress: () => Promise<void>;
   clearProgress: () => void;
