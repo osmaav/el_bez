@@ -28,6 +28,16 @@ import {
   useQuizState,
 } from './hooks';
 
+// Функция перемешивания (Fisher-Yates)
+const shuffleArray = (array: number[]): number[] => {
+  const shuffled = [...array];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  return shuffled;
+};
+
 // Импорт компонентов
 import {
   LearningProgressBar,
@@ -108,6 +118,7 @@ export function LearningSection() {
     resetQuiz,
     showSources,
     toggleSource,
+    setQuizState: setQuizStateLocal,
   } = useQuizState({
     questions: activeQuestions,
     savedStates,
@@ -272,12 +283,37 @@ export function LearningSection() {
   const handleApplyFilter = useCallback((filteredIds: number[]) => {
     console.log('🔍 [LearningSection] Фильтр применён:', filteredIds.length, 'вопросов');
     
-    // Применяем фильтр
-    applyFilter();
+    // Фильтруем вопросы
+    const filtered = questions.filter(q => filteredIds.includes(q.id));
     
-    // Сброс на первую страницу
+    // Сбрасываем на первую страницу
     resetPage();
-  }, [applyFilter, resetPage]);
+    
+    // Принудительно обновляем quizState с новыми вопросами
+    setTimeout(() => {
+      const startIndex = 0;
+      const selected = filtered.slice(startIndex, startIndex + QUESTIONS_PER_SESSION).map(q => ({
+        ...q,
+        question: q.text,
+        answers: q.options,
+      }));
+      
+      // Создаём новое состояние без ответов
+      const shuffledAnswers = selected.map((q) => {
+        const expectedCount = q.answers?.length || 2;
+        return shuffleArray([...Array(expectedCount).keys()]);
+      });
+      
+      setQuizStateLocal({
+        currentQuestions: selected,
+        shuffledAnswers,
+        userAnswers: new Array(selected.length).fill(null),
+        isComplete: false,
+      });
+      
+      console.log('🔄 [LearningSection] Состояние обновлено после фильтра');
+    }, 100);
+  }, [questions, resetPage]);
 
   // Обработка скрытия вопросов
   const handleHiddenChange = useCallback((newHiddenIds: number[]) => {
