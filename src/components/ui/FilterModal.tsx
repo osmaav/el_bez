@@ -1,0 +1,351 @@
+/**
+ * FilterModal — модальное окно для фильтрации вопросов
+ *
+ * @description Модальное окно для настройки фильтров вопросов
+ * @author el-bez UI Team
+ * @version 1.0.0
+ */
+
+import React, { useState, useMemo } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Separator } from '@/components/ui/separator';
+import { Filter, CheckCircle2, XCircle, Eye, EyeOff, X } from 'lucide-react';
+import { questionFilterService } from '@/services/questionFilterService';
+import type { SectionType } from '@/types';
+
+interface QuestionStats {
+  questionId: number;
+  ticket: number;
+  section: SectionType;
+  totalAttempts: number;
+  correctAnswers: number;
+  accuracy: number;
+  isKnown: boolean; // 100% точность
+  isWeak: boolean;  // < 70% точность
+}
+
+export interface FilterModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onApply: (filteredIds: number[], settings: { excludeKnown: boolean; excludeWeak: boolean }) => void;
+  questionStats: QuestionStats[];
+  hiddenQuestionIds: number[];
+  onHiddenChange: (hiddenIds: number[]) => void;
+  currentSection: SectionType;
+}
+
+export function FilterModal({
+  isOpen,
+  onClose,
+  onApply,
+  questionStats,
+  hiddenQuestionIds,
+  onHiddenChange,
+  currentSection,
+}: FilterModalProps) {
+  const [excludeKnown, setExcludeKnown] = useState(false);
+  const [excludeWeak, setExcludeWeak] = useState(false);
+
+  // При открытии модального окна блокируем прокрутку страницы
+  React.useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [isOpen]);
+
+  // При открытии модального окна загружаем текущие настройки
+  React.useEffect(() => {
+    if (isOpen) {
+      const settings = questionFilterService.getSettings(currentSection);
+      setExcludeKnown(settings.excludeKnown);
+      setExcludeWeak(settings.excludeWeak);
+    }
+  }, [isOpen, currentSection]);
+
+  // Статистика по вопросам
+  const stats = useMemo(() => {
+    const total = questionStats.length;
+    const known = questionStats.filter(q => q.isKnown).length;
+    const weak = questionStats.filter(q => q.isWeak).length;
+    const normal = total - known - weak;
+
+    return { total, known, weak, normal };
+  }, [questionStats]);
+
+  // Применяем фильтры
+  const handleApply = () => {
+    const filteredIds = questionStats
+      .filter(q => {
+        if (excludeKnown && q.isKnown) return false;
+        if (excludeWeak && q.isWeak) return false;
+        if (hiddenQuestionIds.includes(q.questionId)) return false;
+        return true;
+      })
+      .map(q => q.questionId);
+
+    // Сохраняем настройки в сервис
+    const settings = questionFilterService.getSettings(currentSection);
+    settings.excludeKnown = excludeKnown;
+    settings.excludeWeak = excludeWeak;
+    questionFilterService.saveSettings(settings);
+
+    onApply(filteredIds, { excludeKnown, excludeWeak });
+    onClose();
+  };
+
+  // Сброс фильтров
+  const handleReset = () => {
+    setExcludeKnown(false);
+    setExcludeWeak(false);
+    questionFilterService.resetSettings(currentSection);
+    onApply(questionStats.map(q => q.questionId), { excludeKnown: false, excludeWeak: false });
+    onClose();
+  };
+
+  // Скрыть/показать вопрос
+  const toggleHideQuestion = (questionId: number) => {
+    const newHidden = hiddenQuestionIds.includes(questionId)
+      ? hiddenQuestionIds.filter(id => id !== questionId)
+      : [...hiddenQuestionIds, questionId];
+
+    onHiddenChange(newHidden);
+  };
+
+  // Предварительный просмотр количества вопросов
+  const previewCount = useMemo(() => {
+    return questionStats.filter(q => {
+      if (excludeKnown && q.isKnown) return false;
+      if (excludeWeak && q.isWeak) return false;
+      if (hiddenQuestionIds.includes(q.questionId)) return false;
+      return true;
+    }).length;
+  }, [excludeKnown, excludeWeak, hiddenQuestionIds, questionStats]);
+
+  return (
+    <AnimatePresence>
+      {isOpen && (
+        <>
+          {/* Затемнение фона - без закрытия по клику */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50"
+          />
+
+          {/* Модальное окно - центрирование по viewport */}
+          <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="w-full max-w-2xl mx-auto my-8"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <Card className="shadow-2xl border-slate-200">
+              <CardHeader className="pb-4 border-b">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Filter className="w-5 h-5 text-blue-600" />
+                    <div>
+                      <CardTitle className="text-lg">Фильтр вопросов</CardTitle>
+                      <CardDescription>
+                        Настройте параметры отображения вопросов
+                      </CardDescription>
+                    </div>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={onClose}
+                    className="h-8 w-8 p-0 hover:bg-slate-100"
+                  >
+                    <X className="w-4 h-4" />
+                  </Button>
+                </div>
+              </CardHeader>
+
+              <CardContent className="space-y-4 pt-4">
+                {/* Переключатели фильтров */}
+                <div className="grid gap-4">
+                  <div className="flex items-center justify-between space-x-2">
+                    <Label htmlFor="exclude-known" className="flex flex-col space-y-1 cursor-pointer">
+                      <span className="text-sm font-medium">Исключить известные</span>
+                      <span className="text-xs text-muted-foreground">
+                        Вопросы со 100% точностью ({stats.known} шт)
+                      </span>
+                    </Label>
+                    <Switch
+                      id="exclude-known"
+                      checked={excludeKnown}
+                      onCheckedChange={(checked) => {
+                        setExcludeKnown(checked);
+                      }}
+                    />
+                  </div>
+
+                  <Separator />
+
+                  <div className="flex items-center justify-between space-x-2">
+                    <Label htmlFor="exclude-weak" className="flex flex-col space-y-1 cursor-pointer">
+                      <span className="text-sm font-medium">Исключить слабые</span>
+                      <span className="text-xs text-muted-foreground">
+                        Вопросы с точностью &lt;70% ({stats.weak} шт)
+                      </span>
+                    </Label>
+                    <Switch
+                      id="exclude-weak"
+                      checked={excludeWeak}
+                      onCheckedChange={(checked) => {
+                        setExcludeWeak(checked);
+                      }}
+                    />
+                  </div>
+                </div>
+
+                {/* Статистика и предпросмотр */}
+                <div className="grid grid-cols-4 gap-2">
+                  <div className="p-3 rounded-lg bg-emerald-50 dark:bg-emerald-950/20 text-center">
+                    <div className="flex items-center justify-center gap-1 mb-1">
+                      <CheckCircle2 className="w-3 h-3 text-emerald-600" />
+                      <span className="text-xs font-medium text-emerald-700 dark:text-emerald-400">
+                        Известные
+                      </span>
+                    </div>
+                    <div className="text-lg font-bold text-emerald-600">{stats.known}</div>
+                  </div>
+
+                  <div className="p-3 rounded-lg bg-rose-50 dark:bg-rose-950/20 text-center">
+                    <div className="flex items-center justify-center gap-1 mb-1">
+                      <XCircle className="w-3 h-3 text-rose-600" />
+                      <span className="text-xs font-medium text-rose-700 dark:text-rose-400">
+                        Слабые
+                      </span>
+                    </div>
+                    <div className="text-lg font-bold text-rose-600">{stats.weak}</div>
+                  </div>
+
+                  <div className="p-3 rounded-lg bg-blue-50 dark:bg-blue-950/20 text-center">
+                    <div className="flex items-center justify-center gap-1 mb-1">
+                      <Filter className="w-3 h-3 text-blue-600" />
+                      <span className="text-xs font-medium text-blue-700 dark:text-blue-400">
+                        В работе
+                      </span>
+                    </div>
+                    <div className="text-lg font-bold text-blue-600">{previewCount}</div>
+                  </div>
+
+                  <div className="p-3 rounded-lg bg-slate-50 dark:bg-slate-950/20 text-center">
+                    <div className="flex items-center justify-center gap-1 mb-1">
+                      <Filter className="w-3 h-3 text-slate-600" />
+                      <span className="text-xs font-medium text-slate-700 dark:text-slate-400">
+                        Всего
+                      </span>
+                    </div>
+                    <div className="text-lg font-bold text-slate-600">{stats.total}</div>
+                  </div>
+                </div>
+
+                {/* Предупреждение о скрытых вопросах */}
+                {hiddenQuestionIds.length > 0 && (
+                  <Alert className="bg-amber-50 dark:bg-amber-950/20 border-amber-200">
+                    <AlertDescription className="text-amber-800 dark:text-amber-300">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm">
+                          Скрыто вопросов: {hiddenQuestionIds.length}
+                        </span>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => onHiddenChange([])}
+                          className="h-6 text-xs"
+                        >
+                          Показать все
+                        </Button>
+                      </div>
+                    </AlertDescription>
+                  </Alert>
+                )}
+
+                {/* Список вопросов для ручного скрытия */}
+                {questionStats.length > 0 && (
+                  <div className="space-y-2">
+                    <Label className="text-xs font-medium">Ручное скрытие вопросов:</Label>
+                    <div className="grid gap-1 max-h-48 overflow-y-auto p-2 rounded-lg bg-slate-50 dark:bg-slate-950/20">
+                      {questionStats.slice(0, 20).map((q) => (
+                        <div
+                          key={q.questionId}
+                          className="flex items-center justify-between p-2 rounded-md bg-white dark:bg-slate-900 text-xs border border-slate-200 dark:border-slate-800"
+                        >
+                          <div className="flex items-center gap-2">
+                            <span className="font-medium">Билет {q.ticket}</span>
+                            <Badge
+                              variant={q.isKnown ? 'default' : q.isWeak ? 'destructive' : 'secondary'}
+                              className="h-4 text-[9px]"
+                            >
+                              {q.accuracy}%
+                            </Badge>
+                          </div>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => toggleHideQuestion(q.questionId)}
+                            className="h-6 w-6 p-0 hover:bg-slate-100 dark:hover:bg-slate-800"
+                          >
+                            {hiddenQuestionIds.includes(q.questionId) ? (
+                              <EyeOff className="w-3 h-3" />
+                            ) : (
+                              <Eye className="w-3 h-3" />
+                            )}
+                          </Button>
+                        </div>
+                      ))}
+                      {questionStats.length > 20 && (
+                        <p className="text-xs text-muted-foreground text-center py-2">
+                          + ещё {questionStats.length - 20} вопросов
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* Кнопки действий */}
+                <div className="flex gap-2 pt-4 border-t">
+                  <Button
+                    variant="outline"
+                    onClick={handleReset}
+                    className="flex-1"
+                  >
+                    Сбросить фильтры
+                  </Button>
+                  <Button
+                    variant="default"
+                    onClick={handleApply}
+                    className="flex-1 bg-blue-600 hover:bg-blue-700"
+                  >
+                    Применить ({previewCount} вопр.)
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+        </div>
+        </>
+      )}
+    </AnimatePresence>
+  );
+}
+
+export default FilterModal;

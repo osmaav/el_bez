@@ -436,8 +436,9 @@ export function TrainerSection() {
           <div className="mb-4">
             <QuestionFilter
               questionStats={statisticsService.getQuestionStats(currentSection)}
-              onFilterChange={(filteredIds) => {
-                console.log('Filtered questions:', filteredIds.length);
+              currentSection={currentSection}
+              onFilterChange={(filteredIds, settings) => {
+                console.log('🔍 [TrainerSection] Фильтр применён, вопросов:', filteredIds.length, 'настройки:', settings);
               }}
               hiddenQuestionIds={hiddenQuestionIds}
               onHiddenChange={(newHiddenIds) => {

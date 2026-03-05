@@ -139,37 +139,37 @@ export function Navigation() {
             {/* Информация о пользователе и кнопка выхода */}
             {user && (
               <div className="flex items-center space-x-2 border-l border-slate-700 pl-4 ml-2">
-                  <RichTooltip
-                    {...defaultTooltipProps}
-                    title="Профиль пользователя"
-                    content={tooltips.userProfile}
-                    align="start"
+                <RichTooltip
+                  {...defaultTooltipProps}
+                  title="Профиль пользователя"
+                  content={tooltips.userProfile}
+                  align="start"
+                >
+                  <button
+                    onClick={() => setShowEditProfileModal(true)}
+                    className="flex items-center space-x-2 text-sm text-slate-300 hover:text-white hover:bg-slate-800 px-2 py-1 rounded-lg transition-all font-medium cursor-pointer"
                   >
-                    <button
-                      onClick={() => setShowEditProfileModal(true)}
-                      className="flex items-center space-x-2 text-sm text-slate-300 hover:text-white hover:bg-slate-800 px-2 py-1 rounded-lg transition-all font-medium cursor-pointer"
-                    >
-                      <UserCircle className="w-4 h-4" />
-                      <span className="hidden sm:inline">
-                        {user.name || user.surname || user.email}
-                      </span>
-                    </button>
-                  </RichTooltip>
-                  <RichTooltip
-                    {...defaultTooltipProps}
-                    title="Выход из системы"
-                    content={tooltips.buttonExit}
-                    align="start"
+                    <UserCircle className="w-4 h-4" />
+                    <span className="hidden sm:inline">
+                      {user.name || user.surname || user.email}
+                    </span>
+                  </button>
+                </RichTooltip>
+                <RichTooltip
+                  {...defaultTooltipProps}
+                  title="Выход из системы"
+                  content={tooltips.buttonExit}
+                  align="end"
+                >
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleLogout}
+                    className="text-slate-300 hover:text-white hover:bg-slate-800 h-8 w-8 p-0"
                   >
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={handleLogout}
-                      className="text-slate-300 hover:text-white hover:bg-slate-800 h-8 w-8 p-0"
-                    >
-                      <LogOut className="w-4 h-4" />
-                    </Button>
-                  </RichTooltip>
+                    <LogOut className="w-4 h-4" />
+                  </Button>
+                </RichTooltip>
               </div>
             )}
           </div>
@@ -188,6 +188,7 @@ export function Navigation() {
                     {...defaultTooltipProps}
                     title={item.label}
                     content={tooltips[item.id]}
+                    align="end"
                   >
                     <button
                       onClick={() => handlePageChange(item.id)}
@@ -213,6 +214,7 @@ export function Navigation() {
                 {...defaultTooltipProps}
                 title="Вход в систему"
                 content={tooltips.buttonLogin}
+                align="end"
               >
                 <Button
                   onClick={handleLogin}
