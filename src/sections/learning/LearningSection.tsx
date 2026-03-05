@@ -18,7 +18,7 @@ import { Shuffle, Trophy } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import jsPDF from 'jspdf';
-import 'jspdf-autotable';
+import autoTable from 'jspdf-autotable';
 
 // Импорт хуков
 import {
@@ -245,7 +245,7 @@ export function LearningSection() {
         ];
       });
 
-      (doc as any).autoTable({
+      autoTable(doc, {
         startY: 60,
         head: [['№', 'Вопрос', 'Ваш ответ', '✓/✗']],
         body: tableData,
@@ -282,13 +282,16 @@ export function LearningSection() {
   // Обработка применения фильтра
   const handleApplyFilter = useCallback((filteredIds: number[]) => {
     console.log('🔍 [LearningSection] Фильтр применён:', filteredIds.length, 'вопросов');
-    
+
     // Фильтруем вопросы
     const filtered = questions.filter(q => filteredIds.includes(q.id));
-    
+
+    // Обновляем фильтр в хуке
+    applyFilter();
+
     // Сбрасываем на первую страницу
     resetPage();
-    
+
     // Принудительно обновляем quizState с новыми вопросами
     setTimeout(() => {
       const startIndex = 0;
@@ -297,23 +300,23 @@ export function LearningSection() {
         question: q.text,
         answers: q.options,
       }));
-      
+
       // Создаём новое состояние без ответов
       const shuffledAnswers = selected.map((q) => {
         const expectedCount = q.answers?.length || 2;
         return shuffleArray([...Array(expectedCount).keys()]);
       });
-      
+
       setQuizStateLocal({
         currentQuestions: selected,
         shuffledAnswers,
         userAnswers: new Array(selected.length).fill(null),
         isComplete: false,
       });
-      
+
       console.log('🔄 [LearningSection] Состояние обновлено после фильтра');
     }, 100);
-  }, [questions, resetPage]);
+  }, [questions, applyFilter, resetPage]);
 
   // Обработка скрытия вопросов
   const handleHiddenChange = useCallback((newHiddenIds: number[]) => {
