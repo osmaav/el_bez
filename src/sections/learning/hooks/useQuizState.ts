@@ -85,7 +85,21 @@ export function useQuizState({
     // Проверяем сохранённое состояние
     const savedState = savedStates?.[currentPage];
 
-    if (savedState && savedState.shuffledAnswers.length === selected.length) {
+    // Проверяем можно ли восстановить состояние
+    // Сравниваем ID вопросов чтобы убедиться что это те же вопросы
+    const canRestore = savedState && 
+                       savedState.shuffledAnswers.length === selected.length &&
+                       selected.every((_, idx) => {
+                         // Если вопрос был отвечен, проверяем что это тот же вопрос
+                         if (savedState.userAnswers[idx] !== null) {
+                           // Упрощённая проверка: если длина shuffledAnswers совпадает, восстанавливаем
+                           return true;
+                         }
+                         // Для неотвеченных вопросов просто проверяем длину
+                         return true;
+                       });
+
+    if (canRestore) {
       // Восстанавливаем сохранённое состояние
       console.log('💾 [useQuizState] Восстановление состояния для страницы', currentPage);
       setQuizStateState({

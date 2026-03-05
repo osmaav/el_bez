@@ -25,6 +25,8 @@ interface UseQuestionFilterReturn {
   applyFilter: () => void;
   setHiddenQuestionIds: (ids: number[]) => void;
   resetFilter: () => void;
+  setFilteredQuestions: (questions: Question[]) => void;
+  setFilteredTotalPages: (pages: number) => void;
 }
 
 export function useQuestionFilter({
@@ -120,6 +122,8 @@ export function useQuestionFilter({
     applyFilter,
     setHiddenQuestionIds,
     resetFilter,
+    setFilteredQuestions,
+    setFilteredTotalPages: setTotalPages,
   };
 }
 

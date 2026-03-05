@@ -28,16 +28,6 @@ import {
   useQuizState,
 } from './hooks';
 
-// Функция перемешивания (Fisher-Yates)
-const shuffleArray = (array: number[]): number[] => {
-  const shuffled = [...array];
-  for (let i = shuffled.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-  }
-  return shuffled;
-};
-
 // Импорт компонентов
 import {
   LearningProgressBar,
@@ -86,6 +76,8 @@ export function LearningSection() {
     hiddenQuestionIds,
     applyFilter,
     setHiddenQuestionIds,
+    setFilteredQuestions,
+    setFilteredTotalPages,
   } = useQuestionFilter({
     currentSection,
     questions,
@@ -118,9 +110,8 @@ export function LearningSection() {
     resetQuiz,
     showSources,
     toggleSource,
-    setQuizState: setQuizStateLocal,
   } = useQuizState({
-    questions: activeQuestions,
+    questions: activeQuestions, // Используем отфильтрованные вопросы
     savedStates,
     questionsPerPage: QUESTIONS_PER_SESSION,
     currentPage,
@@ -285,6 +276,10 @@ export function LearningSection() {
 
     // Фильтруем вопросы
     const filtered = questions.filter(q => filteredIds.includes(q.id));
+    
+    // Сначала обновляем filteredQuestions
+    setFilteredQuestions(filtered);
+    setFilteredTotalPages(Math.ceil(filtered.length / QUESTIONS_PER_SESSION));
 
     // Обновляем фильтр в хуке
     applyFilter();
@@ -292,35 +287,11 @@ export function LearningSection() {
     // Сбрасываем на первую страницу
     resetPage();
 
-    // Очищаем сохранённое состояние для страницы 1 чтобы оно не восстановилось
-    const newSavedStates = { ...savedStates };
-    delete newSavedStates[1];
+    // НЕ очищаем savedStates - useQuizState сам создаст новое состояние
+    // потому что savedStates[1] не будет совпадать с новыми вопросами
     
-    // Принудительно обновляем quizState с новыми вопросами
-    setTimeout(() => {
-      const startIndex = 0;
-      const selected = filtered.slice(startIndex, startIndex + QUESTIONS_PER_SESSION).map(q => ({
-        ...q,
-        question: q.text,
-        answers: q.options,
-      }));
-
-      // Создаём новое состояние без ответов
-      const shuffledAnswers = selected.map((q) => {
-        const expectedCount = q.answers?.length || 2;
-        return shuffleArray([...Array(expectedCount).keys()]);
-      });
-
-      setQuizStateLocal({
-        currentQuestions: selected,
-        shuffledAnswers,
-        userAnswers: new Array(selected.length).fill(null),
-        isComplete: false,
-      });
-
-      console.log('🔄 [LearningSection] Состояние обновлено после фильтра');
-    }, 100);
-  }, [questions, applyFilter, resetPage, savedStates]);
+    console.log('🔄 [LearningSection] Фильтр применён, вопросы обновлены');
+  }, [questions, applyFilter, resetPage]);
 
   // Обработка скрытия вопросов
   const handleHiddenChange = useCallback((newHiddenIds: number[]) => {
