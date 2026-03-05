@@ -111,7 +111,7 @@ export function useQuizState({
       // Создаём новое состояние с ID вопросов
       // Учитываем что количество вариантов ответа может быть от 2 до 6
       const shuffledAnswers = selected.map((q) => {
-        const answerCount = q.answers?.length || q.options?.length || 4; // Реальное количество вариантов
+        const answerCount = q.answers?.length || q.options?.length || 2; // Минимум 2 варианта
         return shuffleArray([...Array(answerCount).keys()]);
       });
 
