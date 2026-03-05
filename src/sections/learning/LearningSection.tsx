@@ -292,6 +292,10 @@ export function LearningSection() {
     // Сбрасываем на первую страницу
     resetPage();
 
+    // Очищаем сохранённое состояние для страницы 1 чтобы оно не восстановилось
+    const newSavedStates = { ...savedStates };
+    delete newSavedStates[1];
+    
     // Принудительно обновляем quizState с новыми вопросами
     setTimeout(() => {
       const startIndex = 0;
@@ -316,7 +320,7 @@ export function LearningSection() {
 
       console.log('🔄 [LearningSection] Состояние обновлено после фильтра');
     }, 100);
-  }, [questions, applyFilter, resetPage]);
+  }, [questions, applyFilter, resetPage, savedStates]);
 
   // Обработка скрытия вопросов
   const handleHiddenChange = useCallback((newHiddenIds: number[]) => {
