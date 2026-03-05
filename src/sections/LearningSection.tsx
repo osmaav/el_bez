@@ -3,10 +3,12 @@ import { useApp } from '@/context/AppContext';
 import { useAuth } from '@/context/AuthContext';
 import { useToast } from '@/context/ToastContext';
 import { saveLearningProgress, loadLearningProgress } from '@/services/questionService';
-import { SessionTracker } from '@/services/statisticsService';
+import { SessionTracker, statisticsService } from '@/services/statisticsService';
+import { questionFilterService } from '@/services/questionFilterService';
+import { QuestionFilter } from '@/components/statistics/QuestionFilter';
 import { LoadingModal } from '@/components/ui/loading-modal';
 import { ConfirmModal } from '@/components/ui/confirm-modal';
-import { Shuffle, RotateCcw, CheckCircle2, XCircle, Trophy, Target, AlertCircle, ChevronLeft, ChevronRight, BookOpen, Download } from 'lucide-react';
+import { Shuffle, RotateCcw, CheckCircle2, XCircle, Trophy, Target, AlertCircle, ChevronLeft, ChevronRight, BookOpen, Download, Filter } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
@@ -124,6 +126,10 @@ export function LearningSection() {
   const [isInitialized, setIsInitialized] = useState(false);
   const [lastSection, setLastSection] = useState<SectionType | null>(null);
   const [isSectionChanging, setIsSectionChanging] = useState(false);
+  
+  // Состояния для фильтра вопросов
+  const [hiddenQuestionIds, setHiddenQuestionIds] = useState<number[]>([]);
+  const [showFilter, setShowFilter] = useState(false);
 
   // SessionTracker для статистики обучения
   const sessionTrackerRef = useRef<SessionTracker | null>(null);
@@ -218,6 +224,10 @@ export function LearningSection() {
       // console.log('⏳ [LearningSection] Вопросы ещё не загружены, ожидаем...');
       return;
     }
+
+    // Загружаем настройки фильтра
+    const filterSettings = questionFilterService.getSettings(currentSection);
+    setHiddenQuestionIds(filterSettings.hiddenQuestionIds);
 
     // Загружаем прогресс обучения
     const loadProgressData = async () => {
@@ -808,6 +818,15 @@ export function LearningSection() {
                   <RotateCcw className="w-4 h-4" />
                   <span className="hidden md:inline ml-1">Сброс</span>
                 </Button>
+                <Button
+                  variant={showFilter ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setShowFilter(!showFilter)}
+                  className={showFilter ? 'bg-blue-600 hover:bg-blue-700' : ''}
+                >
+                  <Filter className="w-4 h-4" />
+                  <span className="hidden md:inline ml-1">Фильтр</span>
+                </Button>
               </div>
             </div>
             <div className="mb-2">
@@ -882,6 +901,26 @@ export function LearningSection() {
             </Card>
           ))}
         </div>
+
+        {/* Фильтр вопросов */}
+        {showFilter && (
+          <div className="mb-6">
+            <QuestionFilter
+              questionStats={statisticsService.getQuestionStats(currentSection)}
+              onFilterChange={(filteredIds) => {
+                // Фильтрация будет применяться при загрузке вопросов
+                console.log('Filtered questions:', filteredIds.length);
+              }}
+              hiddenQuestionIds={hiddenQuestionIds}
+              onHiddenChange={(newHiddenIds) => {
+                setHiddenQuestionIds(newHiddenIds);
+                const settings = questionFilterService.getSettings(currentSection);
+                settings.hiddenQuestionIds = newHiddenIds;
+                questionFilterService.saveSettings(settings);
+              }}
+            />
+          </div>
+        )}
 
         {/* Результаты */}
         {quizState.isComplete && (

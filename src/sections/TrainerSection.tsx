@@ -1,6 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useApp } from '@/context/AppContext';
 import { useToast } from '@/context/ToastContext';
+import { questionFilterService } from '@/services/questionFilterService';
+import { statisticsService } from '@/services/statisticsService';
+import { QuestionFilter } from '@/components/statistics/QuestionFilter';
 import { LoadingModal } from '@/components/ui/loading-modal';
 import { ConfirmModal } from '@/components/ui/confirm-modal';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -19,7 +22,8 @@ import {
   Trophy,
   Target,
   AlertCircle,
-  Clock
+  Clock,
+  Filter,
 } from 'lucide-react';
 
 export function TrainerSection() {
@@ -60,9 +64,17 @@ export function TrainerSection() {
     title: '',
     description: ''
   });
+  
+  // Состояния для фильтра вопросов
+  const [hiddenQuestionIds, setHiddenQuestionIds] = useState<number[]>([]);
+  const [showFilter, setShowFilter] = useState(false);
 
   // Обёртка для startTrainer с LoadingModal и Toast
   const handleStartTrainer = (questionCount: number) => {
+    // Загружаем настройки фильтра при старте
+    const filterSettings = questionFilterService.getSettings(currentSection);
+    setHiddenQuestionIds(filterSettings.hiddenQuestionIds);
+    
     setLoadingModal({
       isOpen: true,
       status: 'loading',
@@ -340,6 +352,15 @@ export function TrainerSection() {
             <RotateCcw className="w-5 h-5 mr-2" />
             Новая тренировка
           </Button>
+          <Button
+            variant={showFilter ? 'default' : 'outline'}
+            size="lg"
+            onClick={() => setShowFilter(!showFilter)}
+            className={showFilter ? 'bg-blue-600 hover:bg-blue-700' : ''}
+          >
+            <Filter className="w-5 h-5 mr-2" />
+            Фильтр
+          </Button>
         </div>
       </div>
     );
@@ -409,6 +430,25 @@ export function TrainerSection() {
           </div>
           <Progress value={progress} className="h-2" />
         </div>
+
+        {/* Фильтр вопросов */}
+        {showFilter && (
+          <div className="mb-4">
+            <QuestionFilter
+              questionStats={statisticsService.getQuestionStats(currentSection)}
+              onFilterChange={(filteredIds) => {
+                console.log('Filtered questions:', filteredIds.length);
+              }}
+              hiddenQuestionIds={hiddenQuestionIds}
+              onHiddenChange={(newHiddenIds) => {
+                setHiddenQuestionIds(newHiddenIds);
+                const settings = questionFilterService.getSettings(currentSection);
+                settings.hiddenQuestionIds = newHiddenIds;
+                questionFilterService.saveSettings(settings);
+              }}
+            />
+          </div>
+        )}
 
         {/* Вопрос */}
         <Card className="mb-6 py-2 gap-0">
