@@ -206,7 +206,7 @@ export function LearningSection() {
       } else {
         // Создаём новое состояние
         const shuffledAnswers = selected.map((q) => {
-          const expectedCount = q.answers?.length || 2;
+          const expectedCount = q.answers?.length || q.options?.length || 4;
           return shuffleArray([...Array(expectedCount).keys()]);
         });
 
@@ -478,7 +478,7 @@ export function LearningSection() {
         // Проверяем, что shuffledAnswers соответствует текущему количеству ответов
         const validatedShuffledAnswers = selected.map((q, idx) => {
           const savedShuffled = savedState.shuffledAnswers[idx];
-          const expectedCount = q.answers?.length || 2;
+          const expectedCount = q.answers?.length || q.options?.length || 4;
 
           // Если сохранённые ответы не соответствуют ожидаемому количеству, перегенерируем
           if (!savedShuffled || savedShuffled.length !== expectedCount) {
@@ -974,7 +974,7 @@ export function LearningSection() {
               } else {
                 // Создаём новое состояние без ответов
                 const shuffledAnswers = selected.map((q) => {
-                  const expectedCount = q.answers?.length || 2;
+                  const expectedCount = q.answers?.length || q.options?.length || 4;
                   return shuffleArray([...Array(expectedCount).keys()]);
                 });
                 

@@ -91,7 +91,10 @@ export function useQuizState({
     // Сравниваем ID вопросов чтобы убедиться что это те же вопросы
     const currentQuestionIds = selected.map(q => q.id);
     const savedQuestionIds = savedState?.questionIds || [];
+    
+    // Восстанавливаем только если questionIds сохранены и совпадают
     const questionsMatch = savedState && 
+                           savedState.questionIds && // Важно: questionIds должны быть сохранены
                            savedQuestionIds.length === currentQuestionIds.length &&
                            savedQuestionIds.every((id, idx) => id === currentQuestionIds[idx]);
 
@@ -106,9 +109,10 @@ export function useQuizState({
       });
     } else {
       // Создаём новое состояние с ID вопросов
+      // Учитываем что количество вариантов ответа может быть от 2 до 6
       const shuffledAnswers = selected.map((q) => {
-        const expectedCount = q.answers?.length || 2;
-        return shuffleArray([...Array(expectedCount).keys()]);
+        const answerCount = q.answers?.length || q.options?.length || 4; // Реальное количество вариантов
+        return shuffleArray([...Array(answerCount).keys()]);
       });
 
       setQuizStateState({
