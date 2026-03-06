@@ -45,13 +45,18 @@ export const ActivityCalendar: React.FC<ActivityCalendarProps> = ({ data }) => {
     return map;
   }, [last30Days]);
 
-  // Генерируем данные для текущего и предыдущего месяцев
+  // Определяем, нужно ли показывать предыдущий месяц
+  const today = new Date();
+  const shouldShowPrevMonth = today.getDate() < 15;
+
+  // Генерируем данные для месяцев
   const monthsData = useMemo((): MonthData[] => {
     const result: MonthData[] = [];
-    const today = new Date();
+    
+    // Если текущая дата < 15, показываем предыдущий и текущий месяц
+    const startMonthOffset = shouldShowPrevMonth ? 1 : 0;
 
-    // Предыдущий и текущий месяцы
-    for (let monthOffset = 1; monthOffset >= 0; monthOffset--) {
+    for (let monthOffset = startMonthOffset; monthOffset >= 0; monthOffset--) {
       const targetDate = new Date(today.getFullYear(), today.getMonth() - monthOffset, 1);
       const year = targetDate.getFullYear();
       const month = targetDate.getMonth();
@@ -112,7 +117,7 @@ export const ActivityCalendar: React.FC<ActivityCalendarProps> = ({ data }) => {
     }
 
     return result;
-  }, [activityMap]);
+  }, [activityMap, shouldShowPrevMonth]);
 
   // Динамическая подпись
   const description = `Календарь вашей активности за последние ${last30Days.length} дней.`;
@@ -142,17 +147,80 @@ export const ActivityCalendar: React.FC<ActivityCalendarProps> = ({ data }) => {
   };
 
   return (
-    <Card className="activity-calendar-card max-w-[536px] mx-auto">
+    <Card className="activity-calendar-card max-w-[280px] mx-auto">
       <CardHeader className="pb-3">
         <CardTitle className="text-lg font-bold">Активность</CardTitle>
         <CardDescription className="text-xs">{description}</CardDescription>
       </CardHeader>
       <CardContent>
-        {/* Контейнер для месяцев с горизонтальной прокруткой */}
-        <div className="w-full overflow-x-auto scrollbar-hide">
-          <div className="flex gap-6" style={{ width: 'fit-content' }}>
+        {/* Контейнер для месяцев с горизонтальной прокруткой (если показываем 2 месяца) */}
+        {shouldShowPrevMonth ? (
+          <div className="w-full overflow-x-auto scrollbar-hide">
+            <div className="flex gap-6" style={{ width: 'fit-content' }}>
+              {monthsData.map((monthData, monthIndex) => (
+                <div key={monthIndex} className="space-y-2" style={{ width: '230px', flexShrink: 0 }}>
+                  {/* Заголовок месяца */}
+                  <div className="text-sm font-semibold text-slate-700 dark:text-slate-300 capitalize text-center whitespace-nowrap">
+                    {monthData.name}
+                  </div>
+
+                  {/* Таблица календаря */}
+                  <div>
+                    <table className="border-collapse" style={{ tableLayout: 'fixed', width: '230px' }}>
+                      <thead>
+                        <tr className="text-slate-500 dark:text-slate-400">
+                          <th className="h-7 font-normal text-[9px] w-[32.86px]">Пн</th>
+                          <th className="h-7 font-normal text-[9px] w-[32.86px]">Вт</th>
+                          <th className="h-7 font-normal text-[9px] w-[32.86px]">Ср</th>
+                          <th className="h-7 font-normal text-[9px] w-[32.86px]">Чт</th>
+                          <th className="h-7 font-normal text-[9px] w-[32.86px]">Пт</th>
+                          <th className="h-7 font-normal text-[9px] w-[32.86px]">Сб</th>
+                          <th className="h-7 font-normal text-[9px] w-[32.86px]">Вс</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {monthData.weeks.map((week, weekIndex) => (
+                          <tr key={weekIndex}>
+                            {week.map((day, dayIndex) => {
+                              if (!day) {
+                                return <td key={dayIndex} className="w-[32.86px] h-[32.86px]" />;
+                              }
+
+                              return (
+                                <td
+                                  key={day.date}
+                                  className="w-[32.86px] h-[32.86px] p-0.5 relative"
+                                >
+                                  <div
+                                    className={cn(
+                                      'w-full h-full rounded-md flex items-center justify-center text-[9px] font-medium',
+                                      'transition-all duration-300 ease-out',
+                                      'hover:scale-125 hover:shadow-xl hover:ring-2 hover:ring-blue-400 hover:ring-offset-1',
+                                      'cursor-default',
+                                      getColorClass(day.questionsAnswered),
+                                      getTextColorClass(day.questionsAnswered)
+                                    )}
+                                    title={`${formatDateTooltip(day.date)} — ${day.questionsAnswered} ${getDeclension(day.questionsAnswered, ['вопрос', 'вопроса', 'вопросов'])}`}
+                                  >
+                                    {day.day}
+                                  </div>
+                                </td>
+                              );
+                            })}
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        ) : (
+          /* Показываем только текущий месяц без прокрутки */
+          <div className="space-y-2">
             {monthsData.map((monthData, monthIndex) => (
-              <div key={monthIndex} className="space-y-2" style={{ width: '230px', flexShrink: 0 }}>
+              <div key={monthIndex} className="space-y-2">
                 {/* Заголовок месяца */}
                 <div className="text-sm font-semibold text-slate-700 dark:text-slate-300 capitalize text-center whitespace-nowrap">
                   {monthData.name}
@@ -209,7 +277,7 @@ export const ActivityCalendar: React.FC<ActivityCalendarProps> = ({ data }) => {
               </div>
             ))}
           </div>
-        </div>
+        )}
 
         {/* Легенда */}
         <div className="flex items-center justify-center gap-2 pt-4 mt-4 border-t border-slate-200 dark:border-slate-700">
