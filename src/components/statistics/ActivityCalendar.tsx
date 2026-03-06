@@ -24,11 +24,15 @@ const scrollbarHideStyles = `
   
   /* Z-index для ячеек календаря при hover */
   .activity-calendar-cell {
-    position: relative;
     z-index: 1;
   }
   .activity-calendar-cell:hover {
     z-index: 50;
+  }
+  /* Создаём контекст наложения для работы z-index с transform */
+  .activity-calendar-cell > div {
+    transform: translateZ(0);
+    backface-visibility: hidden;
   }
 `;
 
@@ -281,7 +285,7 @@ export const ActivityCalendar: React.FC<ActivityCalendarProps> = ({ data }) => {
                     </thead>
                     <tbody>
                       {monthData.weeks.map((week, weekIndex) => (
-                        <tr key={weekIndex}>
+                        <tr key={weekIndex} style={{ position: 'relative' }}>
                           {week.map((day, dayIndex) => {
                             if (!day) {
                               return <td key={dayIndex} className="w-[32.86px] h-[32.86px]" />;
@@ -290,7 +294,8 @@ export const ActivityCalendar: React.FC<ActivityCalendarProps> = ({ data }) => {
                             return (
                               <td
                                 key={day.date}
-                                className="w-[32.86px] h-[32.86px] p-0.5 relative activity-calendar-cell"
+                                className="w-[32.86px] h-[32.86px] p-0.5 activity-calendar-cell"
+                                style={{ position: 'relative', overflow: 'visible' }}
                               >
                                 <div
                                   className={cn(
