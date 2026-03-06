@@ -45,68 +45,74 @@ export const ActivityCalendar: React.FC<ActivityCalendarProps> = ({ data }) => {
     return map;
   }, [last30Days]);
 
-  // Генерируем данные только для текущего месяца
-  const currentMonthData = useMemo((): MonthData | null => {
+  // Генерируем данные для текущего и предыдущего месяцев
+  const monthsData = useMemo((): MonthData[] => {
+    const result: MonthData[] = [];
     const today = new Date();
-    const year = today.getFullYear();
-    const month = today.getMonth();
 
-    // Название месяца
-    const name = today.toLocaleDateString('ru-RU', { month: 'long', year: 'numeric' });
-    const shortName = today.toLocaleDateString('ru-RU', { month: 'short' });
+    // Предыдущий и текущий месяцы
+    for (let monthOffset = 1; monthOffset >= 0; monthOffset--) {
+      const targetDate = new Date(today.getFullYear(), today.getMonth() - monthOffset, 1);
+      const year = targetDate.getFullYear();
+      const month = targetDate.getMonth();
 
-    // Первый день месяца
-    const firstDay = new Date(year, month, 1);
-    const lastDay = new Date(year, month + 1, 0);
+      // Название месяца
+      const name = targetDate.toLocaleDateString('ru-RU', { month: 'long', year: 'numeric' });
+      const shortName = targetDate.toLocaleDateString('ru-RU', { month: 'short' });
 
-    // День недели первого дня (0 = Вс, 1 = Пн, ...)
-    let startDayOfWeek = firstDay.getDay();
-    startDayOfWeek = startDayOfWeek === 0 ? 6 : startDayOfWeek - 1; // Пн = 0, ..., Вс = 6
+      // Первый день месяца
+      const firstDay = new Date(year, month, 1);
+      const lastDay = new Date(year, month + 1, 0);
 
-    // Количество дней в месяце
-    const daysInMonth = lastDay.getDate();
+      // День недели первого дня (0 = Вс, 1 = Пн, ...)
+      let startDayOfWeek = firstDay.getDay();
+      startDayOfWeek = startDayOfWeek === 0 ? 6 : startDayOfWeek - 1; // Пн = 0, ..., Вс = 6
 
-    // Создаём недели
-    const weeks: DayCell[][] = [];
-    let currentWeek: DayCell[] = [];
+      // Количество дней в месяце
+      const daysInMonth = lastDay.getDate();
 
-    // Пустые ячейки до первого дня месяца
-    for (let i = 0; i < startDayOfWeek; i++) {
-      currentWeek.push(null as any);
-    }
+      // Создаём недели
+      const weeks: DayCell[][] = [];
+      let currentWeek: DayCell[] = [];
 
-    // Дни месяца
-    for (let day = 1; day <= daysInMonth; day++) {
-      const date = new Date(year, month, day);
-      const dateStr = date.toISOString().split('T')[0];
-      const questionsAnswered = activityMap.get(dateStr) || 0;
-
-      currentWeek.push({
-        date: dateStr,
-        day,
-        month,
-        year,
-        questionsAnswered
-      });
-
-      if (currentWeek.length === 7) {
-        weeks.push([...currentWeek]);
-        currentWeek = [];
-      }
-    }
-
-    // Добавляем последнюю неделю
-    if (currentWeek.length > 0) {
-      while (currentWeek.length < 7) {
+      // Пустые ячейки до первого дня месяца
+      for (let i = 0; i < startDayOfWeek; i++) {
         currentWeek.push(null as any);
       }
-      weeks.push([...currentWeek]);
+
+      // Дни месяца
+      for (let day = 1; day <= daysInMonth; day++) {
+        const date = new Date(year, month, day);
+        const dateStr = date.toISOString().split('T')[0];
+        const questionsAnswered = activityMap.get(dateStr) || 0;
+
+        currentWeek.push({
+          date: dateStr,
+          day,
+          month,
+          year,
+          questionsAnswered
+        });
+
+        if (currentWeek.length === 7) {
+          weeks.push([...currentWeek]);
+          currentWeek = [];
+        }
+      }
+
+      // Добавляем последнюю неделю
+      if (currentWeek.length > 0) {
+        while (currentWeek.length < 7) {
+          currentWeek.push(null as any);
+        }
+        weeks.push([...currentWeek]);
+      }
+
+      result.push({ name, shortName, year, month, weeks });
     }
 
-    return { name, shortName, year, month, weeks };
+    return result;
   }, [activityMap]);
-
-  if (!currentMonthData) return null;
 
   // Динамическая подпись
   const description = `Календарь вашей активности за последние ${last30Days.length} дней.`;
@@ -136,66 +142,72 @@ export const ActivityCalendar: React.FC<ActivityCalendarProps> = ({ data }) => {
   };
 
   return (
-    <Card className="activity-calendar-card max-w-[280px] mx-auto">
+    <Card className="activity-calendar-card max-w-[536px] mx-auto">
       <CardHeader className="pb-3">
         <CardTitle className="text-lg font-bold">Активность</CardTitle>
         <CardDescription className="text-xs">{description}</CardDescription>
       </CardHeader>
       <CardContent>
-        {/* Календарь текущего месяца */}
-        <div className="space-y-2">
-          {/* Заголовок месяца */}
-          <div className="text-sm font-semibold text-slate-700 dark:text-slate-300 capitalize text-center whitespace-nowrap">
-            {currentMonthData.name}
-          </div>
+        {/* Контейнер для месяцев с горизонтальной прокруткой */}
+        <div className="w-full overflow-x-auto scrollbar-hide">
+          <div className="flex gap-6" style={{ width: 'fit-content' }}>
+            {monthsData.map((monthData, monthIndex) => (
+              <div key={monthIndex} className="space-y-2" style={{ width: '230px', flexShrink: 0 }}>
+                {/* Заголовок месяца */}
+                <div className="text-sm font-semibold text-slate-700 dark:text-slate-300 capitalize text-center whitespace-nowrap">
+                  {monthData.name}
+                </div>
 
-          {/* Таблица календаря */}
-          <div>
-            <table className="border-collapse" style={{ tableLayout: 'fixed', width: '230px' }}>
-              <thead>
-                <tr className="text-slate-500 dark:text-slate-400">
-                  <th className="h-7 font-normal text-[9px] w-[32.86px]">Пн</th>
-                  <th className="h-7 font-normal text-[9px] w-[32.86px]">Вт</th>
-                  <th className="h-7 font-normal text-[9px] w-[32.86px]">Ср</th>
-                  <th className="h-7 font-normal text-[9px] w-[32.86px]">Чт</th>
-                  <th className="h-7 font-normal text-[9px] w-[32.86px]">Пт</th>
-                  <th className="h-7 font-normal text-[9px] w-[32.86px]">Сб</th>
-                  <th className="h-7 font-normal text-[9px] w-[32.86px]">Вс</th>
-                </tr>
-              </thead>
-              <tbody>
-                {currentMonthData.weeks.map((week, weekIndex) => (
-                  <tr key={weekIndex}>
-                    {week.map((day, dayIndex) => {
-                      if (!day) {
-                        return <td key={dayIndex} className="w-[32.86px] h-[32.86px]" />;
-                      }
+                {/* Таблица календаря */}
+                <div>
+                  <table className="border-collapse" style={{ tableLayout: 'fixed', width: '230px' }}>
+                    <thead>
+                      <tr className="text-slate-500 dark:text-slate-400">
+                        <th className="h-7 font-normal text-[9px] w-[32.86px]">Пн</th>
+                        <th className="h-7 font-normal text-[9px] w-[32.86px]">Вт</th>
+                        <th className="h-7 font-normal text-[9px] w-[32.86px]">Ср</th>
+                        <th className="h-7 font-normal text-[9px] w-[32.86px]">Чт</th>
+                        <th className="h-7 font-normal text-[9px] w-[32.86px]">Пт</th>
+                        <th className="h-7 font-normal text-[9px] w-[32.86px]">Сб</th>
+                        <th className="h-7 font-normal text-[9px] w-[32.86px]">Вс</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {monthData.weeks.map((week, weekIndex) => (
+                        <tr key={weekIndex}>
+                          {week.map((day, dayIndex) => {
+                            if (!day) {
+                              return <td key={dayIndex} className="w-[32.86px] h-[32.86px]" />;
+                            }
 
-                      return (
-                        <td
-                          key={day.date}
-                          className="w-[32.86px] h-[32.86px] p-0.5 relative"
-                        >
-                          <div
-                            className={cn(
-                              'w-full h-full rounded-md flex items-center justify-center text-[9px] font-medium',
-                              'transition-all duration-300 ease-out',
-                              'hover:scale-125 hover:shadow-xl hover:ring-2 hover:ring-blue-400 hover:ring-offset-1',
-                              'cursor-default',
-                              getColorClass(day.questionsAnswered),
-                              getTextColorClass(day.questionsAnswered)
-                            )}
-                            title={`${formatDateTooltip(day.date)} — ${day.questionsAnswered} ${getDeclension(day.questionsAnswered, ['вопрос', 'вопроса', 'вопросов'])}`}
-                          >
-                            {day.day}
-                          </div>
-                        </td>
-                      );
-                    })}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+                            return (
+                              <td
+                                key={day.date}
+                                className="w-[32.86px] h-[32.86px] p-0.5 relative"
+                              >
+                                <div
+                                  className={cn(
+                                    'w-full h-full rounded-md flex items-center justify-center text-[9px] font-medium',
+                                    'transition-all duration-300 ease-out',
+                                    'hover:scale-125 hover:shadow-xl hover:ring-2 hover:ring-blue-400 hover:ring-offset-1',
+                                    'cursor-default',
+                                    getColorClass(day.questionsAnswered),
+                                    getTextColorClass(day.questionsAnswered)
+                                  )}
+                                  title={`${formatDateTooltip(day.date)} — ${day.questionsAnswered} ${getDeclension(day.questionsAnswered, ['вопрос', 'вопроса', 'вопросов'])}`}
+                                >
+                                  {day.day}
+                                </div>
+                              </td>
+                            );
+                          })}
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
 
