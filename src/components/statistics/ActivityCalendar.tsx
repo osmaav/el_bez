@@ -199,7 +199,15 @@ export const ActivityCalendar: React.FC<ActivityCalendarProps> = ({ data }) => {
             ref={scrollContainerRef}
             className="w-full overflow-x-auto scrollbar-hide"
           >
-            <div className="flex gap-6" style={{ width: 'fit-content' }}>
+            <div 
+              className="flex gap-6" 
+              style={{ 
+                width: 'fit-content',
+                marginLeft: '5px',
+                marginRight: '5px',
+                marginBottom: '3px'
+              }}
+            >
               {monthsData.map((monthData, monthIndex) => (
                 <div key={monthIndex} className="space-y-2" style={{ width: '230px', flexShrink: 0 }}>
                   {/* Заголовок месяца */}
@@ -322,6 +330,9 @@ export const ActivityCalendar: React.FC<ActivityCalendarProps> = ({ data }) => {
             ))}
           </div>
         )}
+
+        {/* Добавляем отступы для предотвращения выхода за границы при hover */}
+        <div style={{ height: '15px' }} />
 
         {/* Легенда */}
         <div className="flex items-center justify-center gap-2 pt-4 mt-4 border-t border-slate-200 dark:border-slate-700">
