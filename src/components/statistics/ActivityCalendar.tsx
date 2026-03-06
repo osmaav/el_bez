@@ -12,7 +12,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { cn } from '@/lib/utils';
 import type { DailyActivity } from '@/types';
 
-// Стили для скрытия полосы прокрутки и z-index при hover
+// Стили для скрытия полосы прокрутки и hover эффекта
 const scrollbarHideStyles = `
   .scrollbar-hide {
     -ms-overflow-style: none; /* IE/Edge */
@@ -22,17 +22,17 @@ const scrollbarHideStyles = `
     display: none; /* Chrome/Safari */
   }
   
-  /* Z-index для ячеек календаря при hover */
+  /* Hover эффект с всплытием */
   .activity-calendar-cell {
+    position: relative;
     z-index: 1;
   }
   .activity-calendar-cell:hover {
-    z-index: 50;
+    z-index: 100;
   }
-  /* Создаём контекст наложения для работы z-index с transform */
-  .activity-calendar-cell > div {
-    transform: translateZ(0);
-    backface-visibility: hidden;
+  .activity-calendar-cell:hover > div {
+    transform: scale(1.4);
+    position: relative;
   }
 `;
 
@@ -237,8 +237,8 @@ export const ActivityCalendar: React.FC<ActivityCalendarProps> = ({ data }) => {
                                   <div
                                     className={cn(
                                       'w-full h-full rounded-md flex items-center justify-center text-[9px] font-medium',
-                                      'transition-all duration-300 ease-out',
-                                      'hover:scale-125 hover:shadow-xl hover:ring-2 hover:ring-blue-400 hover:ring-offset-1',
+                                      'transition-all duration-200 ease-out',
+                                      'hover:shadow-lg hover:ring-2 hover:ring-blue-400 hover:ring-offset-1',
                                       'cursor-default',
                                       getColorClass(day.questionsAnswered),
                                       getTextColorClass(day.questionsAnswered)
@@ -274,13 +274,13 @@ export const ActivityCalendar: React.FC<ActivityCalendarProps> = ({ data }) => {
                   <table className="border-collapse" style={{ tableLayout: 'fixed', width: '230px' }}>
                     <thead>
                       <tr className="text-slate-500 dark:text-slate-400">
-                        <th className="h-7 font-normal text-[9px] w-[32.86px]">Пн</th>
-                        <th className="h-7 font-normal text-[9px] w-[32.86px]">Вт</th>
-                        <th className="h-7 font-normal text-[9px] w-[32.86px]">Ср</th>
-                        <th className="h-7 font-normal text-[9px] w-[32.86px]">Чт</th>
-                        <th className="h-7 font-normal text-[9px] w-[32.86px]">Пт</th>
-                        <th className="h-7 font-normal text-[9px] w-[32.86px]">Сб</th>
-                        <th className="h-7 font-normal text-[9px] w-[32.86px]">Вс</th>
+                        <th className="h-7 font-bold text-[9px] w-[32.86px]">Пн</th>
+                        <th className="h-7 font-bold text-[9px] w-[32.86px]">Вт</th>
+                        <th className="h-7 font-bold text-[9px] w-[32.86px]">Ср</th>
+                        <th className="h-7 font-bold text-[9px] w-[32.86px]">Чт</th>
+                        <th className="h-7 font-bold text-[9px] w-[32.86px]">Пт</th>
+                        <th className="h-7 font-bold text-red-600 dark:text-red-400 text-[9px] w-[32.86px]">Сб</th>
+                        <th className="h-7 font-bold text-red-600 dark:text-red-400 text-[9px] w-[32.86px]">Вс</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -300,8 +300,8 @@ export const ActivityCalendar: React.FC<ActivityCalendarProps> = ({ data }) => {
                                 <div
                                   className={cn(
                                     'w-full h-full rounded-md flex items-center justify-center text-[9px] font-medium',
-                                    'transition-all duration-300 ease-out',
-                                    'hover:scale-125 hover:shadow-xl hover:ring-2 hover:ring-blue-400 hover:ring-offset-1',
+                                    'transition-all duration-200 ease-out',
+                                    'hover:shadow-lg hover:ring-2 hover:ring-blue-400 hover:ring-offset-1',
                                     'cursor-default',
                                     getColorClass(day.questionsAnswered),
                                     getTextColorClass(day.questionsAnswered)
