@@ -1,56 +1,18 @@
 /**
- * ActivityCalendar — Календарь активности на 3 месяца
- * 
- * @description Отображает активность пользователя в виде календаря на 3 месяца
+ * ActivityCalendar — Календарь активности
+ *
+ * @description Отображает активность пользователя в виде календаря
  * с цветовой кодировкой интенсивности активности
  * @author el-bez UI Team
- * @version 1.0.0
+ * @version 2.0.0
  */
 
-import React, { useMemo } from 'react';
+import React, { useMemo, useRef } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import type { DailyActivity } from '@/types';
-
-// Стили для адаптивного масштабирования и перестроения
-const responsiveStyles = `
-  .activity-calendar-container {
-    overflow-x: auto;
-    overflow-y: hidden;
-    scrollbar-width: none; /* Firefox */
-    -ms-overflow-style: none; /* IE/Edge */
-    max-width: 100%;
-  }
-  
-  .activity-calendar-container::-webkit-scrollbar {
-    display: none; /* Chrome/Safari */
-  }
-  
-  /* Ограничение ширины компонента */
-  .activity-calendar-card {
-    max-width: 536px;
-    margin: 0 auto;
-  }
-  
-  /* 3 месяца в одну линию (всегда) */
-  .activity-calendar-grid {
-    grid-template-columns: repeat(3, 230px) !important;
-  }
-  
-  /* Позиционирование для z-index */
-  .activity-calendar-month table {
-    position: relative;
-  }
-  .activity-calendar-month td {
-    position: relative;
-  }
-  .activity-calendar-month td > div {
-    position: relative;
-  }
-  .activity-calendar-month td:hover > div {
-    z-index: 100;
-  }
-`;
 
 interface ActivityCalendarProps {
   data: DailyActivity[];
@@ -62,36 +24,43 @@ interface DayCell {
   month: number;
   year: number;
   questionsAnswered: number;
-  isCurrentMonth: boolean;
 }
 
 interface MonthData {
   name: string;
   shortName: string;
   year: number;
+  month: number;
   weeks: DayCell[][];
 }
 
 export const ActivityCalendar: React.FC<ActivityCalendarProps> = ({ data }) => {
-  // Получаем последние 90 дней (3 месяца)
-  const last90Days = useMemo(() => data.slice(-90), [data]);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
 
-  // Создаём карту активности по датам для быстрого доступа
+  // Ограничиваем статистику 30 днями
+  const last30Days = useMemo(() => data.slice(-30), [data]);
+
+  // Создаём карту активности по датам
   const activityMap = useMemo(() => {
     const map = new Map<string, number>();
-    last90Days.forEach(day => {
+    last30Days.forEach(day => {
       map.set(day.date, day.questionsAnswered);
     });
     return map;
-  }, [last90Days]);
+  }, [last30Days]);
 
-  // Генерируем данные для 3 месяцев
+  // Определяем, нужно ли показывать предыдущий месяц
+  const today = new Date();
+  const shouldShowPrevMonth = today.getDate() < 15;
+
+  // Генерируем данные для месяцев
   const monthsData = useMemo((): MonthData[] => {
     const result: MonthData[] = [];
-    const today = new Date();
+    
+    // Если текущая дата < 15, показываем предыдущий и текущий месяц
+    const startMonthOffset = shouldShowPrevMonth ? 1 : 0;
 
-    // Текущий месяц и 2 предыдущих
-    for (let monthOffset = 2; monthOffset >= 0; monthOffset--) {
+    for (let monthOffset = startMonthOffset; monthOffset >= 0; monthOffset--) {
       const targetDate = new Date(today.getFullYear(), today.getMonth() - monthOffset, 1);
       const year = targetDate.getFullYear();
       const month = targetDate.getMonth();
@@ -131,8 +100,7 @@ export const ActivityCalendar: React.FC<ActivityCalendarProps> = ({ data }) => {
           day,
           month,
           year,
-          questionsAnswered,
-          isCurrentMonth: monthOffset === 0
+          questionsAnswered
         });
 
         if (currentWeek.length === 7) {
@@ -149,11 +117,11 @@ export const ActivityCalendar: React.FC<ActivityCalendarProps> = ({ data }) => {
         weeks.push([...currentWeek]);
       }
 
-      result.push({ name, shortName, year, weeks });
+      result.push({ name, shortName, year, month, weeks });
     }
 
     return result;
-  }, [activityMap]);
+  }, [activityMap, shouldShowPrevMonth]);
 
   // Определяем цвет ячейки в зависимости от активности
   const getColorClass = (questionsAnswered: number) => {
@@ -179,31 +147,72 @@ export const ActivityCalendar: React.FC<ActivityCalendarProps> = ({ data }) => {
     return date.toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' });
   };
 
+  // Прокрутка к предыдущему месяцу
+  const scrollToLeft = () => {
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollTo({
+        left: 0,
+        behavior: 'smooth'
+      });
+    }
+  };
+
+  // Прокрутка к текущему месяцу
+  const scrollToRight = () => {
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollTo({
+        left: scrollContainerRef.current.scrollWidth,
+        behavior: 'smooth'
+      });
+    }
+  };
+
+  // Динамическая подпись
+  const description = `Календарь вашей активности за последние ${last30Days.length} дней.`;
+
   return (
-    <Card className="activity-calendar-card">
-      <style>{responsiveStyles}</style>
+    <Card className="activity-calendar-card max-w-[536px] mx-auto">
       <CardHeader>
         <CardTitle className="text-xl font-bold">Активность</CardTitle>
-        <CardDescription>
-          Календарь вашей активности за последние 3 месяца
-        </CardDescription>
+        <CardDescription>{description}</CardDescription>
       </CardHeader>
       <CardContent>
-        {/* Контейнер для 3 месяцев с горизонтальной прокруткой */}
-        <div className="w-full overflow-x-auto activity-calendar-container">
-          <div 
-            className="grid gap-6 mx-auto activity-calendar-grid"
-            style={{ 
-              width: 'fit-content',
-            }}
-          >
+        {/* Кнопки прокрутки (видны только если показываем 2 месяца) */}
+        {shouldShowPrevMonth && monthsData.length === 2 && (
+          <div className="flex justify-between items-center mb-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={scrollToLeft}
+              className="h-8 w-8 p-0"
+            >
+              <ChevronLeft className="w-4 h-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={scrollToRight}
+              className="h-8 w-8 p-0"
+            >
+              <ChevronRight className="w-4 h-4" />
+            </Button>
+          </div>
+        )}
+
+        {/* Контейнер для месяцев с горизонтальной прокруткой */}
+        <div 
+          ref={scrollContainerRef}
+          className="w-full overflow-x-auto scrollbar-hide"
+          style={{ scrollBehavior: 'smooth' }}
+        >
+          <div className="flex gap-6" style={{ width: 'fit-content' }}>
             {monthsData.map((monthData, monthIndex) => (
-              <div key={monthIndex} className="space-y-2 activity-calendar-month" style={{ width: '230px', flexShrink: 0 }}>
+              <div key={monthIndex} className="space-y-2" style={{ width: '230px', flexShrink: 0 }}>
                 {/* Заголовок месяца */}
                 <div className="text-sm font-semibold text-slate-700 dark:text-slate-300 capitalize text-center whitespace-nowrap">
                   {monthData.name}
                 </div>
-                
+
                 {/* Таблица календаря */}
                 <div>
                   <table className="border-collapse" style={{ tableLayout: 'fixed', width: '230px' }}>
@@ -225,7 +234,7 @@ export const ActivityCalendar: React.FC<ActivityCalendarProps> = ({ data }) => {
                             if (!day) {
                               return <td key={dayIndex} className="w-[32.86px] h-[32.86px]" />;
                             }
-                            
+
                             return (
                               <td
                                 key={day.date}
@@ -256,7 +265,7 @@ export const ActivityCalendar: React.FC<ActivityCalendarProps> = ({ data }) => {
             ))}
           </div>
         </div>
-        
+
         {/* Легенда */}
         <div className="flex items-center justify-center gap-2 pt-4 mt-4 border-t border-slate-200 dark:border-slate-700">
           <span className="text-xs text-slate-500">Меньше</span>

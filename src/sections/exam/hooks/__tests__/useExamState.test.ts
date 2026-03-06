@@ -4,7 +4,7 @@
 
 import { renderHook, act, waitFor } from '@testing-library/react';
 import { useExamState } from '@/sections/exam/hooks/useExamState';
-import type { Ticket, Question } from '@/types';
+import type { Ticket } from '@/types';
 
 const mockTicket: Ticket = {
   id: 1,
