@@ -12,7 +12,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { cn } from '@/lib/utils';
 import type { DailyActivity } from '@/types';
 
-// Стили для скрытия полосы прокрутки
+// Стили для скрытия полосы прокрутки и z-index при hover
 const scrollbarHideStyles = `
   .scrollbar-hide {
     -ms-overflow-style: none; /* IE/Edge */
@@ -20,6 +20,15 @@ const scrollbarHideStyles = `
   }
   .scrollbar-hide::-webkit-scrollbar {
     display: none; /* Chrome/Safari */
+  }
+  
+  /* Z-index для ячеек календаря при hover */
+  .activity-calendar-cell {
+    position: relative;
+    z-index: 1;
+  }
+  .activity-calendar-cell:hover {
+    z-index: 50;
   }
 `;
 
@@ -281,7 +290,7 @@ export const ActivityCalendar: React.FC<ActivityCalendarProps> = ({ data }) => {
                             return (
                               <td
                                 key={day.date}
-                                className="w-[32.86px] h-[32.86px] p-0.5 relative"
+                                className="w-[32.86px] h-[32.86px] p-0.5 relative activity-calendar-cell"
                               >
                                 <div
                                   className={cn(
