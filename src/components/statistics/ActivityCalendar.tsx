@@ -273,12 +273,12 @@ export const ActivityCalendar: React.FC<ActivityCalendarProps> = ({ data }) => {
                 <div>
                   <table className="border-collapse" style={{ tableLayout: 'fixed', width: '230px' }}>
                     <thead>
-                      <tr className="text-slate-500 dark:text-slate-400">
-                        <th className="h-7 font-bold text-[9px] w-[32.86px]">Пн</th>
-                        <th className="h-7 font-bold text-[9px] w-[32.86px]">Вт</th>
-                        <th className="h-7 font-bold text-[9px] w-[32.86px]">Ср</th>
-                        <th className="h-7 font-bold text-[9px] w-[32.86px]">Чт</th>
-                        <th className="h-7 font-bold text-[9px] w-[32.86px]">Пт</th>
+                      <tr>
+                        <th className="h-7 font-bold text-slate-500 dark:text-slate-400 text-[9px] w-[32.86px]">Пн</th>
+                        <th className="h-7 font-bold text-slate-500 dark:text-slate-400 text-[9px] w-[32.86px]">Вт</th>
+                        <th className="h-7 font-bold text-slate-500 dark:text-slate-400 text-[9px] w-[32.86px]">Ср</th>
+                        <th className="h-7 font-bold text-slate-500 dark:text-slate-400 text-[9px] w-[32.86px]">Чт</th>
+                        <th className="h-7 font-bold text-slate-500 dark:text-slate-400 text-[9px] w-[32.86px]">Пт</th>
                         <th className="h-7 font-bold text-red-600 dark:text-red-400 text-[9px] w-[32.86px]">Сб</th>
                         <th className="h-7 font-bold text-red-600 dark:text-red-400 text-[9px] w-[32.86px]">Вс</th>
                       </tr>
