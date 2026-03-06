@@ -77,7 +77,7 @@ export const ActivityCalendar: React.FC<ActivityCalendarProps> = ({ data }) => {
   // Генерируем данные для месяцев
   const monthsData = useMemo((): MonthData[] => {
     const result: MonthData[] = [];
-    
+
     // Если текущая дата < 15, показываем предыдущий и текущий месяц
     const startMonthOffset = shouldShowPrevMonth ? 1 : 0;
 
@@ -187,29 +187,88 @@ export const ActivityCalendar: React.FC<ActivityCalendarProps> = ({ data }) => {
   return (
     <>
       <style>{scrollbarHideStyles}</style>
-      <Card className="activity-calendar-card max-w-[280px] mx-auto">
+      <Card className="activity-calendar-card max-w-[283px] gap-0 mx-auto">
         <CardHeader className="pb-3">
           <CardTitle className="text-lg font-bold">Активность</CardTitle>
           <CardDescription className="text-xs">{description}</CardDescription>
         </CardHeader>
         <CardContent>
-        {/* Контейнер для месяцев с горизонтальной прокруткой (если показываем 2 месяца) */}
-        {shouldShowPrevMonth ? (
-          <div 
-            ref={scrollContainerRef}
-            className="w-full overflow-x-auto scrollbar-hide"
-          >
-            <div 
-              className="flex gap-6" 
-              style={{ 
-                width: 'fit-content',
-                marginLeft: '5px',
-                marginRight: '5px',
-                marginBottom: '3px'
-              }}
+          {/* Контейнер для месяцев с горизонтальной прокруткой (если показываем 2 месяца) */}
+          {shouldShowPrevMonth ? (
+            <div
+              ref={scrollContainerRef}
+              className="w-full overflow-x-auto scrollbar-hide"
             >
+              <div
+                className="flex"
+                style={{
+                  gap: '24px' // 24px (gap-6) + 5px = 29px
+                }}
+              >
+                {monthsData.map((monthData, monthIndex) => (
+                  <div key={monthIndex} style={{ flexShrink: 0 }}>
+                    {/* Заголовок месяца */}
+                    <div className="text-m font-semibold text-slate-600 dark:text-slate-300 capitalize text-center whitespace-nowrap">
+                      {monthData.name}
+                    </div>
+
+                    {/* Таблица календаря */}
+                    <div>
+                      <table className="border-collapse text-[12px]" style={{ tableLayout: 'fixed' }}>
+                        <thead>
+                          <tr>
+                            <th className="h-7 font-bold text-slate-500 dark:text-slate-400  w-[32.86px]">Пн</th>
+                            <th className="h-7 font-bold text-slate-500 dark:text-slate-400  w-[32.86px]">Вт</th>
+                            <th className="h-7 font-bold text-slate-500 dark:text-slate-400  w-[32.86px]">Ср</th>
+                            <th className="h-7 font-bold text-slate-500 dark:text-slate-400  w-[32.86px]">Чт</th>
+                            <th className="h-7 font-bold text-slate-500 dark:text-slate-400  w-[32.86px]">Пт</th>
+                            <th className="h-7 font-bold text-red-600 dark:text-red-400  w-[32.86px]">Сб</th>
+                            <th className="h-7 font-bold text-red-600 dark:text-red-400  w-[32.86px]">Вс</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {monthData.weeks.map((week, weekIndex) => (
+                            <tr key={weekIndex}>
+                              {week.map((day, dayIndex) => {
+                                if (!day) {
+                                  return <td key={dayIndex} className="w-[32.86px] h-[32.86px]" />;
+                                }
+
+                                return (
+                                  <td
+                                    key={day.date}
+                                    className="w-[32.86px] h-[32.86px] p-0.5 relative"
+                                  >
+                                    <div
+                                      className={cn(
+                                        'w-full h-full rounded-md flex items-center justify-center text-[12px] font-medium',
+                                        'transition-all duration-200 ease-out',
+                                        'hover:shadow-lg hover:ring-2 hover:ring-blue-400 hover:ring-offset-1',
+                                        'cursor-default',
+                                        getColorClass(day.questionsAnswered),
+                                        getTextColorClass(day.questionsAnswered)
+                                      )}
+                                      title={`${formatDateTooltip(day.date)} — ${day.questionsAnswered} ${getDeclension(day.questionsAnswered, ['вопрос', 'вопроса', 'вопросов'])}`}
+                                    >
+                                      {day.day}
+                                    </div>
+                                  </td>
+                                );
+                              })}
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : (
+            /* Показываем только текущий месяц без прокрутки */
+            <div className="space-y-4">
               {monthsData.map((monthData, monthIndex) => (
-                <div key={monthIndex} className="space-y-2" style={{ width: '230px', flexShrink: 0 }}>
+                <div key={monthIndex} className="space-y-4">
                   {/* Заголовок месяца */}
                   <div className="text-sm font-semibold text-slate-700 dark:text-slate-300 capitalize text-center whitespace-nowrap">
                     {monthData.name}
@@ -217,21 +276,21 @@ export const ActivityCalendar: React.FC<ActivityCalendarProps> = ({ data }) => {
 
                   {/* Таблица календаря */}
                   <div>
-                    <table className="border-collapse" style={{ tableLayout: 'fixed', width: '230px' }}>
+                    <table className="border-collapse text-[12px]" style={{ tableLayout: 'fixed' }}>
                       <thead>
-                        <tr className="text-slate-500 dark:text-slate-400">
-                          <th className="h-7 font-normal text-[9px] w-[32.86px]">Пн</th>
-                          <th className="h-7 font-normal text-[9px] w-[32.86px]">Вт</th>
-                          <th className="h-7 font-normal text-[9px] w-[32.86px]">Ср</th>
-                          <th className="h-7 font-normal text-[9px] w-[32.86px]">Чт</th>
-                          <th className="h-7 font-normal text-[9px] w-[32.86px]">Пт</th>
-                          <th className="h-7 font-normal text-[9px] w-[32.86px]">Сб</th>
-                          <th className="h-7 font-normal text-[9px] w-[32.86px]">Вс</th>
+                        <tr>
+                          <th className="h-7 font-bold text-slate-500 dark:text-slate-400  w-[32.86px]">Пн</th>
+                          <th className="h-7 font-bold text-slate-500 dark:text-slate-400  w-[32.86px]">Вт</th>
+                          <th className="h-7 font-bold text-slate-500 dark:text-slate-400  w-[32.86px]">Ср</th>
+                          <th className="h-7 font-bold text-slate-500 dark:text-slate-400  w-[32.86px]">Чт</th>
+                          <th className="h-7 font-bold text-slate-500 dark:text-slate-400  w-[32.86px]">Пт</th>
+                          <th className="h-7 font-bold text-red-600 dark:text-red-400  w-[32.86px]">Сб</th>
+                          <th className="h-7 font-bold text-red-600 dark:text-red-400  w-[32.86px]">Вс</th>
                         </tr>
                       </thead>
                       <tbody>
                         {monthData.weeks.map((week, weekIndex) => (
-                          <tr key={weekIndex}>
+                          <tr key={weekIndex} style={{ position: 'relative' }}>
                             {week.map((day, dayIndex) => {
                               if (!day) {
                                 return <td key={dayIndex} className="w-[32.86px] h-[32.86px]" />;
@@ -240,11 +299,12 @@ export const ActivityCalendar: React.FC<ActivityCalendarProps> = ({ data }) => {
                               return (
                                 <td
                                   key={day.date}
-                                  className="w-[32.86px] h-[32.86px] p-0.5 relative"
+                                  className="w-[32.86px] h-[32.86px] p-0.5 activity-calendar-cell"
+                                  style={{ position: 'relative', overflow: 'visible' }}
                                 >
                                   <div
                                     className={cn(
-                                      'w-full h-full rounded-md flex items-center justify-center text-[9px] font-medium',
+                                      'w-full h-full rounded-md flex items-center justify-center text-[12px] font-medium',
                                       'transition-all duration-200 ease-out',
                                       'hover:shadow-lg hover:ring-2 hover:ring-blue-400 hover:ring-offset-1',
                                       'cursor-default',
@@ -266,88 +326,25 @@ export const ActivityCalendar: React.FC<ActivityCalendarProps> = ({ data }) => {
                 </div>
               ))}
             </div>
+          )}
+
+          {/* Добавляем отступы для предотвращения выхода за границы при hover */}
+          <div style={{ height: '15px' }} />
+
+          {/* Легенда */}
+          <div className="flex items-center justify-center gap-2 pt-4 mt-4 border-t border-slate-200 dark:border-slate-700">
+            <span className="text-xs text-slate-500">Меньше</span>
+            <div className="flex gap-1">
+              <div className="w-3 h-3 rounded bg-slate-100 dark:bg-slate-800" />
+              <div className="w-3 h-3 rounded bg-blue-100 dark:bg-blue-900/30" />
+              <div className="w-3 h-3 rounded bg-blue-200 dark:bg-blue-800/40" />
+              <div className="w-3 h-3 rounded bg-blue-300 dark:bg-blue-700/50" />
+              <div className="w-3 h-3 rounded bg-blue-400 dark:bg-blue-600/60" />
+              <div className="w-3 h-3 rounded bg-blue-500 dark:bg-blue-500/70" />
+              <div className="w-3 h-3 rounded bg-blue-600 dark:bg-blue-400/80" />
+            </div>
+            <span className="text-xs text-slate-500">Больше</span>
           </div>
-        ) : (
-          /* Показываем только текущий месяц без прокрутки */
-          <div className="space-y-2">
-            {monthsData.map((monthData, monthIndex) => (
-              <div key={monthIndex} className="space-y-2">
-                {/* Заголовок месяца */}
-                <div className="text-sm font-semibold text-slate-700 dark:text-slate-300 capitalize text-center whitespace-nowrap">
-                  {monthData.name}
-                </div>
-
-                {/* Таблица календаря */}
-                <div>
-                  <table className="border-collapse" style={{ tableLayout: 'fixed', width: '230px' }}>
-                    <thead>
-                      <tr>
-                        <th className="h-7 font-bold text-slate-500 dark:text-slate-400 text-[9px] w-[32.86px]">Пн</th>
-                        <th className="h-7 font-bold text-slate-500 dark:text-slate-400 text-[9px] w-[32.86px]">Вт</th>
-                        <th className="h-7 font-bold text-slate-500 dark:text-slate-400 text-[9px] w-[32.86px]">Ср</th>
-                        <th className="h-7 font-bold text-slate-500 dark:text-slate-400 text-[9px] w-[32.86px]">Чт</th>
-                        <th className="h-7 font-bold text-slate-500 dark:text-slate-400 text-[9px] w-[32.86px]">Пт</th>
-                        <th className="h-7 font-bold text-red-600 dark:text-red-400 text-[9px] w-[32.86px]">Сб</th>
-                        <th className="h-7 font-bold text-red-600 dark:text-red-400 text-[9px] w-[32.86px]">Вс</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {monthData.weeks.map((week, weekIndex) => (
-                        <tr key={weekIndex} style={{ position: 'relative' }}>
-                          {week.map((day, dayIndex) => {
-                            if (!day) {
-                              return <td key={dayIndex} className="w-[32.86px] h-[32.86px]" />;
-                            }
-
-                            return (
-                              <td
-                                key={day.date}
-                                className="w-[32.86px] h-[32.86px] p-0.5 activity-calendar-cell"
-                                style={{ position: 'relative', overflow: 'visible' }}
-                              >
-                                <div
-                                  className={cn(
-                                    'w-full h-full rounded-md flex items-center justify-center text-[9px] font-medium',
-                                    'transition-all duration-200 ease-out',
-                                    'hover:shadow-lg hover:ring-2 hover:ring-blue-400 hover:ring-offset-1',
-                                    'cursor-default',
-                                    getColorClass(day.questionsAnswered),
-                                    getTextColorClass(day.questionsAnswered)
-                                  )}
-                                  title={`${formatDateTooltip(day.date)} — ${day.questionsAnswered} ${getDeclension(day.questionsAnswered, ['вопрос', 'вопроса', 'вопросов'])}`}
-                                >
-                                  {day.day}
-                                </div>
-                              </td>
-                            );
-                          })}
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-
-        {/* Добавляем отступы для предотвращения выхода за границы при hover */}
-        <div style={{ height: '15px' }} />
-
-        {/* Легенда */}
-        <div className="flex items-center justify-center gap-2 pt-4 mt-4 border-t border-slate-200 dark:border-slate-700">
-          <span className="text-xs text-slate-500">Меньше</span>
-          <div className="flex gap-1">
-            <div className="w-3 h-3 rounded bg-slate-100 dark:bg-slate-800" />
-            <div className="w-3 h-3 rounded bg-blue-100 dark:bg-blue-900/30" />
-            <div className="w-3 h-3 rounded bg-blue-200 dark:bg-blue-800/40" />
-            <div className="w-3 h-3 rounded bg-blue-300 dark:bg-blue-700/50" />
-            <div className="w-3 h-3 rounded bg-blue-400 dark:bg-blue-600/60" />
-            <div className="w-3 h-3 rounded bg-blue-500 dark:bg-blue-500/70" />
-            <div className="w-3 h-3 rounded bg-blue-600 dark:bg-blue-400/80" />
-          </div>
-          <span className="text-xs text-slate-500">Больше</span>
-        </div>
         </CardContent>
       </Card>
     </>
