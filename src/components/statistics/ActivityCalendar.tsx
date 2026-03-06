@@ -7,7 +7,7 @@
  * @version 2.0.0
  */
 
-import React, { useMemo } from 'react';
+import React, { useMemo, useRef } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 import type { DailyActivity } from '@/types';
@@ -44,6 +44,7 @@ interface MonthData {
 }
 
 export const ActivityCalendar: React.FC<ActivityCalendarProps> = ({ data }) => {
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
   // Ограничиваем статистику 30 днями
   const last30Days = useMemo(() => data.slice(-30), [data]);
 
@@ -133,6 +134,19 @@ export const ActivityCalendar: React.FC<ActivityCalendarProps> = ({ data }) => {
   // Динамическая подпись
   const description = `Календарь вашей активности за последние ${last30Days.length} дней.`;
 
+  // Прокрутка к текущему месяцу при монтировании
+  React.useEffect(() => {
+    if (shouldShowPrevMonth && scrollContainerRef.current) {
+      // Прокручиваем вправо к текущему месяцу
+      setTimeout(() => {
+        scrollContainerRef.current?.scrollTo({
+          left: scrollContainerRef.current.scrollWidth,
+          behavior: 'auto'
+        });
+      }, 100);
+    }
+  }, [shouldShowPrevMonth]);
+
   // Определяем цвет ячейки в зависимости от активности
   const getColorClass = (questionsAnswered: number) => {
     if (questionsAnswered === 0) return 'bg-slate-100 dark:bg-slate-800';
@@ -168,7 +182,10 @@ export const ActivityCalendar: React.FC<ActivityCalendarProps> = ({ data }) => {
         <CardContent>
         {/* Контейнер для месяцев с горизонтальной прокруткой (если показываем 2 месяца) */}
         {shouldShowPrevMonth ? (
-          <div className="w-full overflow-x-auto scrollbar-hide">
+          <div 
+            ref={scrollContainerRef}
+            className="w-full overflow-x-auto scrollbar-hide"
+          >
             <div className="flex gap-6" style={{ width: 'fit-content' }}>
               {monthsData.map((monthData, monthIndex) => (
                 <div key={monthIndex} className="space-y-2" style={{ width: '230px', flexShrink: 0 }}>
