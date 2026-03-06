@@ -12,6 +12,17 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { cn } from '@/lib/utils';
 import type { DailyActivity } from '@/types';
 
+// Стили для скрытия полосы прокрутки
+const scrollbarHideStyles = `
+  .scrollbar-hide {
+    -ms-overflow-style: none; /* IE/Edge */
+    scrollbar-width: none; /* Firefox */
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none; /* Chrome/Safari */
+  }
+`;
+
 interface ActivityCalendarProps {
   data: DailyActivity[];
 }
@@ -61,8 +72,8 @@ export const ActivityCalendar: React.FC<ActivityCalendarProps> = ({ data }) => {
       const year = targetDate.getFullYear();
       const month = targetDate.getMonth();
 
-      // Название месяца
-      const name = targetDate.toLocaleDateString('ru-RU', { month: 'long', year: 'numeric' });
+      // Название месяца (только месяц, без года)
+      const name = targetDate.toLocaleDateString('ru-RU', { month: 'long' });
       const shortName = targetDate.toLocaleDateString('ru-RU', { month: 'short' });
 
       // Первый день месяца
@@ -147,12 +158,14 @@ export const ActivityCalendar: React.FC<ActivityCalendarProps> = ({ data }) => {
   };
 
   return (
-    <Card className="activity-calendar-card max-w-[280px] mx-auto">
-      <CardHeader className="pb-3">
-        <CardTitle className="text-lg font-bold">Активность</CardTitle>
-        <CardDescription className="text-xs">{description}</CardDescription>
-      </CardHeader>
-      <CardContent>
+    <>
+      <style>{scrollbarHideStyles}</style>
+      <Card className="activity-calendar-card max-w-[280px] mx-auto">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-lg font-bold">Активность</CardTitle>
+          <CardDescription className="text-xs">{description}</CardDescription>
+        </CardHeader>
+        <CardContent>
         {/* Контейнер для месяцев с горизонтальной прокруткой (если показываем 2 месяца) */}
         {shouldShowPrevMonth ? (
           <div className="w-full overflow-x-auto scrollbar-hide">
@@ -293,8 +306,9 @@ export const ActivityCalendar: React.FC<ActivityCalendarProps> = ({ data }) => {
           </div>
           <span className="text-xs text-slate-500">Больше</span>
         </div>
-      </CardContent>
-    </Card>
+        </CardContent>
+      </Card>
+    </>
   );
 };
 
