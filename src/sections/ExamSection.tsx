@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useApp } from '@/context/AppContext';
 import { useToast } from '@/context/ToastContext';
+import { exportExamToPDF } from '@/services/exportService';
 import { LoadingModal } from '@/components/ui/loading-modal';
 import { ConfirmModal } from '@/components/ui/confirm-modal';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -16,7 +17,8 @@ import {
   Trophy,
   AlertCircle,
   FileCheck,
-  RotateCcw
+  RotateCcw,
+  Download,
 } from 'lucide-react';
 
 export function ExamSection() {
@@ -93,6 +95,40 @@ export function ExamSection() {
     setShowResetConfirm(false);
     resetExam();
     success('Экзамен сброшен', 'Все ответы очищены');
+  };
+
+  // Экспорт результатов в PDF
+  const handleExportToPDF = async () => {
+    const loadingId = loading('Генерация PDF', 'Пожалуйста, подождите...');
+
+    try {
+      const stats = getExamStats();
+      const ticketQuestions = tickets.find(t => t.id === currentTicketId)?.questions || [];
+
+      const exportData = {
+        section: currentSection,
+        sectionInfo: currentSectionInfo!,
+        ticketId: currentTicketId!,
+        questions: ticketQuestions,
+        answers: examAnswers,
+        results: examResults,
+        stats: {
+          total: stats.total,
+          correct: stats.correct,
+          percentage: stats.percentage,
+          passed: stats.percentage >= 80
+        },
+        timestamp: Date.now()
+      };
+
+      await exportExamToPDF(exportData);
+
+      updateToast(loadingId, { type: 'success', title: 'PDF сохранён' });
+      success('PDF сохранён', 'Файл загружен в папку загрузок');
+    } catch (err: any) {
+      console.error('❌ [ExamSection] Ошибка экспорта PDF:', err);
+      updateToast(loadingId, { type: 'error', title: 'Ошибка сохранения' });
+    }
   };
 
   // Показываем LoadingModal при загрузке экзамена
@@ -266,7 +302,15 @@ export function ExamSection() {
           </CardContent>
         </Card>
 
-        <div className="flex justify-center space-x-4">
+        <div className="flex justify-center space-x-4 flex-wrap gap-4">
+          <Button
+            size="lg"
+            onClick={handleExportToPDF}
+            className="bg-blue-600 hover:bg-blue-700"
+          >
+            <Download className="w-5 h-5 mr-2" />
+            Сохранить в PDF
+          </Button>
           <Button
             size="lg"
             onClick={handleResetExam}

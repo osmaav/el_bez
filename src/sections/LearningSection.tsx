@@ -1,11 +1,12 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { useApp } from '@/context/AppContext';
 import { useAuth } from '@/context/AuthContext';
 import { useToast } from '@/context/ToastContext';
-import { saveLearningProgress } from '@/services/questionService';
+import { saveLearningProgress, loadLearningProgress } from '@/services/questionService';
 import { SessionTracker, statisticsService } from '@/services/statisticsService';
 import { questionFilterService } from '@/services/questionFilterService';
-import { QuestionFilter } from '@/components/statistics/QuestionFilter';
+import { exportLearningToPDF } from '@/services/exportService';
+import { FilterModal } from '@/components/ui/FilterModal';
 import { RichTooltip } from '@/components/ui/rich-tooltip';
 import { LoadingModal } from '@/components/ui/loading-modal';
 import { ConfirmModal } from '@/components/ui/confirm-modal';
@@ -15,8 +16,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import type { Question, SectionType } from '@/types';
-import jsPDF from 'jspdf';
-import 'jspdf-autotable';
 
 interface QuizState {
   currentQuestions: Question[];
@@ -88,20 +87,19 @@ export function LearningSection() {
   });
   const [stats, setStats] = useState({ correct: 0, incorrect: 0, remaining: 0 });
   const [savedStates, setSavedStates] = useState<SavedState>({});
+  const [isSavedStatesLoaded, setIsSavedStatesLoaded] = useState(false);
   const [showSources, setShowSources] = useState<{ [key: number]: boolean }>({});
   const [isInitialized, setIsInitialized] = useState(false);
   const [lastSection, setLastSection] = useState<SectionType | null>(null);
   const [isSectionChanging, setIsSectionChanging] = useState(false);
+  const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
+  const [isFilterActive, setIsFilterActive] = useState(false);
+  const [isFilterApplying, setIsFilterApplying] = useState(false);
   
   // Состояния для фильтра вопросов
   const [hiddenQuestionIds, setHiddenQuestionIds] = useState<number[]>([]);
-  const [showFilter, setShowFilter] = useState(false);
   const [filteredQuestions, setFilteredQuestions] = useState<Question[]>([]);
   const [filteredTotalPages, setFilteredTotalPages] = useState(0);
-
-  // Ref для прокрутки к фильтру
-  const filterRef = useRef<HTMLDivElement>(null);
-  const filterButtonRef = useRef<HTMLButtonElement>(null);
 
   // SessionTracker для статистики обучения
   const sessionTrackerRef = useRef<SessionTracker | null>(null);
@@ -112,25 +110,37 @@ export function LearningSection() {
 
   const currentSectionInfo = sections.find(s => s.id === currentSection);
   const TOTAL_QUESTIONS = questions.length;
-  
+
   // Используем отфильтрованные вопросы если фильтр активен
   const activeQuestions = filteredQuestions.length > 0 ? filteredQuestions : questions;
   const TOTAL_PAGES = filteredTotalPages > 0 ? filteredTotalPages : Math.ceil(TOTAL_QUESTIONS / QUESTIONS_PER_SESSION);
-  
+
+  // Перемешивание массива (алгоритм Фишера-Йетса) - объявляем раньше для использования в useEffect
+  const shuffleArray = useCallback((array: number[]) => {
+    const shuffled = [...array];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    return shuffled;
+  }, []);
+
   // Функция применения фильтра
   const applyFilter = useCallback(() => {
     const filterSettings = questionFilterService.getSettings(currentSection);
     const questionStats = statisticsService.getQuestionStats(currentSection);
     const allQuestionIds = questions.map(q => q.id);
     const filteredIds = questionFilterService.filterQuestions(allQuestionIds, questionStats, filterSettings);
-    
+
     const filtered = questions.filter(q => filteredIds.includes(q.id));
     setFilteredQuestions(filtered);
     setFilteredTotalPages(Math.ceil(filtered.length / QUESTIONS_PER_SESSION));
-    
-    // Сбрасываем на первую страницу при применении фильтра
+
+    // Сбрасываем на первую страницу и сохраняем это
     setCurrentPage(1);
-    
+    const keys = getStorageKeys(currentSection);
+    localStorage.setItem(keys.page, '1');
+
     console.log('🔍 [LearningSection] Фильтр применён:', {
       total: questions.length,
       filtered: filtered.length,
@@ -143,25 +153,49 @@ export function LearningSection() {
     if (questions.length > 0) {
       const filterSettings = questionFilterService.getSettings(currentSection);
       setHiddenQuestionIds(filterSettings.hiddenQuestionIds);
-      applyFilter();
+      
+      // Применяем фильтр для получения отфильтрованных вопросов
+      const allQuestionIds = questions.map(q => q.id);
+      const questionStats = statisticsService.getQuestionStats(currentSection);
+      const filteredIds = questionFilterService.filterQuestions(allQuestionIds, questionStats, filterSettings);
+      const filtered = questions.filter(q => filteredIds.includes(q.id));
+      setFilteredQuestions(filtered);
+      setFilteredTotalPages(Math.ceil(filtered.length / QUESTIONS_PER_SESSION));
+      
+      console.log('🔍 [LearningSection] Фильтр применён при инициализации:', {
+        total: questions.length,
+        filtered: filtered.length,
+        pages: Math.ceil(filtered.length / QUESTIONS_PER_SESSION)
+      });
     }
   }, [currentSection, questions.length]);
   
-  // Обновление вопросов при изменении filteredQuestions или currentPage
+  // Обновление вопросов при изменении filteredQuestions, currentPage или после загрузки прогресса
   useEffect(() => {
-    if (activeQuestions.length > 0) {
+    // Не обновляем если применяется фильтр
+    if (activeQuestions.length > 0 && isSavedStatesLoaded && !isFilterApplying) {
       const startIndex = (currentPage - 1) * QUESTIONS_PER_SESSION;
       const selected = activeQuestions.slice(startIndex, startIndex + QUESTIONS_PER_SESSION).map(q => ({
         ...q,
         question: q.text,
         answers: q.options
       }));
-      
+
       // Проверяем, есть ли сохранённое состояние для этой страницы
-      const savedState = savedStates[currentPage];
-      
+      // Используем ref для предотвращения гонок состояний
+      const savedState = savedStatesRef.current[currentPage];
+
+      console.log('🔍 [LearningSection] Обновление вопросов:', {
+        page: currentPage,
+        total: activeQuestions.length,
+        selected: selected.length,
+        hasSavedState: !!savedState,
+        savedStatesKeys: Object.keys(savedStatesRef.current)
+      });
+
       if (savedState && savedState.shuffledAnswers.length === selected.length) {
         // Восстанавливаем сохранённое состояние
+        console.log('💾 [LearningSection] Восстановление состояния для страницы', currentPage);
         setQuizState({
           currentQuestions: selected,
           shuffledAnswers: savedState.shuffledAnswers,
@@ -171,10 +205,10 @@ export function LearningSection() {
       } else {
         // Создаём новое состояние
         const shuffledAnswers = selected.map((q) => {
-          const expectedCount = q.answers?.length || 2;
+          const expectedCount = q.answers?.length || q.options?.length || 2;
           return shuffleArray([...Array(expectedCount).keys()]);
         });
-        
+
         setQuizState({
           currentQuestions: selected,
           shuffledAnswers,
@@ -182,14 +216,8 @@ export function LearningSection() {
           isComplete: false,
         });
       }
-      
-      console.log('📝 [LearningSection] Вопросы обновлены:', {
-        page: currentPage,
-        total: activeQuestions.length,
-        selected: selected.length
-      });
     }
-  }, [activeQuestions, currentPage]);
+  }, [activeQuestions, currentPage, isSavedStatesLoaded, isFilterApplying, shuffleArray]);
 
   // Отслеживание смены раздела - сброс всех состояний
   useEffect(() => {
@@ -251,16 +279,6 @@ export function LearningSection() {
     }
   }, [isInitialized, isSectionChanging]);
 
-  // Перемешивание массива (алгоритм Фишера-Йетса)
-  const shuffleArray = useCallback((array: number[]) => {
-    const shuffled = [...array];
-    for (let i = shuffled.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-    }
-    return shuffled;
-  }, []);
-
   // Инициализация сессии
   useEffect(() => {
     // console.log('📖 [LearningSection] === Инициализация ===');
@@ -277,8 +295,76 @@ export function LearningSection() {
     // Загружаем настройки фильтра
     const filterSettings = questionFilterService.getSettings(currentSection);
     setHiddenQuestionIds(filterSettings.hiddenQuestionIds);
+    
+    // Проверяем активность фильтров
+    const isFilterEnabled = filterSettings.excludeKnown || filterSettings.excludeWeak || filterSettings.hiddenQuestionIds.length > 0;
+    setIsFilterActive(isFilterEnabled);
+
+    // Загружаем сохраненную страницу из localStorage
+    // Если фильтр активен, всегда загружаем страницу 1
+    if (!isFilterEnabled) {
+      const keys = getStorageKeys(currentSection);
+      const savedPage = localStorage.getItem(keys.page);
+      if (savedPage) {
+        const page = parseInt(savedPage, 10);
+        // Проверяем что страница в пределах общего количества вопросов
+        if (page > 0 && page <= Math.ceil(questions.length / QUESTIONS_PER_SESSION)) {
+          setCurrentPage(page);
+          console.log('📄 [LearningSection] Загружена сохраненная страница:', page);
+        }
+      }
+    } else {
+      console.log('🔍 [LearningSection] Фильтр активен, загружаем страницу 1');
+      setCurrentPage(1);
+    }
+    
+    // Загружаем сохранённый прогресс из Firestore/localStorage
+    const loadProgress = async () => {
+      let progress: SavedState | null = null;
+      
+      if (user?.id) {
+        // Пытаемся загрузить из Firestore
+        console.log('☁️ [LearningSection] Загрузка прогресса из Firestore...');
+        progress = await loadLearningProgress(user.id, currentSection);
+      }
+      
+      // Если не загрузили из Firestore, пробуем localStorage
+      if (!progress && !user?.id) {
+        console.log('💾 [LearningSection] Загрузка прогресса из localStorage...');
+        const keys = getStorageKeys(currentSection);
+        const stored = localStorage.getItem(keys.progress);
+        if (stored) {
+          try {
+            progress = JSON.parse(stored);
+            console.log('✅ [LearningSection] Прогресс загружен из localStorage:', Object.keys(progress as SavedState).length, 'страниц');
+          } catch (e) {
+            console.error('❌ [LearningSection] Ошибка парсинга прогресса:', e);
+          }
+        }
+      }
+      
+      // Обновляем savedStates и savedStatesRef
+      if (progress) {
+        console.log('✅ [LearningSection] Прогресс загружен, страниц:', Object.keys(progress as SavedState).length);
+        savedStatesRef.current = progress;
+        setSavedStates(progress);
+        setIsSavedStatesLoaded(true);
+      } else {
+        // Если прогресса нет, всё равно устанавливаем флаг чтобы не ждать зря
+        setIsSavedStatesLoaded(true);
+      }
+    };
+    
+    loadProgress();
+    
+    // Создаём SessionTracker для обучения
+    if (!sessionTrackerRef.current) {
+      sessionTrackerRef.current = new SessionTracker(currentSection, 'learning');
+      console.log('📊 [LearningSection] SessionTracker создан для раздела:', currentSection);
+    }
+    
     setIsInitialized(true);
-  }, [currentSection, questions.length]);
+  }, [currentSection, questions.length, user?.id]);
 
   // Обновление статистики
   useEffect(() => {
@@ -391,7 +477,7 @@ export function LearningSection() {
         // Проверяем, что shuffledAnswers соответствует текущему количеству ответов
         const validatedShuffledAnswers = selected.map((q, idx) => {
           const savedShuffled = savedState.shuffledAnswers[idx];
-          const expectedCount = q.answers?.length || 2;
+          const expectedCount = q.answers?.length || q.options?.length || 2;
 
           // Если сохранённые ответы не соответствуют ожидаемому количеству, перегенерируем
           if (!savedShuffled || savedShuffled.length !== expectedCount) {
@@ -442,14 +528,18 @@ export function LearningSection() {
         if (answer !== null) totalAnswered++;
       });
     });
+    
+    // Используем activeQuestions.length вместо TOTAL_QUESTIONS для учёта фильтра
+    const totalQuestions = activeQuestions.length;
+    
     return {
       answered: totalAnswered,
-      total: TOTAL_QUESTIONS,
-      percentage: Math.round((totalAnswered / TOTAL_QUESTIONS) * 100)
+      total: totalQuestions,
+      percentage: totalQuestions > 0 ? Math.round((totalAnswered / totalQuestions) * 100) : 0
     };
   };
 
-  const globalProgress = getGlobalProgress();
+  const globalProgress = useMemo(() => getGlobalProgress(), [savedStates, activeQuestions.length]);
   const progress = quizState.currentQuestions.length > 0
     ? ((QUESTIONS_PER_SESSION - stats.remaining) / QUESTIONS_PER_SESSION) * 100
     : 0;
@@ -464,16 +554,19 @@ export function LearningSection() {
   const nextPage = useCallback(() => {
     // Сначала прокручиваем к началу
     window.scrollTo({ top: 0, behavior: 'smooth' });
-    // Отменяем текущую сессию при переходе на другую страницу
-    if (sessionTrackerRef.current) {
+    // Отменяем текущую сессию при переходе на другую страницу (только если она не завершена)
+    if (sessionTrackerRef.current && !quizState.isComplete) {
+      console.log('📊 [LearningSection] Отмена сессии при переходе на страницу', currentPage + 1);
       sessionTrackerRef.current.cancel();
       sessionTrackerRef.current = null;
+    } else if (quizState.isComplete) {
+      console.log('✅ [LearningSection] Сессия завершена, статистика сохранена');
     }
     // Затем обновляем страницу с небольшой задержкой
     setTimeout(() => {
       goToPage(currentPage + 1);
     }, 150);
-  }, [currentPage, goToPage]);
+  }, [currentPage, goToPage, quizState.isComplete]);
 
   const prevPage = useCallback(() => {
     // Сначала прокручиваем к началу
@@ -545,68 +638,28 @@ export function LearningSection() {
   };
 
   // Сохранение результатов в PDF
-  const handleSaveToPDF = () => {
+  const handleSaveToPDF = async () => {
     const loadingId = loading('Генерация PDF', 'Пожалуйста, подождите...');
-    
+
     try {
-      const doc = new jsPDF();
-      
-      // Заголовок
-      doc.setFontSize(18);
-      doc.setTextColor(15, 23, 42);
-      doc.text('Результаты обучения', 14, 20);
-      
-      // Информация
-      doc.setFontSize(12);
-      doc.setTextColor(100, 116, 139);
-      doc.text(`Раздел: ${currentSectionInfo?.name || currentSection}`, 14, 30);
-      doc.text(`Страница: ${currentPage} из ${TOTAL_PAGES}`, 14, 36);
-      doc.text(`Дата: ${new Date().toLocaleDateString('ru-RU')}`, 14, 42);
-      
-      // Статистика
-      doc.setFontSize(14);
-      doc.setTextColor(15, 23, 42);
-      doc.text(`Результат: ${stats.correct} из ${QUESTIONS_PER_SESSION} (${Math.round((stats.correct / QUESTIONS_PER_SESSION) * 100)}%)`, 14, 52);
-      
-      // Таблица с вопросами
-      const tableData = quizState.currentQuestions.map((q, idx) => {
-        const userAnswer = quizState.userAnswers[idx];
-        const correctAnswer = q.correct_index;
-        const isCorrect = userAnswer === correctAnswer;
-        const shuffledIndex = quizState.shuffledAnswers[idx][userAnswer ?? 0];
-        const originalAnswer = q.answers?.[shuffledIndex] || q.options[shuffledIndex];
-        
-        return [
-          idx + 1,
-          q.text.substring(0, 80) + (q.text.length > 80 ? '...' : ''),
-          originalAnswer?.substring(0, 50) + (originalAnswer?.length > 50 ? '...' : '') || 'Нет ответа',
-          isCorrect ? '✓' : '✗'
-        ];
-      });
-      
-      (doc as any).autoTable({
-        startY: 60,
-        head: [['№', 'Вопрос', 'Ваш ответ', '✓/✗']],
-        body: tableData,
-        theme: 'striped',
-        headStyles: { fillColor: [59, 130, 246] },
-        didParseCell: (data: any) => {
-          if (data.section === 'body' && data.column.index === 3) {
-            if (data.cell.raw === '✓') {
-              data.cell.styles.textColor = [34, 197, 94];
-            } else {
-              data.cell.styles.textColor = [239, 68, 68];
-            }
-          }
-        }
-      });
-      
-      // Сохранение
-      const fileName = `результаты_${currentSection}_стр${currentPage}_${new Date().getTime()}.pdf`;
-      doc.save(fileName);
-      
+      // Подготовка данных для экспорта
+      const exportData = {
+        section: currentSection,
+        sectionInfo: currentSectionInfo!,
+        page: currentPage,
+        totalPages: TOTAL_PAGES,
+        questions: quizState.currentQuestions,
+        userAnswers: quizState.userAnswers,
+        shuffledAnswers: quizState.shuffledAnswers,
+        stats: stats,
+        timestamp: Date.now()
+      };
+
+      // Экспорт через сервис
+      await exportLearningToPDF(exportData);
+
       updateToast(loadingId, { type: 'success', title: 'PDF сохранён' });
-      success('PDF сохранён', `Файл ${fileName} загружен`);
+      success('PDF сохранён', 'Файл загружен в папку загрузок');
     } catch (err: any) {
       console.error('❌ [LearningSection] Ошибка сохранения PDF:', err);
       updateToast(loadingId, { type: 'error', title: 'Ошибка сохранения' });
@@ -744,19 +797,10 @@ export function LearningSection() {
                   maxWidth={280}
                 >
                   <Button
-                    ref={filterButtonRef}
-                    variant={showFilter ? 'default' : 'outline'}
+                    variant={isFilterActive ? 'default' : 'outline'}
                     size="sm"
-                    onClick={() => {
-                      setShowFilter(!showFilter);
-                      if (!showFilter) {
-                        // Прокрутка к фильтру
-                        setTimeout(() => {
-                          filterRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                        }, 100);
-                      }
-                    }}
-                    className={showFilter ? 'bg-blue-600 hover:bg-blue-700' : ''}
+                    onClick={() => setIsFilterModalOpen(true)}
+                    className={isFilterActive ? 'bg-blue-100 hover:bg-blue-200 text-blue-700 border-blue-300' : ''}
                   >
                     <Filter className="w-4 h-4" />
                     <span className="hidden md:inline ml-1">Фильтр</span>
@@ -767,7 +811,7 @@ export function LearningSection() {
             <div className="mb-2">
               <div className="flex items-center justify-between text-xs text-slate-500 mb-1">
                 <span>Глобальный</span>
-                <span>{globalProgress.answered}/{TOTAL_QUESTIONS} ({globalProgress.percentage}%)</span>
+                <span>{globalProgress.answered}/{globalProgress.total} ({globalProgress.percentage}%)</span>
               </div>
               <Progress value={globalProgress.percentage} className="h-2" />
             </div>
@@ -837,27 +881,111 @@ export function LearningSection() {
           ))}
         </div>
 
-        {/* Фильтр вопросов */}
-        {showFilter && (
-          <div ref={filterRef} className="mb-6 scroll-mt-20">
-            <QuestionFilter
-              questionStats={statisticsService.getQuestionStats(currentSection)}
-              onFilterChange={(filteredIds) => {
-                applyFilter();
-                console.log('Filtered questions:', filteredIds.length);
-              }}
-              hiddenQuestionIds={hiddenQuestionIds}
-              onHiddenChange={(newHiddenIds) => {
-                setHiddenQuestionIds(newHiddenIds);
-                const settings = questionFilterService.getSettings(currentSection);
-                settings.hiddenQuestionIds = newHiddenIds;
-                questionFilterService.saveSettings(settings);
-                // Применяем фильтр после сохранения
-                setTimeout(() => applyFilter(), 100);
-              }}
-            />
-          </div>
-        )}
+        {/* FilterModal - Модальное окно фильтра */}
+        <FilterModal
+          isOpen={isFilterModalOpen}
+          onClose={() => setIsFilterModalOpen(false)}
+          onApply={(filteredIds, settings) => {
+            console.log('🔍 [LearningSection] Фильтр применён, вопросов:', filteredIds.length, 'настройки:', settings);
+            
+            // Устанавливаем флаг применения фильтра
+            setIsFilterApplying(true);
+            
+            // Сохраняем настройки фильтра в сервис
+            const filterSettings = questionFilterService.getSettings(currentSection);
+            filterSettings.excludeKnown = settings.excludeKnown;
+            filterSettings.excludeWeak = settings.excludeWeak;
+            questionFilterService.saveSettings(filterSettings);
+            
+            const filtered = questions.filter(q => filteredIds.includes(q.id));
+            setFilteredQuestions(filtered);
+            setFilteredTotalPages(Math.ceil(filtered.length / QUESTIONS_PER_SESSION));
+            // Сбрасываем на первую страницу и сохраняем это
+            setCurrentPage(1);
+            const keys = getStorageKeys(currentSection);
+            localStorage.setItem(keys.page, '1');
+            
+            // Обновляем флаг активности фильтра
+            const isFilterEnabled = settings.excludeKnown || settings.excludeWeak || hiddenQuestionIds.length > 0;
+            setIsFilterActive(isFilterEnabled);
+            
+            // Принудительно обновляем quizState для первой страницы с новыми вопросами
+            setTimeout(() => {
+              const startIndex = 0;
+              const selected = filtered.slice(startIndex, startIndex + QUESTIONS_PER_SESSION).map(q => ({
+                ...q,
+                question: q.text,
+                answers: q.options
+              }));
+              
+              // Проверяем есть ли сохраненное состояние для страницы 1
+              const savedState = savedStatesRef.current[1];
+              
+              if (savedState && savedState.shuffledAnswers.length === selected.length) {
+                // Восстанавливаем сохраненное состояние
+                console.log('💾 [LearningSection] Восстановление состояния для страницы 1 после фильтра');
+                setQuizState({
+                  currentQuestions: selected,
+                  shuffledAnswers: savedState.shuffledAnswers,
+                  userAnswers: savedState.userAnswers,
+                  isComplete: savedState.isComplete,
+                });
+              } else {
+                // Создаём новое состояние без ответов
+                const shuffledAnswers = selected.map((q) => {
+                  const expectedCount = q.answers?.length || q.options?.length || 2;
+                  return shuffleArray([...Array(expectedCount).keys()]);
+                });
+                
+                console.log('🔄 [LearningSection] Создание нового состояния для страницы 1 после фильтра');
+                setQuizState({
+                  currentQuestions: selected,
+                  shuffledAnswers,
+                  userAnswers: new Array(selected.length).fill(null),
+                  isComplete: false,
+                });
+              }
+              
+              // Сбрасываем флаг применения фильтра
+              setTimeout(() => {
+                setIsFilterApplying(false);
+              }, 100);
+            }, 0);
+          }}
+          questionStats={(() => {
+            // Создаем полную статистику по всем вопросам раздела
+            const allStats = statisticsService.getQuestionStats(currentSection);
+            const statsMap = new Map(allStats.map(s => [s.questionId, s]));
+            
+            // Добавляем все вопросы раздела (даже те, на которые не отвечали)
+            return questions.map(q => {
+              const existing = statsMap.get(q.id);
+              if (existing) {
+                return existing;
+              }
+              // Вопрос без статистики (не отвечали)
+              return {
+                questionId: q.id,
+                ticket: q.ticket,
+                section: currentSection,
+                totalAttempts: 0,
+                correctAnswers: 0,
+                accuracy: 0,
+                isKnown: false,
+                isWeak: false,
+              };
+            });
+          })()}
+          hiddenQuestionIds={hiddenQuestionIds}
+          onHiddenChange={(newHiddenIds) => {
+            setHiddenQuestionIds(newHiddenIds);
+            const settings = questionFilterService.getSettings(currentSection);
+            settings.hiddenQuestionIds = newHiddenIds;
+            questionFilterService.saveSettings(settings);
+            applyFilter();
+          }}
+          currentSection={currentSection}
+        />
 
         {/* Результаты */}
         {quizState.isComplete && (

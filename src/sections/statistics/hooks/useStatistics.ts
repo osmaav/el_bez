@@ -1,0 +1,82 @@
+/**
+ * useStatistics — хук для управления статистикой
+ * 
+ * @description Загрузка, экспорт, очистка статистики
+ * @author el-bez Team
+ * @version 1.0.0
+ */
+
+import { useState, useCallback } from 'react';
+import { useAuth } from '@/context/AuthContext';
+import { statisticsService } from '@/services/statisticsService';
+import { importTestData } from '@/utils/statisticsTestData';
+import type { UserStatistics } from '@/types';
+import type { StatisticsTab, UseStatisticsReturn } from '../types';
+import { toast as sonnerToast } from 'sonner';
+
+export function useStatistics(): UseStatisticsReturn {
+  const { user } = useAuth();
+  const [statistics, setStatistics] = useState<UserStatistics | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState<StatisticsTab>('overview');
+
+  // Загрузка статистики
+  const loadStatistics = useCallback(() => {
+    const userId = user?.id || 'anonymous';
+    let stats = statisticsService.load(userId);
+
+    if (!stats) {
+      stats = statisticsService.initialize(userId);
+    }
+
+    setStatistics(stats);
+    setIsLoading(false);
+  }, [user]);
+
+  // Экспорт статистики
+  const handleExport = useCallback(() => {
+    const data = statisticsService.export();
+    const blob = new Blob([data], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `elbez-statistics-${new Date().toISOString().split('T')[0]}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    sonnerToast.success('Статистика экспортирована');
+  }, []);
+
+  // Очистка статистики
+  const handleClear = useCallback(() => {
+    if (confirm('Вы уверены, что хотите очистить всю статистику? Это действие необратимо.')) {
+      statisticsService.clear();
+      loadStatistics();
+      sonnerToast.success('Статистика очищена');
+    }
+  }, [loadStatistics]);
+
+  // Загрузка тестовых данных
+  const handleLoadTestData = useCallback(() => {
+    if (confirm('Загрузить тестовые данные для демонстрации статистики? Это перезапишет текущие данные.')) {
+      const userId = user?.id || 'anonymous';
+      importTestData(userId);
+      loadStatistics();
+      sonnerToast.success('Тестовые данные загружены');
+    }
+  }, [user, loadStatistics]);
+
+  return {
+    statistics,
+    isLoading,
+    activeTab,
+    setActiveTab,
+    refreshStatistics: loadStatistics,
+    handleExport,
+    handleClear,
+    handleLoadTestData,
+  };
+}
+
+export default useStatistics;

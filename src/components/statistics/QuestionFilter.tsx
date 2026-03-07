@@ -16,6 +16,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Separator } from '@/components/ui/separator';
 import { Filter, CheckCircle2, XCircle, Eye, EyeOff, ChevronDown, ChevronUp } from 'lucide-react';
 import type { SectionType } from '@/types';
+import { questionFilterService } from '@/services/questionFilterService';
 
 interface QuestionStats {
   questionId: number;
@@ -30,9 +31,10 @@ interface QuestionStats {
 
 interface QuestionFilterProps {
   questionStats: QuestionStats[];
-  onFilterChange: (filteredQuestionIds: number[]) => void;
+  onFilterChange: (filteredQuestionIds: number[], settings?: { excludeKnown: boolean; excludeWeak: boolean }) => void;
   hiddenQuestionIds: number[];
   onHiddenChange: (hiddenIds: number[]) => void;
+  currentSection: SectionType;
 }
 
 export const QuestionFilter: React.FC<QuestionFilterProps> = ({
@@ -40,6 +42,7 @@ export const QuestionFilter: React.FC<QuestionFilterProps> = ({
   onFilterChange,
   hiddenQuestionIds,
   onHiddenChange,
+  currentSection,
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [excludeKnown, setExcludeKnown] = useState(false);
@@ -55,12 +58,7 @@ export const QuestionFilter: React.FC<QuestionFilterProps> = ({
     return { total, known, weak, normal };
   }, [questionStats]);
 
-  // Применяем фильтры при изменении переключателей
-  React.useEffect(() => {
-    applyFilters();
-  }, [excludeKnown, excludeWeak, hiddenQuestionIds]);
-
-  // Применяем фильтры
+  // Применяем фильтры (вызывается только по кнопке "Применить")
   const applyFilters = () => {
     const filteredIds = questionStats
       .filter(q => {
@@ -70,15 +68,23 @@ export const QuestionFilter: React.FC<QuestionFilterProps> = ({
         return true;
       })
       .map(q => q.questionId);
-    
-    onFilterChange(filteredIds);
+
+    // Сохраняем настройки в сервис
+    const settings = questionFilterService.getSettings(currentSection);
+    settings.excludeKnown = excludeKnown;
+    settings.excludeWeak = excludeWeak;
+    questionFilterService.saveSettings(settings);
+
+    onFilterChange(filteredIds, { excludeKnown, excludeWeak });
   };
 
   // Сброс фильтров
   const handleReset = () => {
     setExcludeKnown(false);
     setExcludeWeak(false);
-    onFilterChange(questionStats.map(q => q.questionId));
+    // Сбрасываем настройки в сервисе
+    questionFilterService.resetSettings(currentSection);
+    onFilterChange(questionStats.map(q => q.questionId), { excludeKnown: false, excludeWeak: false });
   };
 
   // Скрыть/показать вопрос
@@ -134,13 +140,13 @@ export const QuestionFilter: React.FC<QuestionFilterProps> = ({
                 checked={excludeKnown}
                 onCheckedChange={(checked) => {
                   setExcludeKnown(checked);
-                  setTimeout(applyFilters, 0);
+                  // Применение только по кнопке "Применить"
                 }}
               />
             </div>
-            
+
             <Separator />
-            
+
             <div className="flex items-center justify-between space-x-2">
               <Label htmlFor="exclude-weak" className="flex flex-col space-y-1">
                 <span className="text-sm font-medium">Исключить слабые</span>
@@ -153,7 +159,7 @@ export const QuestionFilter: React.FC<QuestionFilterProps> = ({
                 checked={excludeWeak}
                 onCheckedChange={(checked) => {
                   setExcludeWeak(checked);
-                  setTimeout(applyFilters, 0);
+                  // Применение только по кнопке "Применить"
                 }}
               />
             </div>

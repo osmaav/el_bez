@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useApp } from '@/context/AppContext';
 import { useToast } from '@/context/ToastContext';
+import { exportTrainerToPDF } from '@/services/exportService';
 import { questionFilterService } from '@/services/questionFilterService';
 import { statisticsService } from '@/services/statisticsService';
 import { QuestionFilter } from '@/components/statistics/QuestionFilter';
@@ -24,6 +25,7 @@ import {
   AlertCircle,
   Clock,
   Filter,
+  Download,
 } from 'lucide-react';
 
 export function TrainerSection() {
@@ -118,6 +120,35 @@ export function TrainerSection() {
     setShowResetConfirm(false);
     resetTrainer();
     success('Тренажёр сброшен', 'Все ответы очищены');
+  };
+
+  // Экспорт результатов в PDF
+  const handleExportToPDF = async () => {
+    const loadingId = loading('Генерация PDF', 'Пожалуйста, подождите...');
+
+    try {
+      const exportData = {
+        section: currentSection,
+        sectionInfo: currentSectionInfo!,
+        questions: trainerQuestions,
+        answers: trainerAnswers,
+        stats: {
+          total: trainerStats.total,
+          correct: trainerStats.correct,
+          incorrect: trainerStats.incorrect,
+          remaining: trainerStats.remaining
+        },
+        timestamp: Date.now()
+      };
+
+      await exportTrainerToPDF(exportData);
+
+      updateToast(loadingId, { type: 'success', title: 'PDF сохранён' });
+      success('PDF сохранён', 'Файл загружен в папку загрузок');
+    } catch (err: any) {
+      console.error('❌ [TrainerSection] Ошибка экспорта PDF:', err);
+      updateToast(loadingId, { type: 'error', title: 'Ошибка сохранения' });
+    }
   };
 
   // Синхронизация с состоянием
@@ -343,7 +374,15 @@ export function TrainerSection() {
         </Card>
 
         {/* Кнопки действий */}
-        <div className="flex justify-center space-x-4">
+        <div className="flex justify-center space-x-4 flex-wrap gap-4">
+          <Button
+            size="lg"
+            onClick={handleExportToPDF}
+            className="bg-blue-600 hover:bg-blue-700"
+          >
+            <Download className="w-5 h-5 mr-2" />
+            Сохранить в PDF
+          </Button>
           <Button
             size="lg"
             onClick={handleResetTrainer}
@@ -436,8 +475,9 @@ export function TrainerSection() {
           <div className="mb-4">
             <QuestionFilter
               questionStats={statisticsService.getQuestionStats(currentSection)}
-              onFilterChange={(filteredIds) => {
-                console.log('Filtered questions:', filteredIds.length);
+              currentSection={currentSection}
+              onFilterChange={(filteredIds, settings) => {
+                console.log('🔍 [TrainerSection] Фильтр применён, вопросов:', filteredIds.length, 'настройки:', settings);
               }}
               hiddenQuestionIds={hiddenQuestionIds}
               onHiddenChange={(newHiddenIds) => {

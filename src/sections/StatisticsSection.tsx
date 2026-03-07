@@ -1,7 +1,6 @@
-import React, { useEffect, useState } from 'react';
-import { useAuth } from '@/context/AuthContext';
+import React from 'react';
 import { statisticsService } from '@/services/statisticsService';
-import type { UserStatistics, SectionStats, SectionType } from '@/types';
+import type { SectionType } from '@/types';
 import {
   StatCard,
   ProgressChart,
@@ -13,77 +12,37 @@ import {
   SessionsBarChart,
 } from '@/components/statistics/StatisticsCharts';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import {
-  TrendingUp,
   Target,
   Clock,
   Award,
   BookOpen,
   AlertCircle,
-  Download,
-  RotateCcw,
-  Database,
+  TrendingUp,
 } from 'lucide-react';
-import { toast as sonnerToast } from 'sonner';
-import { importTestData } from '@/utils/statisticsTestData';
+
+// Импорт хуков
+import { useStatistics } from './statistics/hooks';
+
+// Импорт компонентов
+import { StatisticsHeader, StatisticsControls } from './statistics/components';
 
 export const StatisticsSection: React.FC = () => {
-  const { user } = useAuth();
-  const [statistics, setStatistics] = useState<UserStatistics | null>(null);
-  const [activeTab, setActiveTab] = useState<'overview' | '1256-19' | '1258-20'>('overview');
+  const {
+    statistics,
+    activeTab,
+    setActiveTab,
+    refreshStatistics,
+    handleExport,
+    handleClear,
+    handleLoadTestData,
+  } = useStatistics();
 
-  useEffect(() => {
-    loadStatistics();
-  }, [user]);
-
-  const loadStatistics = () => {
-    const userId = user?.id || 'anonymous';
-    let stats = statisticsService.load(userId);
-
-    if (!stats) {
-      stats = statisticsService.initialize(userId);
-    }
-
-    setStatistics(stats);
-  };
-
-  // Обновляем статистику при монтировании компонента
-  useEffect(() => {
-    loadStatistics();
-  }, []);
-
-  const handleExport = () => {
-    const data = statisticsService.export();
-    const blob = new Blob([data], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `elbez-statistics-${new Date().toISOString().split('T')[0]}.json`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-    sonnerToast.success('Статистика экспортирована');
-  };
-
-  const handleClear = () => {
-    if (confirm('Вы уверены, что хотите очистить всю статистику? Это действие необратимо.')) {
-      statisticsService.clear();
-      loadStatistics();
-      sonnerToast.success('Статистика очищена');
-    }
-  };
-
-  const handleLoadTestData = () => {
-    if (confirm('Загрузить тестовые данные для демонстрации статистики? Это перезапишет текущие данные.')) {
-      const userId = user?.id || 'anonymous';
-      importTestData(userId);
-      loadStatistics();
-      sonnerToast.success('Тестовые данные загружены');
-    }
-  };
+  // Обновляем статистику при монтировании
+  React.useEffect(() => {
+    refreshStatistics();
+  }, [refreshStatistics]);
 
   if (!statistics) {
     return (
@@ -100,7 +59,7 @@ export const StatisticsSection: React.FC = () => {
   const section1258Stats = statistics.sections['1258-20'];
 
   const getSectionData = (section: SectionType): {
-    stats: SectionStats | undefined;
+    stats: any;
     progressData: Array<{ date: string; accuracy: number; sessions: number }>;
   } => {
     return {
@@ -115,43 +74,14 @@ export const StatisticsSection: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Заголовок */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Статистика</h1>
-          <p className="text-muted-foreground mt-1">
-            Ваш прогресс в подготовке к экзаменам
-          </p>
-        </div>
-        <div className="flex gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleLoadTestData}
-            className="gap-2"
-          >
-            <Database className="w-4 h-4" />
-            Тестовые данные
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleExport}
-            disabled={statistics.totalSessions === 0}
-          >
-            <Download className="w-4 h-4 mr-2" />
-            Экспорт
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleClear}
-            disabled={statistics.totalSessions === 0}
-          >
-            <RotateCcw className="w-4 h-4 mr-2" />
-            Сброс
-          </Button>
-        </div>
-      </div>
+      <StatisticsHeader />
+
+      {/* Контролы */}
+      <StatisticsControls
+        onExport={handleExport}
+        onClear={handleClear}
+        onLoadTestData={handleLoadTestData}
+      />
 
       {/* Уведомление для новых пользователей */}
       {statistics.totalSessions === 0 && (

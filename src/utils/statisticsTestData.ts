@@ -22,7 +22,7 @@ const randomInRange = (min: number, max: number): number => {
 const generateAttempt = (section: SectionType): QuestionAttempt => {
   const ticket = randomInRange(1, 25);
   const isCorrect = Math.random() > 0.3; // 70% правильных ответов
-
+  const dateStart = Date.now() - 30 * 24 * 60 * 60 * 1000;// на 30 дней ранее текущей даты
   return {
     questionId: randomInRange(1, 250),
     ticket,
@@ -30,7 +30,7 @@ const generateAttempt = (section: SectionType): QuestionAttempt => {
     isCorrect,
     userAnswer: randomInRange(0, 3),
     correctAnswer: randomInRange(0, 3),
-    timestamp: Date.now() - randomInRange(0, 90) * 24 * 60 * 60 * 1000,// 90 дней назад
+    timestamp: dateStart + randomInRange(0, 30) * 24 * 60 * 60 * 1000,// 30 дней назад
     timeSpent: randomInRange(1, 5) //длительность
   };
 };
