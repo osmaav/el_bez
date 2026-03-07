@@ -187,7 +187,7 @@ export const ActivityCalendar: React.FC<ActivityCalendarProps> = ({ data }) => {
   return (
     <>
       <style>{scrollbarHideStyles}</style>
-      <Card className="activity-calendar-card max-w-[283px] gap-0 mx-auto">
+      <Card className="activity-calendar-card max-w-[285px] gap-0 mx-auto">
         <CardHeader className="pb-3">
           <CardTitle className="text-lg font-bold">Активность</CardTitle>
           <CardDescription className="text-xs">{description}</CardDescription>
@@ -200,13 +200,11 @@ export const ActivityCalendar: React.FC<ActivityCalendarProps> = ({ data }) => {
               className="w-full overflow-x-auto scrollbar-hide"
             >
               <div
-                className="flex"
-                style={{
-                  gap: '24px' // 24px (gap-6) + 5px = 29px
-                }}
+                className="flex gap-6"
+                style={{ paddingBottom: '6px' }}
               >
                 {monthsData.map((monthData, monthIndex) => (
-                  <div key={monthIndex} style={{ flexShrink: 0 }}>
+                  <div key={monthIndex} style={{ flexShrink: 0, paddingRight: '3px' }}>
                     {/* Заголовок месяца */}
                     <div className="text-m font-semibold text-slate-600 dark:text-slate-300 capitalize text-center whitespace-nowrap">
                       {monthData.name}
@@ -266,7 +264,7 @@ export const ActivityCalendar: React.FC<ActivityCalendarProps> = ({ data }) => {
             </div>
           ) : (
             /* Показываем только текущий месяц без прокрутки */
-            <div className="space-y-4">
+            <div className="space-y-4" >
               {monthsData.map((monthData, monthIndex) => (
                 <div key={monthIndex} className="space-y-4">
                   {/* Заголовок месяца */}
@@ -329,7 +327,7 @@ export const ActivityCalendar: React.FC<ActivityCalendarProps> = ({ data }) => {
           )}
 
           {/* Добавляем отступы для предотвращения выхода за границы при hover */}
-          <div style={{ height: '15px' }} />
+          {/* <div style={{ height: '10px' }} /> */}
 
           {/* Легенда */}
           <div className="flex items-center justify-center gap-2 pt-4 mt-4 border-t border-slate-200 dark:border-slate-700">
