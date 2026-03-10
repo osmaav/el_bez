@@ -125,28 +125,31 @@ export function useLearningProgress(
   const [isSavedStatesLoaded, setIsSavedStatesLoaded] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
   const [isSectionChanging, setIsSectionChanging] = useState(false);
-  
-  // Инициализируем currentPage из localStorage сразу
-  const [currentPage, setCurrentPage] = useState(() => {
-    if (typeof window === 'undefined') return 1;
-    
-    const keys = getStorageKeys(currentSection);
-    const savedPage = localStorage.getItem(keys.page);
-    if (savedPage) {
-      const page = parseInt(savedPage, 10);
-      const maxPage = questions.length > 0 ? Math.ceil(questions.length / QUESTIONS_PER_SESSION) : 1;
-      if (page > 0 && page <= maxPage) {
-        console.log('📄 [useLearningProgress] Загружена страница из localStorage при инициализации:', page);
-        return page;
-      }
-    }
-    return 1;
-  });
+  const [currentPage, setCurrentPage] = useState(1);
 
   // Refs
   const sessionTrackerRef = useRef<SessionTracker | null>(null);
   const currentSectionRef = useRef<SectionType>(currentSection);
   const savedStatesRef = useRef<SavedState>({});
+
+  // ============================================================================
+  // Load saved page from localStorage when questions are loaded
+  // ============================================================================
+
+  useEffect(() => {
+    if (questions.length === 0 || isInitialized) return;
+    
+    const keys = getStorageKeys(currentSection);
+    const savedPage = localStorage.getItem(keys.page);
+    if (savedPage) {
+      const page = parseInt(savedPage, 10);
+      const maxPage = Math.ceil(questions.length / QUESTIONS_PER_SESSION);
+      if (page > 0 && page <= maxPage) {
+        console.log('📄 [useLearningProgress] Загружена страница из localStorage:', page);
+        setCurrentPage(page);
+      }
+    }
+  }, [questions.length, currentSection, isInitialized]);
 
   // ============================================================================
   // Initialization
@@ -220,6 +223,7 @@ export function useLearningProgress(
       });
       setIsInitialized(false);
       setIsSectionChanging(true);
+      setCurrentPage(1);
 
       setTimeout(() => {
         setIsSectionChanging(false);
