@@ -249,8 +249,10 @@ export function useLearningProgress(
         hasSavedState: !!savedState,
       });
 
-      // Восстанавливаем состояние только если есть сохранённые ответы
-      if (savedState && savedState.shuffledAnswers.length === selected.length && savedState.userAnswers.some(a => a !== null)) {
+      // Восстанавливаем состояние только если все вопросы на странице отвечены
+      const allAnswered = savedState && savedState.userAnswers.every(a => a !== null);
+      
+      if (savedState && savedState.shuffledAnswers.length === selected.length && allAnswered) {
         console.log('💾 [useLearningProgress] Восстановление состояния для страницы', currentPage);
         setQuizState({
           currentQuestions: selected,
@@ -259,7 +261,7 @@ export function useLearningProgress(
           isComplete: savedState.isComplete,
         });
       } else {
-        // Всегда перемешиваем варианты для новой страницы без ответов
+        // Всегда перемешиваем варианты для новой страницы или страницы с частичными ответами
         console.log('🔀 [useLearningProgress] Перемешивание вариантов для страницы', currentPage);
         const shuffledAnswers = selected.map((q) => {
           const expectedCount = q.answers?.length || q.options?.length || 2;
