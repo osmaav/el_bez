@@ -6,6 +6,7 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Mail, CheckCircle2, AlertCircle, Loader2 } from 'lucide-react';
+import { useAuth } from '@/context/AuthContext';
 
 interface EmailVerificationModalProps {
   isOpen: boolean;
@@ -24,6 +25,7 @@ export function EmailVerificationModal({
   onLogout,
   onVerified
 }: EmailVerificationModalProps) {
+  const { isEmailVerified } = useAuth();
   const [isChecking, setIsChecking] = useState(false);
   const [isResending, setIsResending] = useState(false);
   const [isVerified, setIsVerified] = useState(false);
@@ -52,6 +54,18 @@ export function EmailVerificationModal({
     }
   }, [resendCountdown]);
 
+  // Отслеживаем изменение статуса подтверждения email
+  useEffect(() => {
+    if (isEmailVerified && !isVerified) {
+      // console.log('✅ [EmailVerificationModal] Email подтверждён!');
+      setIsVerified(true);
+      // Вызываем колбэк успешного подтверждения
+      if (onVerified) {
+        onVerified();
+      }
+    }
+  }, [isEmailVerified, isVerified, onVerified]);
+
   // Убрали автоматическую проверку - теперь только по клику пользователя
   // Это снижает нагрузку на сервер и базу данных
 
@@ -60,23 +74,9 @@ export function EmailVerificationModal({
     setIsChecking(true);
     try {
       await onVerify();
-      // Проверяем в localStorage, подтверждён ли email
-      const currentUser = localStorage.getItem('elbez_current_user');
-      if (currentUser) {
-        const user = JSON.parse(currentUser);
-        // console.log('📊 [EmailVerificationModal] Статус email после проверки:', {
-        //   email: user.email,
-        //   emailVerified: user.emailVerified
-        // });
-        if (user.emailVerified) {
-          // console.log('✅ [EmailVerificationModal] Email подтверждён!');
-          setIsVerified(true);
-          // Вызываем колбэк успешного подтверждения
-          if (onVerified) {
-            onVerified();
-          }
-        }
-      }
+      // Проверяем статус через useAuth (checkEmail обновил контекст)
+      // localStorage больше не содержит персональных данных
+      // console.log('✅ [EmailVerificationModal] Проверка выполнена');
     } catch (error) {
       // console.error('❌ [EmailVerificationModal] Ошибка проверки email:', error);
     } finally {

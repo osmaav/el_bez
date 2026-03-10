@@ -41,9 +41,11 @@ const mockUsers: Record<string, UserProfile> = {};
 
 /**
  * Ключи localStorage для аутентификации
+ * 🔒 БЕЗОПАСНОСТЬ: Храним только ID пользователя и статус аутентификации.
+ * Персональные данные (email, ФИО, и т.д.) НЕ сохраняются в localStorage.
  */
 const STORAGE_KEY_AUTH = 'elbez_is_authenticated';
-const STORAGE_KEY_USER = 'elbez_current_user';
+const STORAGE_KEY_USER_ID = 'elbez_user_id'; // Только ID, не полный профиль
 
 /**
  * Регистрация пользователя через email/password
@@ -124,9 +126,8 @@ const mockRegisterUser = async (userData: RegisterUserData): Promise<UserProfile
 
   mockUsers[userId] = userProfile;
 
-  // Сохранение в localStorage
-  localStorage.setItem('mockUsers', JSON.stringify(mockUsers));
-  localStorage.setItem(STORAGE_KEY_USER, JSON.stringify(userProfile));
+  // 🔒 Сохраняем ТОЛЬКО ID в localStorage
+  localStorage.setItem(STORAGE_KEY_USER_ID, userId);
   localStorage.setItem(STORAGE_KEY_AUTH, 'true');
 
   // console.log('✅ Mock пользователь создан:', userProfile.email);
@@ -220,8 +221,8 @@ const mockLoginUser = async (userData: LoginUserData): Promise<UserProfile> => {
     throw new Error('Пользователь не найден');
   }
 
-  // Сохранение текущего пользователя
-  localStorage.setItem(STORAGE_KEY_USER, JSON.stringify(user));
+  // 🔒 Сохраняем ТОЛЬКО ID в localStorage
+  localStorage.setItem(STORAGE_KEY_USER_ID, user.id);
   localStorage.setItem(STORAGE_KEY_AUTH, 'true');
 
   return user;
@@ -314,8 +315,9 @@ const mockOAuthSignIn = async (provider: OAuthProviderType): Promise<UserProfile
   };
 
   mockUsers[userId] = userProfile;
-  localStorage.setItem('mockUsers', JSON.stringify(mockUsers));
-  localStorage.setItem(STORAGE_KEY_USER, JSON.stringify(userProfile));
+  
+  // 🔒 Сохраняем ТОЛЬКО ID в localStorage
+  localStorage.setItem(STORAGE_KEY_USER_ID, userId);
   localStorage.setItem(STORAGE_KEY_AUTH, 'true');
 
   // console.log(`✅ Mock ${provider} вход выполнен`);
@@ -327,7 +329,8 @@ const mockOAuthSignIn = async (provider: OAuthProviderType): Promise<UserProfile
  */
 export const logoutUser = async (): Promise<void> => {
   if (!isFirebaseReady()) {
-    localStorage.removeItem(STORAGE_KEY_USER);
+    // 🔒 Очищаем только ID и статус аутентификации
+    localStorage.removeItem(STORAGE_KEY_USER_ID);
     localStorage.removeItem(STORAGE_KEY_AUTH);
     // console.log('🔧 Mock выход выполнен');
     return;
@@ -397,7 +400,7 @@ export const updateUserProfile = async (
   if (!isFirebaseReady()) {
     if (mockUsers[uid]) {
       mockUsers[uid] = { ...mockUsers[uid], ...updates, updatedAt: new Date().toISOString() };
-      localStorage.setItem('mockUsers', JSON.stringify(mockUsers));
+      // 🔒 Убрали сохранение в localStorage - mockUsers хранятся только в памяти
     }
     return;
   }
@@ -420,10 +423,14 @@ export const onAuthChange = (
   callback: (user: UserProfile | null) => void
 ): (() => void) => {
   if (!isFirebaseReady()) {
-    // Mock подписка на localStorage
+    // Mock подписка на localStorage (только ID)
     const handleStorageChange = () => {
-      const currentUser = localStorage.getItem(STORAGE_KEY_USER);
-      callback(currentUser ? JSON.parse(currentUser) : null);
+      const savedUserId = localStorage.getItem(STORAGE_KEY_USER_ID);
+      if (savedUserId && mockUsers[savedUserId]) {
+        callback(mockUsers[savedUserId]);
+      } else {
+        callback(null);
+      }
     };
 
     window.addEventListener('storage', handleStorageChange);
@@ -586,11 +593,10 @@ export const checkEmailVerification = async (uid: string): Promise<UserProfile |
 
   if (!isFirebaseReady()) {
     // console.log('🔧 [checkEmailVerification] Mock-режим (Firebase не настроен)');
-    // Mock проверка - возвращаем пользователя из localStorage
-    const currentUser = localStorage.getItem(STORAGE_KEY_USER);
-    if (currentUser) {
-      const user = JSON.parse(currentUser);
-      // console.log('📄 [checkEmailVerification] Текущий пользователь из localStorage:', {
+    // Mock проверка - возвращаем пользователя из mockUsers по ID
+    const user = mockUsers[uid];
+    if (user) {
+      // console.log('📄 [checkEmailVerification] Пользователь найден в mockUsers:', {
       //   email: user.email,
       //   emailVerified: user.emailVerified,
       //   createdAt: user.createdAt
@@ -603,20 +609,15 @@ export const checkEmailVerification = async (uid: string): Promise<UserProfile |
 
       if (minutesDiff >= 5) {
         user.emailVerified = true;
-        localStorage.setItem(STORAGE_KEY_USER, JSON.stringify(user));
+        mockUsers[uid] = user;
         // console.log('✅ [checkEmailVerification] Email подтверждён (прошло 5+ минут)');
-        // Обновляем в mockUsers
-        if (mockUsers[uid]) {
-          mockUsers[uid].emailVerified = true;
-          localStorage.setItem('mockUsers', JSON.stringify(mockUsers));
-        }
         return user;
       } else {
         // console.log('⏳ [checkEmailVerification] Email ещё не подтверждён (прошло меньше 5 минут)');
         return user;
       }
     }
-    // console.log('❌ [checkEmailVerification] Пользователь не найден в localStorage');
+    // console.log('❌ [checkEmailVerification] Пользователь не найден в mockUsers');
     return null;
   }
 
@@ -664,8 +665,12 @@ export const checkEmailVerification = async (uid: string): Promise<UserProfile |
  */
 export const refreshCurrentUser = async (): Promise<UserProfile | null> => {
   if (!isFirebaseReady()) {
-    const currentUser = localStorage.getItem(STORAGE_KEY_USER);
-    return currentUser ? JSON.parse(currentUser) : null;
+    // Mock режим - возвращаем пользователя из mockUsers по ID
+    const savedUserId = localStorage.getItem(STORAGE_KEY_USER_ID);
+    if (savedUserId && mockUsers[savedUserId]) {
+      return mockUsers[savedUserId];
+    }
+    return null;
   }
 
   const currentUser = auth.currentUser;

@@ -1,13 +1,13 @@
 /**
  * Модальное окно регистрации — современный дизайн
- * 
+ *
  * @description Обновлённое модальное окно регистрации с использованием AnimatedModal
  * @author el-bez UI Team
  * @version 2.0.0
  */
 
 import type { FormEvent, ChangeEvent } from 'react';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -49,29 +49,12 @@ export function RegisterModal({ isOpen, onClose, onOpenLogin }: RegisterModalPro
     password: ''
   });
 
-  // Автозаполнение из localStorage
-  useEffect(() => {
-    const savedForm = localStorage.getItem('elbez_register_form');
-    if (savedForm) {
-      try {
-        const parsed = JSON.parse(savedForm);
-        setFormData(prev => ({ ...prev, ...parsed }));
-      } catch (e) {
-        localStorage.removeItem('elbez_register_form');
-      }
-    }
-  }, []);
-
   const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     const updatedData = { ...formData, [name]: value };
     setFormData(updatedData);
 
-    // Сохраняем в localStorage для автозаполнения (кроме пароля)
-    if (name !== 'password') {
-      localStorage.setItem('elbez_register_form', JSON.stringify(updatedData));
-    }
-
+    // 🔒 Убрали сохранение в localStorage - не храним персональные данные
     // Очищаем ошибку при изменении поля
     if (validationErrors[name as keyof ValidationErrors]) {
       setValidationErrors(prev => ({ ...prev, [name]: undefined }));

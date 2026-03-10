@@ -7,7 +7,7 @@
  */
 
 import type { FormEvent, ChangeEvent } from 'react';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -43,13 +43,7 @@ export function LoginModal({ isOpen, onClose, onOpenRegister }: LoginModalProps)
   const [resetLoading, setResetLoading] = useState(false);
   const [resetSuccess, setResetSuccess] = useState<string | null>(null);
 
-  // Автозаполнение из localStorage
-  useEffect(() => {
-    const savedEmail = localStorage.getItem('elbez_last_email');
-    if (savedEmail) {
-      setFormData(prev => ({ ...prev, email: savedEmail }));
-    }
-  }, []);
+  // 🔒 Убрали автозаполнение из localStorage - не храним персональные данные
 
   const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -70,12 +64,11 @@ export function LoginModal({ isOpen, onClose, onOpenRegister }: LoginModalProps)
         return;
       }
 
-      // Сохраняем email для следующего входа
-      localStorage.setItem('elbez_last_email', formData.email);
+      // 🔒 Убрали сохранение email в localStorage - не храним персональные данные
 
       // Сохраняем пользователя в AuthContext
       login(user);
-      
+
       // Закрываем модальное окно
       onClose();
     } catch (err: any) {

@@ -652,7 +652,8 @@ export function LearningSection() {
         userAnswers: quizState.userAnswers,
         shuffledAnswers: quizState.shuffledAnswers,
         stats: stats,
-        timestamp: Date.now()
+        timestamp: Date.now(),
+        userName: user ? `${user.surname} ${user.name}`.trim() : undefined
       };
 
       // Экспорт через сервис
