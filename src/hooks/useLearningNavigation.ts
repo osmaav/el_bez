@@ -5,7 +5,7 @@
  * навигацией вперёд/назад и сбросом сессии.
  */
 
-import { useState, useCallback } from 'react';
+import { useCallback } from 'react';
 import type { SessionTracker } from '@/services/statisticsService';
 
 // ============================================================================
@@ -15,18 +15,19 @@ import type { SessionTracker } from '@/services/statisticsService';
 interface UseLearningNavigationReturn {
   currentPage: number;
   totalPages: number;
-  
+
   // Actions
   goToPage: (page: number) => void;
   nextPage: () => void;
   prevPage: () => void;
-  setCurrentPage: React.Dispatch<React.SetStateAction<number>>;
 }
 
 interface UseLearningNavigationOptions {
   sessionTrackerRef: React.MutableRefObject<SessionTracker | null>;
   isComplete: boolean;
   totalPages: number;
+  currentPage: number;
+  setCurrentPage: React.Dispatch<React.SetStateAction<number>>;
 }
 
 // ============================================================================
@@ -37,8 +38,9 @@ export function useLearningNavigation({
   sessionTrackerRef,
   isComplete,
   totalPages,
+  currentPage,
+  setCurrentPage,
 }: UseLearningNavigationOptions): UseLearningNavigationReturn {
-  const [currentPage, setCurrentPage] = useState(1);
 
   // ============================================================================
   // Go to Page
@@ -100,12 +102,11 @@ export function useLearningNavigation({
   return {
     currentPage,
     totalPages,
-    
+
     // Actions
     goToPage,
     nextPage,
     prevPage,
-    setCurrentPage,
   };
 }
 

@@ -118,19 +118,21 @@ export function LearningSection() {
   // Calculate total pages
   const TOTAL_PAGES = filter.filteredTotalPages > 0 ? filter.filteredTotalPages : Math.ceil(questions.length / QUESTIONS_PER_SESSION);
 
-  // Navigation hook
-  const navigation = useLearningNavigation({
-    sessionTrackerRef,
-    isComplete: false, // Will be updated after progress hook
-    totalPages: TOTAL_PAGES,
-  });
-
-  // Progress hook
+  // Progress hook (должен быть перед navigation для синхронизации currentPage)
   const progress = useLearningProgress(
     filter.filteredQuestions.length > 0 ? filter.filteredQuestions : questions,
     filter.filteredTotalPages,
     shuffleArray
   );
+
+  // Navigation hook
+  const navigation = useLearningNavigation({
+    sessionTrackerRef,
+    isComplete: progress.quizState.isComplete,
+    totalPages: TOTAL_PAGES,
+    currentPage: progress.currentPage,
+    setCurrentPage: progress.setCurrentPage,
+  });
 
   // Инициализация при загрузке
   useEffect(() => {

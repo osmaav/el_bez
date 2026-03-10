@@ -50,15 +50,19 @@ interface UseLearningProgressReturn {
   stats: LearningStats;
   globalProgress: GlobalProgress;
   progress: number;
-  
+
+  // Page navigation
+  currentPage: number;
+  setCurrentPage: React.Dispatch<React.SetStateAction<number>>;
+
   // Saved states
   savedStates: SavedState;
   isSavedStatesLoaded: boolean;
-  
+
   // Section change
   isSectionChanging: boolean;
   isInitialized: boolean;
-  
+
   // Actions
   setQuizState: React.Dispatch<React.SetStateAction<QuizState>>;
   handleAnswerSelect: (questionIndex: number, answerIndex: number) => void;
@@ -121,12 +125,12 @@ export function useLearningProgress(
   const [isSavedStatesLoaded, setIsSavedStatesLoaded] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
   const [isSectionChanging, setIsSectionChanging] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
 
   // Refs
   const sessionTrackerRef = useRef<SessionTracker | null>(null);
   const currentSectionRef = useRef<SectionType>(currentSection);
   const savedStatesRef = useRef<SavedState>({});
-  const currentPageRef = useRef<number>(1);
 
   // ============================================================================
   // Initialization
@@ -213,24 +217,24 @@ export function useLearningProgress(
 
   useEffect(() => {
     if (activeQuestions.length > 0 && isSavedStatesLoaded && !isSectionChanging) {
-      const startIndex = (currentPageRef.current - 1) * QUESTIONS_PER_SESSION;
+      const startIndex = (currentPage - 1) * QUESTIONS_PER_SESSION;
       const selected = activeQuestions.slice(startIndex, startIndex + QUESTIONS_PER_SESSION).map(q => ({
         ...q,
         question: q.text,
         answers: q.options
       }));
 
-      const savedState = savedStatesRef.current[currentPageRef.current];
+      const savedState = savedStatesRef.current[currentPage];
 
       console.log('🔍 [useLearningProgress] Обновление вопросов:', {
-        page: currentPageRef.current,
+        page: currentPage,
         total: activeQuestions.length,
         selected: selected.length,
         hasSavedState: !!savedState,
       });
 
       if (savedState && savedState.shuffledAnswers.length === selected.length) {
-        console.log('💾 [useLearningProgress] Восстановление состояния для страницы', currentPageRef.current);
+        console.log('💾 [useLearningProgress] Восстановление состояния для страницы', currentPage);
         setQuizState({
           currentQuestions: selected,
           shuffledAnswers: savedState.shuffledAnswers,
@@ -294,7 +298,7 @@ export function useLearningProgress(
 
     const newSavedStates = {
       ...savedStates,
-      [currentPageRef.current]: {
+      [currentPage]: {
         userAnswers: quizState.userAnswers,
         shuffledAnswers: quizState.shuffledAnswers,
         isComplete: quizState.isComplete,
@@ -321,10 +325,10 @@ export function useLearningProgress(
 
   useEffect(() => {
     if (isInitialized) {
-      saveCurrentPage(currentPageRef.current, currentSection);
+      saveCurrentPage(currentPage, currentSection);
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
-  }, [currentPageRef.current, isInitialized, currentSection]);
+  }, [currentPage, isInitialized, currentSection]);
 
   // ============================================================================
   // Answer Handler
@@ -362,7 +366,7 @@ export function useLearningProgress(
       setQuizState({ ...newState, isComplete: true });
       setSavedStates(prev => ({
         ...prev,
-        [currentPageRef.current]: {
+        [currentPage]: {
           userAnswers: newAnswers,
           shuffledAnswers: quizState.shuffledAnswers,
           isComplete: true
@@ -385,7 +389,7 @@ export function useLearningProgress(
     console.log('🔄 [useLearningProgress] Сброс прогресса для раздела:', currentSection);
     clearProgressStorage(currentSection);
     setSavedStates({});
-    currentPageRef.current = 1;
+    setCurrentPage(1);
 
     if (sessionTrackerRef.current) {
       sessionTrackerRef.current.cancel();
@@ -445,15 +449,19 @@ export function useLearningProgress(
     stats,
     globalProgress,
     progress,
-    
+
+    // Page navigation
+    currentPage,
+    setCurrentPage,
+
     // Saved states
     savedStates,
     isSavedStatesLoaded,
-    
+
     // Section change
     isSectionChanging,
     isInitialized,
-    
+
     // Actions
     setQuizState,
     handleAnswerSelect,
