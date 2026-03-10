@@ -95,7 +95,7 @@ export function LearningSection() {
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
   const [isFilterActive, setIsFilterActive] = useState(false);
   const [isFilterApplying, setIsFilterApplying] = useState(false);
-  
+
   // Состояния для фильтра вопросов
   const [hiddenQuestionIds, setHiddenQuestionIds] = useState<number[]>([]);
   const [filteredQuestions, setFilteredQuestions] = useState<Question[]>([]);
@@ -137,9 +137,9 @@ export function LearningSection() {
     setFilteredTotalPages(Math.ceil(filtered.length / QUESTIONS_PER_SESSION));
 
     // Сбрасываем на первую страницу и сохраняем это
-    setCurrentPage(1);
+    //setCurrentPage(1);
     const keys = getStorageKeys(currentSection);
-    localStorage.setItem(keys.page, '1');
+    //localStorage.setItem(keys.page, '1');
 
     console.log('🔍 [LearningSection] Фильтр применён:', {
       total: questions.length,
@@ -147,13 +147,13 @@ export function LearningSection() {
       pages: Math.ceil(filtered.length / QUESTIONS_PER_SESSION)
     });
   }, [currentSection, questions]);
-  
+
   // Загрузка настроек фильтра при инициализации
   useEffect(() => {
     if (questions.length > 0) {
       const filterSettings = questionFilterService.getSettings(currentSection);
       setHiddenQuestionIds(filterSettings.hiddenQuestionIds);
-      
+
       // Применяем фильтр для получения отфильтрованных вопросов
       const allQuestionIds = questions.map(q => q.id);
       const questionStats = statisticsService.getQuestionStats(currentSection);
@@ -161,7 +161,7 @@ export function LearningSection() {
       const filtered = questions.filter(q => filteredIds.includes(q.id));
       setFilteredQuestions(filtered);
       setFilteredTotalPages(Math.ceil(filtered.length / QUESTIONS_PER_SESSION));
-      
+
       console.log('🔍 [LearningSection] Фильтр применён при инициализации:', {
         total: questions.length,
         filtered: filtered.length,
@@ -169,7 +169,7 @@ export function LearningSection() {
       });
     }
   }, [currentSection, questions.length]);
-  
+
   // Обновление вопросов при изменении filteredQuestions, currentPage или после загрузки прогресса
   useEffect(() => {
     // Не обновляем если применяется фильтр
@@ -224,7 +224,7 @@ export function LearningSection() {
     // console.log('🔄 [LearningSection] Обнаружена смена раздела:', { from: lastSection, to: currentSection });
     if (lastSection !== null && lastSection !== currentSection) {
       // console.log('⚠️ [LearningSection] Смена раздела! Сброс всех состояний...');
-      
+
       // Показываем LoadingModal
       setLoadingModal({
         isOpen: true,
@@ -233,7 +233,7 @@ export function LearningSection() {
         title: 'Загрузка раздела',
         description: `Переход к разделу ${currentSection}...`
       });
-      
+
       // Показываем Toast
       const loadingId = loading('Загрузка раздела', 'Пожалуйста, подождите...');
 
@@ -258,7 +258,7 @@ export function LearningSection() {
       setCurrentPage(1);
       setIsInitialized(false);
       setIsSectionChanging(true);
-      
+
       // Скрываем LoadingModal через 1 секунду
       setTimeout(() => {
         setLoadingModal(prev => ({ ...prev, status: 'success', progress: 100 }));
@@ -295,7 +295,7 @@ export function LearningSection() {
     // Загружаем настройки фильтра
     const filterSettings = questionFilterService.getSettings(currentSection);
     setHiddenQuestionIds(filterSettings.hiddenQuestionIds);
-    
+
     // Проверяем активность фильтров
     const isFilterEnabled = filterSettings.excludeKnown || filterSettings.excludeWeak || filterSettings.hiddenQuestionIds.length > 0;
     setIsFilterActive(isFilterEnabled);
@@ -315,19 +315,19 @@ export function LearningSection() {
       }
     } else {
       console.log('🔍 [LearningSection] Фильтр активен, загружаем страницу 1');
-      setCurrentPage(1);
+      //setCurrentPage(1);
     }
-    
+
     // Загружаем сохранённый прогресс из Firestore/localStorage
     const loadProgress = async () => {
       let progress: SavedState | null = null;
-      
+
       if (user?.id) {
         // Пытаемся загрузить из Firestore
         console.log('☁️ [LearningSection] Загрузка прогресса из Firestore...');
         progress = await loadLearningProgress(user.id, currentSection);
       }
-      
+
       // Если не загрузили из Firestore, пробуем localStorage
       if (!progress && !user?.id) {
         console.log('💾 [LearningSection] Загрузка прогресса из localStorage...');
@@ -342,7 +342,7 @@ export function LearningSection() {
           }
         }
       }
-      
+
       // Обновляем savedStates и savedStatesRef
       if (progress) {
         console.log('✅ [LearningSection] Прогресс загружен, страниц:', Object.keys(progress as SavedState).length);
@@ -354,15 +354,15 @@ export function LearningSection() {
         setIsSavedStatesLoaded(true);
       }
     };
-    
+
     loadProgress();
-    
+
     // Создаём SessionTracker для обучения
     if (!sessionTrackerRef.current) {
       sessionTrackerRef.current = new SessionTracker(currentSection, 'learning');
       console.log('📊 [LearningSection] SessionTracker создан для раздела:', currentSection);
     }
-    
+
     setIsInitialized(true);
   }, [currentSection, questions.length, user?.id]);
 
@@ -420,7 +420,7 @@ export function LearningSection() {
     // console.log('💾 [LearningSection] Сохранение прогресса для раздела:', currentSection);
     // console.log('👤 [LearningSection] user:', user);
     // console.log('🆔 [LearningSection] user.id:', user?.id);
-    
+
     const newSavedStates = {
       ...savedStates,
       [currentPage]: {
@@ -429,7 +429,7 @@ export function LearningSection() {
         isComplete: quizState.isComplete,
       },
     };
-    
+
     // Обновляем ref
     savedStatesRef.current = newSavedStates;
     setSavedStates(newSavedStates);
@@ -463,7 +463,7 @@ export function LearningSection() {
       // });
       return;
     }
-    
+
     if (currentPage > 0) {
       const startIndex = (currentPage - 1) * QUESTIONS_PER_SESSION;
       const selected = questions.slice(startIndex, startIndex + QUESTIONS_PER_SESSION).map(q => ({
@@ -528,10 +528,10 @@ export function LearningSection() {
         if (answer !== null) totalAnswered++;
       });
     });
-    
+
     // Используем activeQuestions.length вместо TOTAL_QUESTIONS для учёта фильтра
     const totalQuestions = activeQuestions.length;
-    
+
     return {
       answered: totalAnswered,
       total: totalQuestions,
@@ -622,7 +622,7 @@ export function LearningSection() {
           isComplete: true
         }
       }));
-      
+
       // Завершаем сессию и сохраняем статистику при завершении билета
       if (sessionTrackerRef.current) {
         console.log('📊 [LearningSection] Вызов finish() для SessionTracker');
@@ -739,303 +739,303 @@ export function LearningSection() {
   return (
     <>
       <div className="min-h-screen bg-slate-50">
-      <div className="max-w-6xl mx-auto px-4 py-3">
-        {/* Заголовок */}
-        <div className="mb-6 sm:mb-8">
-          <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 mb-2">
-            Обучение
-          </h1>
-          <p className="text-xs sm:text-sm text-slate-600">
-            {currentSectionInfo?.description} • {TOTAL_QUESTIONS} вопросов • {TOTAL_PAGES} страниц
-          </p>
-        </div>
-
-        {/* Прогресс-бар */}
-        <Card className="mb-6 sticky top-16 z-40 bg-white/95 backdrop-blur shadow-lg">
-          <CardContent>
-            <div className="flex items-center justify-between gap-2 md:gap-4 mb-3">
-              <div className="flex items-center gap-2 md:gap-4">
-                <div className="flex items-center gap-2">
-                  <Target className="w-5 h-5 text-blue-600" />
-                  <span className="text-sm font-medium min-w-[70px]">Всего: {QUESTIONS_PER_SESSION}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <CheckCircle2 className="w-5 h-5 text-green-600" />
-                  <span className="text-sm font-medium text-green-600">{stats.correct}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <XCircle className="w-5 h-5 text-red-600" />
-                  <span className="text-sm font-medium text-red-600">{stats.incorrect}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <AlertCircle className="w-5 h-5 text-orange-600" />
-                  <span className="text-sm font-medium text-orange-600">{stats.remaining}</span>
-                </div>
-              </div>
-              <div className="flex items-center gap-1">
-                <Button variant="outline" size="sm" onClick={prevPage} disabled={currentPage === 1} className="h-8 w-8 p-0">
-                  <ChevronLeft className="w-4 h-4" />
-                </Button>
-                <span className="text-xs font-medium text-center px-1">
-                  <span className="hidden md:inline">стр. </span>
-                  {currentPage}
-                  <span className="hidden md:inline"> из </span>
-                  <span className="hidden md:inline">{TOTAL_PAGES}</span>
-                </span>
-                <Button variant="outline" size="sm" onClick={nextPage} disabled={currentPage === TOTAL_PAGES} className="h-8 w-8 p-0">
-                  <ChevronRight className="w-4 h-4" />
-                </Button>
-                <Button variant="outline" size="sm" onClick={handleReset} className="text-red-600 hover:text-red-700 px-2">
-                  <RotateCcw className="w-4 h-4" />
-                  <span className="hidden md:inline ml-1">Сброс</span>
-                </Button>
-                <RichTooltip
-                  type="info"
-                  title="Фильтр вопросов"
-                  content="Исключите известные вопросы (100% точность) для эффективного обучения"
-                  position="bottom"
-                  align="end"
-                  maxWidth={280}
-                >
-                  <Button
-                    variant={isFilterActive ? 'default' : 'outline'}
-                    size="sm"
-                    onClick={() => setIsFilterModalOpen(true)}
-                    className={isFilterActive ? 'bg-blue-100 hover:bg-blue-200 text-blue-700 border-blue-300' : ''}
-                  >
-                    <Filter className="w-4 h-4" />
-                    <span className="hidden md:inline ml-1">Фильтр</span>
-                  </Button>
-                </RichTooltip>
-              </div>
-            </div>
-            <div className="mb-2">
-              <div className="flex items-center justify-between text-xs text-slate-500 mb-1">
-                <span>Глобальный</span>
-                <span>{globalProgress.answered}/{globalProgress.total} ({globalProgress.percentage}%)</span>
-              </div>
-              <Progress value={globalProgress.percentage} className="h-2" />
-            </div>
-            <Progress value={progress} className="h-2" />
-            <p className="text-xs text-slate-500 mt-2 text-right">
-              {((currentPage - 1) * QUESTIONS_PER_SESSION) + 1}-{Math.min(currentPage * QUESTIONS_PER_SESSION, activeQuestions.length)} из {activeQuestions.length} • {progress}%
+        <div className="max-w-6xl mx-auto px-1 sm:px-4 sm:py-3">
+          {/* Заголовок */}
+          <div className="mb-2">
+            <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 mb-2">
+              Обучение
+            </h1>
+            <p className="text-sm text-slate-600">
+              {currentSectionInfo?.description} • вопросов: {TOTAL_QUESTIONS} • страниц: {TOTAL_PAGES}
             </p>
-          </CardContent>
-        </Card>
+          </div>
 
-        {/* Вопросы */}
-        <div className="space-y-6">
-          {quizState.currentQuestions.map((question, qIdx) => (
-            <Card key={question.id} className="overflow-hidden py-2">
-              <CardHeader className="bg-slate-50 border-b">
-                <div className="flex items-start justify-between">
-                  <CardTitle className="font-medium">Вопрос {question.id}</CardTitle>
+          {/* Прогресс-бар */}
+          <Card className="mb-2 sm:mb-4 sticky top-16 z-40 bg-white/95 backdrop-blur shadow-lg py-2 sm:py-4">
+            <CardContent className='px-1 sm:px-4 md:px-6'>
+              <div className="flex items-center justify-between gap-0.5 sm:gap-2 md:gap-4 mb-1 sm:mb-2 md:sm-3">
+                <div className="flex items-center gap-0.5 sm:gap-2 md:gap-4">
+                  <div className="flex items-center gap-0.5 sm:gap-2">
+                    <Target className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600" />
+                    <span className="text-sm font-medium min-w-[40px] sm:min-w-[70px]"><span className="hidden sm:inline">Всего: </span>{QUESTIONS_PER_SESSION}</span>
+                  </div>
                   <div className="flex items-center gap-2">
-                    <Badge variant="outline" className="border-0 whitespace-normal">Билет №{question.ticket}</Badge>
-                    {quizState.userAnswers[qIdx] !== null && (
-                      quizState.userAnswers[qIdx] ===
-                        quizState.shuffledAnswers[qIdx].findIndex((idx) => idx === question.correct)
-                        ? <CheckCircle2 className="w-5 h-5 text-green-600" />
-                        : <XCircle className="w-5 h-5 text-red-600" />
+                    <CheckCircle2 className="w-4 h-4 sm:w-5 sm:h-5 text-green-600" />
+                    <span className="text-sm font-medium text-green-600">{stats.correct}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <XCircle className="w-4 h-4 sm:w-5 sm:h-5 text-red-600" />
+                    <span className="text-sm font-medium text-red-600">{stats.incorrect}</span>
+                  </div>
+                  <div className="flex items-center gap-1.5 sm:gap-2">
+                    <AlertCircle className="w-4 h-4 sm:w-5 sm:h-5 text-orange-600" />
+                    <span className="text-sm font-medium text-orange-600">{stats.remaining}</span>
+                  </div>
+                </div>
+                <div className="flex items-center gap-1">
+                  <Button variant="outline" size="sm" onClick={prevPage} disabled={currentPage === 1} className="h-8 w-8 p-0">
+                    <ChevronLeft className="w-4 h-4" />
+                  </Button>
+                  <span className="text-xs font-medium text-center px-1">
+                    <span className="hidden md:inline">стр. </span>
+                    {currentPage}
+                    <span className="hidden md:inline"> из </span>
+                    <span className="hidden md:inline">{TOTAL_PAGES}</span>
+                  </span>
+                  <Button variant="outline" size="sm" onClick={nextPage} disabled={currentPage === TOTAL_PAGES} className="h-8 w-8 p-0">
+                    <ChevronRight className="w-4 h-4" />
+                  </Button>
+                  <Button variant="outline" size="sm" onClick={handleReset} className="text-red-600 hover:text-red-700 px-2">
+                    <RotateCcw className="w-4 h-4" />
+                    <span className="hidden md:inline ml-1">Сброс</span>
+                  </Button>
+                  <RichTooltip
+                    type="info"
+                    title="Фильтр вопросов"
+                    content="Исключите известные вопросы (100% точность) для эффективного обучения"
+                    position="bottom"
+                    align="end"
+                    maxWidth={280}
+                  >
+                    <Button
+                      variant={isFilterActive ? 'default' : 'outline'}
+                      size="sm"
+                      onClick={() => setIsFilterModalOpen(true)}
+                      className={isFilterActive ? 'bg-blue-100 hover:bg-blue-200 text-blue-700 border-blue-300' : ''}
+                    >
+                      <Filter className="w-4 h-4" />
+                      <span className="hidden md:inline ml-1">Фильтр</span>
+                    </Button>
+                  </RichTooltip>
+                </div>
+              </div>
+              <div className="mb-2">
+                <div className="flex items-center justify-between text-xs text-slate-500 mb-1">
+                  <span>Глобальный</span>
+                  <span>{globalProgress.answered}/{globalProgress.total} ({globalProgress.percentage}%)</span>
+                </div>
+                <Progress value={globalProgress.percentage} className="h-2" />
+              </div>
+              <Progress value={progress} className="h-2" />
+              <p className="text-xs text-slate-500 mt-2 text-right">
+                {((currentPage - 1) * QUESTIONS_PER_SESSION) + 1}-{Math.min(currentPage * QUESTIONS_PER_SESSION, activeQuestions.length)} из {activeQuestions.length} • {progress}%
+              </p>
+            </CardContent>
+          </Card>
+
+          {/* Вопросы */}
+          <div className="space-y-2 sm:space-y-6">
+            {quizState.currentQuestions.map((question, qIdx) => (
+              <Card key={question.id} className="overflow-hidden py-2 sm:py-3 md:py-4 gap-2 sm:gap-4">
+                <CardHeader className="bg-slate-50 border-b px-2 sm:px-6">
+                  <div className="flex items-start justify-between">
+                    <CardTitle className="font-medium">Вопрос {question.id}</CardTitle>
+                    <div className="flex items-center gap-2">
+                      <Badge variant="outline" className="border-0 whitespace-normal py-0 sm:py-0.5">Билет №{question.ticket}</Badge>
+                      {quizState.userAnswers[qIdx] !== null && (
+                        quizState.userAnswers[qIdx] ===
+                          quizState.shuffledAnswers[qIdx].findIndex((idx) => idx === question.correct)
+                          ? <CheckCircle2 className="w-5 h-5 text-green-600" />
+                          : <XCircle className="w-5 h-5 text-red-600" />
+                      )}
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent className='px-2 sm:px-4'>
+                  <p className="text-slate-800 mb-2 sm:mb-6 sm:leading-relaxed">{question.question}</p>
+                  <div className="space-y-2">
+                    {quizState.shuffledAnswers[qIdx].map((originalIdx, shuffledIdx) => (
+                      <button
+                        key={shuffledIdx}
+                        onClick={() => handleAnswerSelect(qIdx, shuffledIdx)}
+                        disabled={quizState.userAnswers[qIdx] !== null}
+                        className={`w-full p-4 rounded-xl border-2 text-left transition-all duration-200 ${getAnswerStyle(qIdx, shuffledIdx)} hover:shadow-md disabled:cursor-default`}
+                      >
+                        <div className="flex items-start gap-3">
+                          <span className="flex-shrink-0 w-6 h-6 rounded-full bg-slate-200 flex items-center justify-center text-sm font-medium">
+                            {String.fromCharCode(1040 + shuffledIdx)}
+                          </span>
+                          <span className="flex-1">{question.answers?.[originalIdx] || question.options[originalIdx]}</span>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                  <div className="mt-4 flex items-center gap-2 flex-wrap">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setShowSources(prev => ({ ...prev, [qIdx]: !prev[qIdx] }))}
+                      disabled={quizState.userAnswers[qIdx] === null}
+                      className="gap-2"
+                    >
+                      <BookOpen className="w-4 h-4" />
+                      Источник
+                    </Button>
+                    {showSources[qIdx] && (
+                      <Badge className="animate-in fade-in border-0 bg-transparent text-slate-600 max-w-full break-words text-left font-normal whitespace-normal rounded">
+                        {question.link}
+                      </Badge>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+
+          {/* FilterModal - Модальное окно фильтра */}
+          <FilterModal
+            isOpen={isFilterModalOpen}
+            onClose={() => setIsFilterModalOpen(false)}
+            onApply={(filteredIds, settings) => {
+              console.log('🔍 [LearningSection] Фильтр применён, вопросов:', filteredIds.length, 'настройки:', settings);
+
+              // Устанавливаем флаг применения фильтра
+              setIsFilterApplying(true);
+
+              // Сохраняем настройки фильтра в сервис
+              const filterSettings = questionFilterService.getSettings(currentSection);
+              filterSettings.excludeKnown = settings.excludeKnown;
+              filterSettings.excludeWeak = settings.excludeWeak;
+              questionFilterService.saveSettings(filterSettings);
+
+              const filtered = questions.filter(q => filteredIds.includes(q.id));
+              setFilteredQuestions(filtered);
+              setFilteredTotalPages(Math.ceil(filtered.length / QUESTIONS_PER_SESSION));
+              // Сбрасываем на первую страницу и сохраняем это
+              setCurrentPage(1);
+              const keys = getStorageKeys(currentSection);
+              localStorage.setItem(keys.page, '1');
+
+              // Обновляем флаг активности фильтра
+              const isFilterEnabled = settings.excludeKnown || settings.excludeWeak || hiddenQuestionIds.length > 0;
+              setIsFilterActive(isFilterEnabled);
+
+              // Принудительно обновляем quizState для первой страницы с новыми вопросами
+              setTimeout(() => {
+                const startIndex = 0;
+                const selected = filtered.slice(startIndex, startIndex + QUESTIONS_PER_SESSION).map(q => ({
+                  ...q,
+                  question: q.text,
+                  answers: q.options
+                }));
+
+                // Проверяем есть ли сохраненное состояние для страницы 1
+                const savedState = savedStatesRef.current[1];
+
+                if (savedState && savedState.shuffledAnswers.length === selected.length) {
+                  // Восстанавливаем сохраненное состояние
+                  console.log('💾 [LearningSection] Восстановление состояния для страницы 1 после фильтра');
+                  setQuizState({
+                    currentQuestions: selected,
+                    shuffledAnswers: savedState.shuffledAnswers,
+                    userAnswers: savedState.userAnswers,
+                    isComplete: savedState.isComplete,
+                  });
+                } else {
+                  // Создаём новое состояние без ответов
+                  const shuffledAnswers = selected.map((q) => {
+                    const expectedCount = q.answers?.length || q.options?.length || 2;
+                    return shuffleArray([...Array(expectedCount).keys()]);
+                  });
+
+                  console.log('🔄 [LearningSection] Создание нового состояния для страницы 1 после фильтра');
+                  setQuizState({
+                    currentQuestions: selected,
+                    shuffledAnswers,
+                    userAnswers: new Array(selected.length).fill(null),
+                    isComplete: false,
+                  });
+                }
+
+                // Сбрасываем флаг применения фильтра
+                setTimeout(() => {
+                  setIsFilterApplying(false);
+                }, 100);
+              }, 0);
+            }}
+            questionStats={(() => {
+              // Создаем полную статистику по всем вопросам раздела
+              const allStats = statisticsService.getQuestionStats(currentSection);
+              const statsMap = new Map(allStats.map(s => [s.questionId, s]));
+
+              // Добавляем все вопросы раздела (даже те, на которые не отвечали)
+              return questions.map(q => {
+                const existing = statsMap.get(q.id);
+                if (existing) {
+                  return existing;
+                }
+                // Вопрос без статистики (не отвечали)
+                return {
+                  questionId: q.id,
+                  ticket: q.ticket,
+                  section: currentSection,
+                  totalAttempts: 0,
+                  correctAnswers: 0,
+                  accuracy: 0,
+                  isKnown: false,
+                  isWeak: false,
+                };
+              });
+            })()}
+            hiddenQuestionIds={hiddenQuestionIds}
+            onHiddenChange={(newHiddenIds) => {
+              setHiddenQuestionIds(newHiddenIds);
+              const settings = questionFilterService.getSettings(currentSection);
+              settings.hiddenQuestionIds = newHiddenIds;
+              questionFilterService.saveSettings(settings);
+              applyFilter();
+            }}
+            currentSection={currentSection}
+          />
+
+          {/* Результаты */}
+          {quizState.isComplete && (
+            <Card className="mt-8 bg-gradient-to-br from-green-50 to-blue-50 border-green-200">
+              <CardContent className="pt-8 pb-8">
+                <div className="text-center">
+                  <Trophy className="w-16 h-16 text-yellow-500 mx-auto mb-4" />
+                  <h2 className="text-2xl font-bold text-slate-900 mb-2">
+                    {currentPage === TOTAL_PAGES ? "Сессия завершена!" : "Вы ответили на все вопросы текущей страницы."}
+                  </h2>
+                  <p className="text-slate-600 mb-6">
+                    Правильных ответов: {stats.correct} из {QUESTIONS_PER_SESSION} ({Math.round((stats.correct / QUESTIONS_PER_SESSION) * 100)}%)
+                  </p>
+
+                  {/* Прогресс бар результата */}
+                  <div className="max-w-md mx-auto mb-6">
+                    <Progress value={(stats.correct / QUESTIONS_PER_SESSION) * 100} className="h-3" />
+                  </div>
+
+                  <div className="flex justify-center gap-4 flex-wrap">
+                    {/* Кнопка сохранения в PDF */}
+                    <Button
+                      onClick={handleSaveToPDF}
+                      size="lg"
+                      className="gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-lg shadow-blue-500/25"
+                    >
+                      <Download className="w-5 h-5" />
+                      Сохранить в PDF
+                    </Button>
+
+                    {currentPage === TOTAL_PAGES ? (
+                      <Button onClick={handleReset} size="lg" className="gap-2">
+                        <Shuffle className="w-5 h-5" />
+                        Новая сессия
+                      </Button>
+                    ) : (
+                      <Button onClick={nextPage} size="lg" className="gap-2">
+                        Далее...
+                        <ChevronRight className="w-5 h-5" />
+                      </Button>
                     )}
                   </div>
                 </div>
-              </CardHeader>
-              <CardContent className="pt-2">
-                <p className="text-slate-800 mb-6 leading-relaxed">{question.question}</p>
-                <div className="space-y-3">
-                  {quizState.shuffledAnswers[qIdx].map((originalIdx, shuffledIdx) => (
-                    <button
-                      key={shuffledIdx}
-                      onClick={() => handleAnswerSelect(qIdx, shuffledIdx)}
-                      disabled={quizState.userAnswers[qIdx] !== null}
-                      className={`w-full p-4 rounded-xl border-2 text-left transition-all duration-200 ${getAnswerStyle(qIdx, shuffledIdx)} hover:shadow-md disabled:cursor-default`}
-                    >
-                      <div className="flex items-start gap-3">
-                        <span className="flex-shrink-0 w-6 h-6 rounded-full bg-slate-200 flex items-center justify-center text-sm font-medium">
-                          {String.fromCharCode(1040 + shuffledIdx)}
-                        </span>
-                        <span className="flex-1">{question.answers?.[originalIdx] || question.options[originalIdx]}</span>
-                      </div>
-                    </button>
-                  ))}
-                </div>
-                <div className="mt-4 flex items-center gap-2 flex-wrap">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setShowSources(prev => ({ ...prev, [qIdx]: !prev[qIdx] }))}
-                    disabled={quizState.userAnswers[qIdx] === null}
-                    className="gap-2"
-                  >
-                    <BookOpen className="w-4 h-4" />
-                    Источник
-                  </Button>
-                  {showSources[qIdx] && (
-                    <Badge className="animate-in fade-in border-0 bg-transparent text-slate-600 max-w-full break-words text-left font-normal whitespace-normal rounded">
-                      {question.link}
-                    </Badge>
-                  )}
-                </div>
               </CardContent>
             </Card>
-          ))}
+          )}
         </div>
-
-        {/* FilterModal - Модальное окно фильтра */}
-        <FilterModal
-          isOpen={isFilterModalOpen}
-          onClose={() => setIsFilterModalOpen(false)}
-          onApply={(filteredIds, settings) => {
-            console.log('🔍 [LearningSection] Фильтр применён, вопросов:', filteredIds.length, 'настройки:', settings);
-            
-            // Устанавливаем флаг применения фильтра
-            setIsFilterApplying(true);
-            
-            // Сохраняем настройки фильтра в сервис
-            const filterSettings = questionFilterService.getSettings(currentSection);
-            filterSettings.excludeKnown = settings.excludeKnown;
-            filterSettings.excludeWeak = settings.excludeWeak;
-            questionFilterService.saveSettings(filterSettings);
-            
-            const filtered = questions.filter(q => filteredIds.includes(q.id));
-            setFilteredQuestions(filtered);
-            setFilteredTotalPages(Math.ceil(filtered.length / QUESTIONS_PER_SESSION));
-            // Сбрасываем на первую страницу и сохраняем это
-            setCurrentPage(1);
-            const keys = getStorageKeys(currentSection);
-            localStorage.setItem(keys.page, '1');
-            
-            // Обновляем флаг активности фильтра
-            const isFilterEnabled = settings.excludeKnown || settings.excludeWeak || hiddenQuestionIds.length > 0;
-            setIsFilterActive(isFilterEnabled);
-            
-            // Принудительно обновляем quizState для первой страницы с новыми вопросами
-            setTimeout(() => {
-              const startIndex = 0;
-              const selected = filtered.slice(startIndex, startIndex + QUESTIONS_PER_SESSION).map(q => ({
-                ...q,
-                question: q.text,
-                answers: q.options
-              }));
-              
-              // Проверяем есть ли сохраненное состояние для страницы 1
-              const savedState = savedStatesRef.current[1];
-              
-              if (savedState && savedState.shuffledAnswers.length === selected.length) {
-                // Восстанавливаем сохраненное состояние
-                console.log('💾 [LearningSection] Восстановление состояния для страницы 1 после фильтра');
-                setQuizState({
-                  currentQuestions: selected,
-                  shuffledAnswers: savedState.shuffledAnswers,
-                  userAnswers: savedState.userAnswers,
-                  isComplete: savedState.isComplete,
-                });
-              } else {
-                // Создаём новое состояние без ответов
-                const shuffledAnswers = selected.map((q) => {
-                  const expectedCount = q.answers?.length || q.options?.length || 2;
-                  return shuffleArray([...Array(expectedCount).keys()]);
-                });
-                
-                console.log('🔄 [LearningSection] Создание нового состояния для страницы 1 после фильтра');
-                setQuizState({
-                  currentQuestions: selected,
-                  shuffledAnswers,
-                  userAnswers: new Array(selected.length).fill(null),
-                  isComplete: false,
-                });
-              }
-              
-              // Сбрасываем флаг применения фильтра
-              setTimeout(() => {
-                setIsFilterApplying(false);
-              }, 100);
-            }, 0);
-          }}
-          questionStats={(() => {
-            // Создаем полную статистику по всем вопросам раздела
-            const allStats = statisticsService.getQuestionStats(currentSection);
-            const statsMap = new Map(allStats.map(s => [s.questionId, s]));
-            
-            // Добавляем все вопросы раздела (даже те, на которые не отвечали)
-            return questions.map(q => {
-              const existing = statsMap.get(q.id);
-              if (existing) {
-                return existing;
-              }
-              // Вопрос без статистики (не отвечали)
-              return {
-                questionId: q.id,
-                ticket: q.ticket,
-                section: currentSection,
-                totalAttempts: 0,
-                correctAnswers: 0,
-                accuracy: 0,
-                isKnown: false,
-                isWeak: false,
-              };
-            });
-          })()}
-          hiddenQuestionIds={hiddenQuestionIds}
-          onHiddenChange={(newHiddenIds) => {
-            setHiddenQuestionIds(newHiddenIds);
-            const settings = questionFilterService.getSettings(currentSection);
-            settings.hiddenQuestionIds = newHiddenIds;
-            questionFilterService.saveSettings(settings);
-            applyFilter();
-          }}
-          currentSection={currentSection}
-        />
-
-        {/* Результаты */}
-        {quizState.isComplete && (
-          <Card className="mt-8 bg-gradient-to-br from-green-50 to-blue-50 border-green-200">
-            <CardContent className="pt-8 pb-8">
-              <div className="text-center">
-                <Trophy className="w-16 h-16 text-yellow-500 mx-auto mb-4" />
-                <h2 className="text-2xl font-bold text-slate-900 mb-2">
-                  {currentPage === TOTAL_PAGES ? "Сессия завершена!" : "Вы ответили на все вопросы текущей страницы."}
-                </h2>
-                <p className="text-slate-600 mb-6">
-                  Правильных ответов: {stats.correct} из {QUESTIONS_PER_SESSION} ({Math.round((stats.correct / QUESTIONS_PER_SESSION) * 100)}%)
-                </p>
-                
-                {/* Прогресс бар результата */}
-                <div className="max-w-md mx-auto mb-6">
-                  <Progress value={(stats.correct / QUESTIONS_PER_SESSION) * 100} className="h-3" />
-                </div>
-                
-                <div className="flex justify-center gap-4 flex-wrap">
-                  {/* Кнопка сохранения в PDF */}
-                  <Button 
-                    onClick={handleSaveToPDF} 
-                    size="lg" 
-                    className="gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-lg shadow-blue-500/25"
-                  >
-                    <Download className="w-5 h-5" />
-                    Сохранить в PDF
-                  </Button>
-                  
-                  {currentPage === TOTAL_PAGES ? (
-                    <Button onClick={handleReset} size="lg" className="gap-2">
-                      <Shuffle className="w-5 h-5" />
-                      Новая сессия
-                    </Button>
-                  ) : (
-                    <Button onClick={nextPage} size="lg" className="gap-2">
-                      Далее...
-                      <ChevronRight className="w-5 h-5" />
-                    </Button>
-                  )}
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        )}
       </div>
-      </div>
-      
+
       {/* ConfirmModal для сброса прогресса */}
       <ConfirmModal
         isOpen={showResetConfirm}
@@ -1047,7 +1047,7 @@ export function LearningSection() {
         confirmLabel="Сбросить"
         cancelLabel="Отмена"
       />
-      
+
       {/* LoadingModal для загрузки раздела */}
       <LoadingModal
         isOpen={loadingModal.isOpen}

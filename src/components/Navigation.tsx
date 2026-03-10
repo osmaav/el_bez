@@ -2,7 +2,7 @@ import { useApp } from '@/context/AppContext';
 import { useAuth } from '@/context/AuthContext';
 import type { PageType, SectionType } from '@/types';
 import { BookOpen, GraduationCap, Dumbbell, School, ChevronDown, LogOut, LogIn, BarChart3, UserCircle } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { LoginModal } from '@/components/LoginModal';
 import { RegisterModal } from '@/components/RegisterModal';
@@ -24,6 +24,13 @@ export function Navigation() {
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [showRegisterModal, setShowRegisterModal] = useState(false);
   const [showEditProfileModal, setShowEditProfileModal] = useState(false);
+  const [isTouchDevice, setIsTouchDevice] = useState(false);
+
+  // Определяем тач-устройства для отключения подсказок
+  useEffect(() => {
+    const isTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+    setIsTouchDevice(isTouch);
+  }, []);
 
   const handlePageChange = (page: PageType) => {
     setCurrentPage(page);
@@ -89,12 +96,7 @@ export function Navigation() {
 
             {/* Выбор раздела */}
             <div className="relative">
-              <RichTooltip
-                {...defaultTooltipProps}
-                title="Выбор раздела"
-                content={tooltips.section}
-                align="start"
-              >
+              {isTouchDevice ? (
                 <button
                   onClick={() => setShowSectionMenu(!showSectionMenu)}
                   className="flex items-center space-x-1 px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg bg-slate-800 hover:bg-slate-700 transition-all text-xs sm:text-sm"
@@ -102,7 +104,22 @@ export function Navigation() {
                   <span className="font-medium">{getShortSectionName(currentSection)}</span>
                   <ChevronDown className="w-3 h-3 sm:w-4 sm:h-4" />
                 </button>
-              </RichTooltip>
+              ) : (
+                <RichTooltip
+                  {...defaultTooltipProps}
+                  title="Выбор раздела"
+                  content={tooltips.section}
+                  align="start"
+                >
+                  <button
+                    onClick={() => setShowSectionMenu(!showSectionMenu)}
+                    className="flex items-center space-x-1 px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg bg-slate-800 hover:bg-slate-700 transition-all text-xs sm:text-sm"
+                  >
+                    <span className="font-medium">{getShortSectionName(currentSection)}</span>
+                    <ChevronDown className="w-3 h-3 sm:w-4 sm:h-4" />
+                  </button>
+                </RichTooltip>
+              )}
 
               {showSectionMenu && (
                 <div className="absolute left-0 mt-1 w-64 bg-white rounded-lg shadow-lg overflow-hidden z-50">
@@ -139,12 +156,7 @@ export function Navigation() {
             {/* Информация о пользователе и кнопка выхода */}
             {user && (
               <div className="flex items-center space-x-2 border-l border-slate-700 pl-4 ml-2">
-                <RichTooltip
-                  {...defaultTooltipProps}
-                  title="Профиль пользователя"
-                  content={tooltips.userProfile}
-                  align="start"
-                >
+                {isTouchDevice ? (
                   <button
                     onClick={() => setShowEditProfileModal(true)}
                     className="flex items-center space-x-2 text-sm text-slate-300 hover:text-white hover:bg-slate-800 px-2 py-1 rounded-lg transition-all font-medium cursor-pointer"
@@ -154,13 +166,25 @@ export function Navigation() {
                       {user.name || user.surname || user.email}
                     </span>
                   </button>
-                </RichTooltip>
-                <RichTooltip
-                  {...defaultTooltipProps}
-                  title="Выход из системы"
-                  content={tooltips.buttonExit}
-                  align="end"
-                >
+                ) : (
+                  <RichTooltip
+                    {...defaultTooltipProps}
+                    title="Профиль пользователя"
+                    content={tooltips.userProfile}
+                    align="start"
+                  >
+                    <button
+                      onClick={() => setShowEditProfileModal(true)}
+                      className="flex items-center space-x-2 text-sm text-slate-300 hover:text-white hover:bg-slate-800 px-2 py-1 rounded-lg transition-all font-medium cursor-pointer"
+                    >
+                      <UserCircle className="w-4 h-4" />
+                      <span className="hidden sm:inline">
+                        {user.name || user.surname || user.email}
+                      </span>
+                    </button>
+                  </RichTooltip>
+                )}
+                {isTouchDevice ? (
                   <Button
                     variant="ghost"
                     size="sm"
@@ -169,7 +193,23 @@ export function Navigation() {
                   >
                     <LogOut className="w-4 h-4" />
                   </Button>
-                </RichTooltip>
+                ) : (
+                  <RichTooltip
+                    {...defaultTooltipProps}
+                    title="Выход из системы"
+                    content={tooltips.buttonExit}
+                    align="end"
+                  >
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={handleLogout}
+                      className="text-slate-300 hover:text-white hover:bg-slate-800 h-8 w-8 p-0"
+                    >
+                      <LogOut className="w-4 h-4" />
+                    </Button>
+                  </RichTooltip>
+                )}
               </div>
             )}
           </div>
@@ -183,49 +223,80 @@ export function Navigation() {
                 const isActive = currentPage === item.id;
 
                 return (
-                  <RichTooltip
-                    key={item.id}
-                    {...defaultTooltipProps}
-                    title={item.label}
-                    content={tooltips[item.id]}
-                    align="end"
-                  >
-                    <button
-                      onClick={() => handlePageChange(item.id)}
-                      className={`
-                        flex items-center space-x-1 px-2 py-1.5 rounded-lg transition-all duration-200 whitespace-nowrap flex-shrink-0
-                        ${isActive
-                          ? 'bg-yellow-500 text-slate-900 font-medium'
-                          : 'text-slate-300 hover:bg-slate-800 hover:text-white'
-                        }
-                      `}
-                    >
-                      <Icon className="w-4 h-4 sm:w-5 sm:h-5" />
-                      <span className="hidden [@media(min-width:960px)]:inline text-xs sm:text-sm">{item.label}</span>
-                    </button>
-                  </RichTooltip>
+                  <div key={item.id}>
+                    {isTouchDevice ? (
+                      <button
+                        onClick={() => handlePageChange(item.id)}
+                        className={`
+                          flex items-center space-x-1 px-2 py-1.5 rounded-lg transition-all duration-200 whitespace-nowrap flex-shrink-0
+                          ${isActive
+                            ? 'bg-yellow-500 text-slate-900 font-medium'
+                            : 'text-slate-300 hover:bg-slate-800 hover:text-white'
+                          }
+                        `}
+                      >
+                        <Icon className="w-4 h-4 sm:w-5 sm:h-5" />
+                        <span className="hidden [@media(min-width:960px)]:inline text-xs sm:text-sm">{item.label}</span>
+                      </button>
+                    ) : (
+                      <RichTooltip
+                        {...defaultTooltipProps}
+                        title={item.label}
+                        content={tooltips[item.id]}
+                        align="end"
+                      >
+                        <button
+                          onClick={() => handlePageChange(item.id)}
+                          className={`
+                            flex items-center space-x-1 px-2 py-1.5 rounded-lg transition-all duration-200 whitespace-nowrap flex-shrink-0
+                            ${isActive
+                              ? 'bg-yellow-500 text-slate-900 font-medium'
+                              : 'text-slate-300 hover:bg-slate-800 hover:text-white'
+                            }
+                          `}
+                        >
+                          <Icon className="w-4 h-4 sm:w-5 sm:h-5" />
+                          <span className="hidden [@media(min-width:960px)]:inline text-xs sm:text-sm">{item.label}</span>
+                        </button>
+                      </RichTooltip>
+                    )}
+                  </div>
                 );
               })}
             </div>
 
             {/* Кнопка входа для неавторизованных пользователей */}
             {!user && (
-              <RichTooltip
-                {...defaultTooltipProps}
-                title="Вход в систему"
-                content={tooltips.buttonLogin}
-                align="end"
-              >
-                <Button
-                  onClick={handleLogin}
-                  variant="ghost"
-                  size="sm"
-                  className="text-slate-300 hover:text-white hover:bg-slate-800 ml-2"
-                >
-                  <LogIn className="w-4 h-4" />
-                  <span className="ml-1 text-sm hidden [@media(min-width:930px)]:inline">Войти</span>
-                </Button>
-              </RichTooltip>
+              <div>
+                {isTouchDevice ? (
+                  <Button
+                    onClick={handleLogin}
+                    variant="ghost"
+                    size="sm"
+                    className="text-slate-300 hover:text-white hover:bg-slate-800 ml-2"
+                  >
+                    <LogIn className="w-4 h-4" />
+                    <span className="ml-1 text-sm hidden [@media(min-width:930px)]:inline">Войти</span>
+                  </Button>
+                ) : (
+                  <RichTooltip
+                    {...defaultTooltipProps}
+                    title="Вход в систему"
+                    content={tooltips.buttonLogin}
+                    align="end"
+                  >
+                    <Button
+                      onClick={handleLogin}
+                      variant="ghost"
+                      size="sm"
+                      className="text-slate-300 hover:text-white hover:bg-slate-800 ml-2"
+                    >
+                      <LogIn className="w-4 h-4" />
+                      <span className="ml-1 text-sm hidden [@media(min-width:930px)]:inline">Войти</span>
+                    </Button>
+                  </RichTooltip>
+                )}
+              </div>
             )}
           </div>
         </div>
