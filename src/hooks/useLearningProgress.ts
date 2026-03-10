@@ -125,7 +125,23 @@ export function useLearningProgress(
   const [isSavedStatesLoaded, setIsSavedStatesLoaded] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
   const [isSectionChanging, setIsSectionChanging] = useState(false);
-  const [currentPage, setCurrentPage] = useState(1);
+  
+  // Инициализируем currentPage из localStorage сразу
+  const [currentPage, setCurrentPage] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const keys = getStorageKeys(currentSection);
+      const savedPage = localStorage.getItem(keys.page);
+      if (savedPage) {
+        const page = parseInt(savedPage, 10);
+        const maxPage = Math.ceil(questions.length / QUESTIONS_PER_SESSION);
+        if (page > 0 && page <= maxPage) {
+          console.log('📄 [useLearningProgress] Загружена страница из localStorage при инициализации:', page);
+          return page;
+        }
+      }
+    }
+    return 1;
+  });
 
   // Refs
   const sessionTrackerRef = useRef<SessionTracker | null>(null);
@@ -164,18 +180,6 @@ export function useLearningProgress(
         console.log('✅ [useLearningProgress] Прогресс загружен, страниц:', Object.keys(progress).length);
         savedStatesRef.current = progress;
         setSavedStates(progress);
-      }
-
-      // Загружаем сохранённую страницу из localStorage
-      const keys = getStorageKeys(currentSection);
-      const savedPage = localStorage.getItem(keys.page);
-      if (savedPage) {
-        const page = parseInt(savedPage, 10);
-        const maxPage = Math.ceil(questions.length / QUESTIONS_PER_SESSION);
-        if (page > 0 && page <= maxPage) {
-          setCurrentPage(page);
-          console.log('📄 [useLearningProgress] Загружена сохранённая страница:', page);
-        }
       }
 
       setIsSavedStatesLoaded(true);
