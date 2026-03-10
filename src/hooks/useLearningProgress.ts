@@ -128,16 +128,16 @@ export function useLearningProgress(
   
   // Инициализируем currentPage из localStorage сразу
   const [currentPage, setCurrentPage] = useState(() => {
-    if (typeof window !== 'undefined') {
-      const keys = getStorageKeys(currentSection);
-      const savedPage = localStorage.getItem(keys.page);
-      if (savedPage) {
-        const page = parseInt(savedPage, 10);
-        const maxPage = Math.ceil(questions.length / QUESTIONS_PER_SESSION);
-        if (page > 0 && page <= maxPage) {
-          console.log('📄 [useLearningProgress] Загружена страница из localStorage при инициализации:', page);
-          return page;
-        }
+    if (typeof window === 'undefined') return 1;
+    
+    const keys = getStorageKeys(currentSection);
+    const savedPage = localStorage.getItem(keys.page);
+    if (savedPage) {
+      const page = parseInt(savedPage, 10);
+      const maxPage = questions.length > 0 ? Math.ceil(questions.length / QUESTIONS_PER_SESSION) : 1;
+      if (page > 0 && page <= maxPage) {
+        console.log('📄 [useLearningProgress] Загружена страница из localStorage при инициализации:', page);
+        return page;
       }
     }
     return 1;
@@ -249,7 +249,8 @@ export function useLearningProgress(
         hasSavedState: !!savedState,
       });
 
-      if (savedState && savedState.shuffledAnswers.length === selected.length) {
+      // Восстанавливаем состояние только если есть сохранённые ответы
+      if (savedState && savedState.shuffledAnswers.length === selected.length && savedState.userAnswers.some(a => a !== null)) {
         console.log('💾 [useLearningProgress] Восстановление состояния для страницы', currentPage);
         setQuizState({
           currentQuestions: selected,
@@ -258,6 +259,8 @@ export function useLearningProgress(
           isComplete: savedState.isComplete,
         });
       } else {
+        // Всегда перемешиваем варианты для новой страницы без ответов
+        console.log('🔀 [useLearningProgress] Перемешивание вариантов для страницы', currentPage);
         const shuffledAnswers = selected.map((q) => {
           const expectedCount = q.answers?.length || q.options?.length || 2;
           return shuffleArray([...Array(expectedCount).keys()]);
