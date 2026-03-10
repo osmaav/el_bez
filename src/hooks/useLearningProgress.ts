@@ -165,7 +165,19 @@ export function useLearningProgress(
         savedStatesRef.current = progress;
         setSavedStates(progress);
       }
-      
+
+      // Загружаем сохранённую страницу из localStorage
+      const keys = getStorageKeys(currentSection);
+      const savedPage = localStorage.getItem(keys.page);
+      if (savedPage) {
+        const page = parseInt(savedPage, 10);
+        const maxPage = Math.ceil(questions.length / QUESTIONS_PER_SESSION);
+        if (page > 0 && page <= maxPage) {
+          setCurrentPage(page);
+          console.log('📄 [useLearningProgress] Загружена сохранённая страница:', page);
+        }
+      }
+
       setIsSavedStatesLoaded(true);
     };
 
