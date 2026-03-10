@@ -132,6 +132,13 @@ export function LearningSection() {
     shuffleArray
   );
 
+  // Инициализация при загрузке
+  useEffect(() => {
+    if (questions.length > 0 && !progress.isInitialized) {
+      progress.initializeSection();
+    }
+  }, [questions.length, progress.isInitialized, progress.initializeSection]);
+
   // Update navigation isComplete when quizState changes
   useEffect(() => {
     // Navigation needs to know about completion state
