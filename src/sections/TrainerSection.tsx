@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useApp } from '@/context/AppContext';
+import { useAuth } from '@/context/AuthContext';
 import { useToast } from '@/context/ToastContext';
 import { exportTrainerToPDF } from '@/services/exportService';
 import { questionFilterService } from '@/services/questionFilterService';
@@ -46,6 +47,7 @@ export function TrainerSection() {
     sections
   } = useApp();
 
+  const { user } = useAuth();
   const { success, loading, updateToast } = useToast();
 
   const currentSectionInfo = sections.find(s => s.id === currentSection);
@@ -138,7 +140,8 @@ export function TrainerSection() {
           incorrect: trainerStats.incorrect,
           remaining: trainerStats.remaining
         },
-        timestamp: Date.now()
+        timestamp: Date.now(),
+        userName: user ? `${user.surname} ${user.name}`.trim() : undefined
       };
 
       await exportTrainerToPDF(exportData);

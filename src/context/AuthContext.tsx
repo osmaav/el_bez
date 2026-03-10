@@ -1,6 +1,10 @@
 /**
  * AuthContext - Глобальное состояние аутентификации
  * Управление состоянием входа пользователя с сохранением в localStorage и Firestore
+ * 
+ * 🔒 БЕЗОПАСНОСТЬ: В localStorage хранится ТОЛЬКО ID пользователя.
+ * Персональные данные (email, ФИО, и т.д.) НЕ сохраняются в localStorage.
+ * Полный профиль загружается из Firebase/Firestore при необходимости.
  */
 
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
@@ -10,7 +14,7 @@ import { saveUserState } from '@/services/questionService';
 import { auth, isFirebaseReady } from '@/lib/firebase';
 
 const STORAGE_KEY_AUTH = 'elbez_is_authenticated';
-const STORAGE_KEY_USER = 'elbez_current_user';
+const STORAGE_KEY_USER_ID = 'elbez_user_id'; // Только ID, не полный профиль
 
 interface AuthContextType {
   isAuthenticated: boolean;
@@ -35,56 +39,54 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     // console.log('🔵 [AuthContext] Инициализация...');
 
-    // Проверяем сохранённые данные в localStorage
-    const savedUser = localStorage.getItem(STORAGE_KEY_USER);
+    // Проверяем сохранённые данные в localStorage (ТОЛЬКО ID)
+    const savedUserId = localStorage.getItem(STORAGE_KEY_USER_ID);
     const savedAuth = localStorage.getItem(STORAGE_KEY_AUTH);
-    // console.log('📦 [AuthContext] Сохранённые данные:', {
-    //   hasSavedUser: !!savedUser,
-    //   hasSavedAuth: !!savedAuth,
-    //   savedAuthValue: savedAuth,
-    //   userEmail: savedUser ? JSON.parse(savedUser).email : null,
-    //   emailVerified: savedUser ? JSON.parse(savedUser).emailVerified : null
-    // });
 
-    if (savedUser && savedAuth === 'true') {
-      try {
-        const parsedUser = JSON.parse(savedUser);
-        // console.log('✅ [AuthContext] Пользователь загружен из localStorage:', {
-        //   email: parsedUser.email,
-        //   emailVerified: parsedUser.emailVerified
-        // });
-        setUser(parsedUser);
-      } catch (error) {
-        // console.error('❌ [AuthContext] Ошибка парсинга сохранённых данных:', error);
-        localStorage.removeItem(STORAGE_KEY_USER);
+    if (savedUserId && savedAuth === 'true') {
+      // Восстанавливаем пользователя по ID из Firebase
+      // console.log('📦 [AuthContext] Найден ID пользователя, загружаем профиль...');
+      refreshCurrentUser().then((loadedUser) => {
+        if (loadedUser) {
+          setUser(loadedUser);
+          // console.log('✅ [AuthContext] Профиль загружен из Firebase');
+        } else {
+          // Пользователь не найден, очищаем localStorage
+          localStorage.removeItem(STORAGE_KEY_USER_ID);
+          localStorage.removeItem(STORAGE_KEY_AUTH);
+        }
+        setIsLoading(false);
+      }).catch(() => {
+        // Ошибка загрузки, очищаем localStorage
+        localStorage.removeItem(STORAGE_KEY_USER_ID);
         localStorage.removeItem(STORAGE_KEY_AUTH);
-      }
+        setIsLoading(false);
+      });
+    } else {
+      setIsLoading(false);
     }
 
     // Подписка на изменения аутентификации (Firebase + localStorage)
     const unsubscribe = onAuthChange((currentUser) => {
       // console.log('📡 [AuthContext] onAuthChange вызван:', {
       //   hasUser: !!currentUser,
-      //   email: currentUser?.email,
-      //   emailVerified: currentUser?.emailVerified
+      //   email: currentUser?.email
       // });
 
       if (currentUser) {
         // console.log('✅ [AuthContext] Пользователь авторизован:', currentUser.email);
         setUser(currentUser);
-        localStorage.setItem(STORAGE_KEY_USER, JSON.stringify(currentUser));
+        // 🔒 Сохраняем ТОЛЬКО ID в localStorage
+        localStorage.setItem(STORAGE_KEY_USER_ID, currentUser.id);
         localStorage.setItem(STORAGE_KEY_AUTH, 'true');
       } else {
         // console.log('🚪 [AuthContext] Пользователь вышел');
         setUser(null);
-        localStorage.removeItem(STORAGE_KEY_USER);
+        localStorage.removeItem(STORAGE_KEY_USER_ID);
         localStorage.removeItem(STORAGE_KEY_AUTH);
       }
       setIsLoading(false);
     });
-
-    // Убрали периодическую проверку email для снижения нагрузки на сервер
-    // Проверка выполняется только по клику на кнопку в модальном окне
 
     return () => {
       // console.log('🧹 [AuthContext] Очистка...');
@@ -99,7 +101,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     //   emailVerified: userData.emailVerified
     // });
     setUser(userData);
-    localStorage.setItem(STORAGE_KEY_USER, JSON.stringify(userData));
+    // 🔒 Сохраняем ТОЛЬКО ID в localStorage
+    localStorage.setItem(STORAGE_KEY_USER_ID, userData.id);
     localStorage.setItem(STORAGE_KEY_AUTH, 'true');
 
     // Сохраняем состояние в Firestore
@@ -121,7 +124,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // console.log('🚪 [AuthContext] logout вызван');
     await authLogout();
     setUser(null);
-    localStorage.removeItem(STORAGE_KEY_USER);
+    localStorage.removeItem(STORAGE_KEY_USER_ID);
     localStorage.removeItem(STORAGE_KEY_AUTH);
   }, []);
 
@@ -139,8 +142,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // });
     if (updatedProfile) {
       setUser(updatedProfile);
-      localStorage.setItem(STORAGE_KEY_USER, JSON.stringify(updatedProfile));
+      // 🔒 ID не меняется, localStorage не обновляем
     }
+    // Не возвращаем значение - типизировано как Promise<void>
   }, [user]);
 
   // Отправка повторного письма подтверждения
@@ -170,14 +174,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // });
     if (updatedProfile) {
       setUser(updatedProfile);
-      localStorage.setItem(STORAGE_KEY_USER, JSON.stringify(updatedProfile));
+      // 🔒 ID не меняется, localStorage не обновляем
     }
   }, []);
 
   // Обновление данных пользователя (синхронное)
   const updateUser = useCallback((updatedUser: UserProfile) => {
     setUser(updatedUser);
-    localStorage.setItem(STORAGE_KEY_USER, JSON.stringify(updatedUser));
+    // 🔒 ID не меняется, localStorage не обновляем
   }, []);
 
   return (

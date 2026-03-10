@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useApp } from '@/context/AppContext';
+import { useAuth } from '@/context/AuthContext';
 import { useToast } from '@/context/ToastContext';
 import { exportExamToPDF } from '@/services/exportService';
 import { LoadingModal } from '@/components/ui/loading-modal';
@@ -38,6 +39,7 @@ export function ExamSection() {
     sections
   } = useApp();
 
+  const { user } = useAuth();
   const { success, loading, updateToast } = useToast();
 
   const currentSectionInfo = sections.find(s => s.id === currentSection);
@@ -118,7 +120,8 @@ export function ExamSection() {
           percentage: stats.percentage,
           passed: stats.percentage >= 80
         },
-        timestamp: Date.now()
+        timestamp: Date.now(),
+        userName: user ? `${user.surname} ${user.name}`.trim() : undefined
       };
 
       await exportExamToPDF(exportData);

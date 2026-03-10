@@ -41,6 +41,7 @@ export interface LearningExportData {
     remaining: number;
   };
   timestamp: number;
+  userName?: string;
 }
 
 export interface TrainerExportData {
@@ -55,6 +56,7 @@ export interface TrainerExportData {
     remaining: number;
   };
   timestamp: number;
+  userName?: string;
 }
 
 export interface ExamExportData {
@@ -71,6 +73,7 @@ export interface ExamExportData {
     passed: boolean;
   };
   timestamp: number;
+  userName?: string;
 }
 
 // ============================================================================
@@ -135,19 +138,19 @@ const COLORS = {
  */
 export const exportLearningToPDF = async (data: LearningExportData): Promise<void> => {
   const doc = new jsPDF();
-  
+
   // Загружаем кириллический шрифт
   await loadCyrillicFont(doc);
-  
+
   // Настройки документа
   const pageWidth = doc.internal.pageSize.getWidth();
-  const margin = 14;
+  const margin = 10;
   const contentWidth = pageWidth - 2 * margin;
-  
+
   // Заголовок
   doc.setFillColor(COLORS.primary[0], COLORS.primary[1], COLORS.primary[2]);
   doc.rect(0, 0, pageWidth, 25, 'F');
-  
+
   doc.setTextColor(255, 255, 255);
   doc.setFont('Roboto');
   doc.setFontSize(16);
@@ -156,34 +159,40 @@ export const exportLearningToPDF = async (data: LearningExportData): Promise<voi
   doc.setFont('Roboto');
   doc.setFontSize(10);
   doc.text(`${data.sectionInfo.name} — ${data.sectionInfo.description}`, pageWidth / 2, 19, { align: 'center' });
-  
+
   // Информация
   doc.setTextColor(COLORS.slate[0], COLORS.slate[1], COLORS.slate[2]);
   doc.setFontSize(9);
-  doc.text(`Страница ${data.page} из ${data.totalPages}`, margin, 32);
+  doc.text(`Билет №${data.page}`, margin, 32);
+
+  // ФИО пользователя (если есть)
+  if (data.userName) {
+    doc.text(`Пользователь: ${data.userName}`, pageWidth / 2, 32, { align: 'center' });
+  }
+
   doc.text(formatDate(data.timestamp), pageWidth - margin, 32, { align: 'right' });
-  
+
   // Статистика
-  const statsY = 40;
+  const statsY = 35;
   const statsHeight = 20;
-  
+
   doc.setFillColor(COLORS.light[0], COLORS.light[1], COLORS.light[2]);
   doc.roundedRect(margin, statsY, contentWidth, statsHeight, 3, 3, 'F');
-  
+
   doc.setTextColor(COLORS.slate[0], COLORS.slate[1], COLORS.slate[2]);
   doc.setFont('Roboto');
   doc.setFontSize(10);
-  doc.text('Статистика страницы:', margin + 10, statsY + 8);
-  
+  doc.text('Статистика страницы:', contentWidth / 2 - margin, statsY + 6);
+
   doc.setFont('Roboto');
   doc.setFontSize(9);
-  
+
   const stats = [
     { label: 'Правильно', value: data.stats.correct, color: COLORS.success },
     { label: 'Неправильно', value: data.stats.incorrect, color: COLORS.error },
     { label: 'Осталось', value: data.stats.remaining, color: COLORS.warning },
   ];
-  
+
   const statWidth = (contentWidth - 40) / 3;
   stats.forEach((stat, idx) => {
     const x = margin + 10 + idx * (statWidth + 10);
@@ -195,29 +204,29 @@ export const exportLearningToPDF = async (data: LearningExportData): Promise<voi
 
   // Вопросы - устанавливаем шрифт перед autoTable
   doc.setFont('Roboto', 'normal');
-  const tableStartY = statsY + statsHeight + 10;
-  
+  const tableStartY = statsY + statsHeight + 3;
+
   const tableData = data.questions.map((q, qIdx) => {
     const userAnswerIdx = data.userAnswers[qIdx];
     const isAnswered = userAnswerIdx !== null;
     const shuffledIdx = isAnswered ? data.shuffledAnswers[qIdx][userAnswerIdx] : -1;
     const isCorrect = isAnswered && shuffledIdx === q.correct_index;
-    
+
     return {
       number: qIdx + 1,
-      question: truncateText(q.text, 80),
-      answer: isAnswered 
-        ? truncateText(getAnswerText(q, shuffledIdx), 50)
+      question: truncateText(q.text, 300),
+      answer: isAnswered
+        ? truncateText(getAnswerText(q, shuffledIdx), 200)
         : 'Не отвечено',
-      correct: isAnswered 
+      correct: isAnswered
         ? (isCorrect ? '✓' : '✗')
         : '—',
-      status: isAnswered 
+      status: isAnswered
         ? (isCorrect ? 'Верно' : 'Ошибка')
         : 'Не отвечено'
     };
   });
-  
+
   autoTable(doc, {
     startY: tableStartY,
     head: [['№', 'Вопрос', 'Ваш ответ', 'Результат', 'Статус']],
@@ -230,13 +239,13 @@ export const exportLearningToPDF = async (data: LearningExportData): Promise<voi
     ]),
     theme: 'striped',
     headStyles: { fillColor: COLORS.primary as [number, number, number] },
-    styles: { fontSize: 8, cellPadding: 3 },
+    styles: { fontSize: 8, cellPadding: 3, lineWidth: 0 },
     columnStyles: {
       0: { cellWidth: 10, halign: 'center' },
-      1: { cellWidth: 80 },
+      1: { cellWidth: 70 },
       2: { cellWidth: 70 },
       3: { cellWidth: 20, halign: 'center' },
-      4: { cellWidth: 25, halign: 'center' }
+      4: { cellWidth: 20, halign: 'center' }
     },
     didParseCell: (data: any) => {
       if (data.section === 'body') {
@@ -254,7 +263,7 @@ export const exportLearningToPDF = async (data: LearningExportData): Promise<voi
     },
     margin: { left: margin, right: margin }
   });
-  
+
   // Подвал
   const finalY = doc.lastAutoTable.finalY || tableStartY;
   doc.setTextColor(COLORS.slate[0], COLORS.slate[1], COLORS.slate[2]);
@@ -265,7 +274,7 @@ export const exportLearningToPDF = async (data: LearningExportData): Promise<voi
     finalY + 10,
     { align: 'center' }
   );
-  
+
   // Сохранение
   doc.save(`el-bez_learning_page_${data.page}_${Date.now()}.pdf`);
 };
@@ -275,51 +284,56 @@ export const exportLearningToPDF = async (data: LearningExportData): Promise<voi
  */
 export const exportTrainerToPDF = async (data: TrainerExportData): Promise<void> => {
   const doc = new jsPDF();
-  
+
   // Загружаем кириллический шрифт
   await loadCyrillicFont(doc);
-  
+
   const pageWidth = doc.internal.pageSize.getWidth();
   const margin = 14;
-  
+
   // Заголовок
   doc.setFillColor(COLORS.primary[0], COLORS.primary[1], COLORS.primary[2]);
   doc.rect(0, 0, pageWidth, 25, 'F');
-  
+
   doc.setTextColor(255, 255, 255);
   doc.setFont('Roboto');
   doc.setFontSize(16);
   doc.text('Результаты тренировки', pageWidth / 2, 12, { align: 'center' });
-  
+
   doc.setFont('Roboto');
   doc.setFontSize(10);
   doc.text(`${data.sectionInfo.name} — ${data.sectionInfo.description}`, pageWidth / 2, 19, { align: 'center' });
-  
+
   // Дата
   doc.setTextColor(COLORS.slate[0], COLORS.slate[1], COLORS.slate[2]);
   doc.setFontSize(9);
   doc.text(formatDate(data.timestamp), pageWidth - margin, 32, { align: 'right' });
-  
+
+  // ФИО пользователя (если есть)
+  if (data.userName) {
+    doc.text(`Пользователь: ${data.userName}`, pageWidth / 2, 32, { align: 'center' });
+  }
+
   // Общая статистика
-  const percentage = data.stats.total > 0 
-    ? Math.round((data.stats.correct / data.stats.total) * 100) 
+  const percentage = data.stats.total > 0
+    ? Math.round((data.stats.correct / data.stats.total) * 100)
     : 0;
-  
+
   const statsY = 40;
   doc.setFillColor(COLORS.light[0], COLORS.light[1], COLORS.light[2]);
   doc.roundedRect(margin, statsY, pageWidth - 2 * margin, 30, 3, 3, 'F');
-  
+
   // Процент в центре
   doc.setTextColor(COLORS.primary[0], COLORS.primary[1], COLORS.primary[2]);
   doc.setFont('Roboto');
   doc.setFontSize(36);
   doc.text(`${percentage}%`, pageWidth / 2, statsY + 18, { align: 'center' });
-  
+
   doc.setTextColor(COLORS.slate[0], COLORS.slate[1], COLORS.slate[2]);
   doc.setFont('Roboto');
   doc.setFontSize(10);
   doc.text('Правильных ответов', pageWidth / 2, statsY + 26, { align: 'center' });
-  
+
   // Детальная статистика
   const detailStatsY = statsY + 38;
   const statsData = [
@@ -328,12 +342,12 @@ export const exportTrainerToPDF = async (data: TrainerExportData): Promise<void>
     { label: 'Неправильно', value: data.stats.incorrect.toString(), color: COLORS.error },
     { label: 'Точность', value: `${percentage}%` },
   ];
-  
+
   autoTable(doc, {
     startY: detailStatsY,
     body: statsData.map(s => [s.label, s.value]),
     theme: 'plain',
-    styles: { fontSize: 10, font: 'Roboto' },
+    styles: { fontSize: 10, font: 'Roboto', lineWidth: 0 },
     columnStyles: {
       0: { fontStyle: 'bold', cellWidth: 60 },
       1: { cellWidth: 40, halign: 'right' }
@@ -348,7 +362,7 @@ export const exportTrainerToPDF = async (data: TrainerExportData): Promise<void>
       // Устанавливаем шрифт Roboto для всех ячеек
       doc.setFont('Roboto', 'normal');
     },
-    margin: { left: margin, right: margin }
+    margin: { left: margin, right: margin + 10 }
   });
 
   // Детальный разбор - устанавливаем шрифт перед autoTable
@@ -386,7 +400,7 @@ export const exportTrainerToPDF = async (data: TrainerExportData): Promise<void>
     ]),
     theme: 'striped',
     headStyles: { fillColor: COLORS.primary as [number, number, number], font: 'Roboto' },
-    styles: { fontSize: 8, cellPadding: 3, font: 'Roboto' },
+    styles: { fontSize: 8, cellPadding: 3, font: 'Roboto', lineWidth: 0 },
     columnStyles: {
       0: { cellWidth: 10, halign: 'center' },
       1: { cellWidth: 75 },
@@ -408,7 +422,7 @@ export const exportTrainerToPDF = async (data: TrainerExportData): Promise<void>
       // Устанавливаем шрифт Roboto для всех ячеек
       doc.setFont('Roboto', 'normal');
     },
-    margin: { left: margin, right: margin }
+    margin: { left: margin, right: margin + 10 }
   });
 
   // Подвал
@@ -431,10 +445,10 @@ export const exportTrainerToPDF = async (data: TrainerExportData): Promise<void>
  */
 export const exportExamToPDF = async (data: ExamExportData): Promise<void> => {
   const doc = new jsPDF();
-  
+
   // Загружаем кириллический шрифт
   await loadCyrillicFont(doc);
-  
+
   const pageWidth = doc.internal.pageSize.getWidth();
   const margin = 14;
 
@@ -463,6 +477,12 @@ export const exportExamToPDF = async (data: ExamExportData): Promise<void> => {
   doc.setTextColor(COLORS.slate[0], COLORS.slate[1], COLORS.slate[2]);
   doc.setFontSize(9);
   doc.text(`${data.sectionInfo.name} — ${data.sectionInfo.description}`, margin, 32);
+
+  // ФИО пользователя (если есть)
+  if (data.userName) {
+    doc.text(`Пользователь: ${data.userName}`, pageWidth / 2, 32, { align: 'center' });
+  }
+
   doc.text(formatDate(data.timestamp), pageWidth - margin, 32, { align: 'right' });
 
   // Результат
@@ -502,7 +522,7 @@ export const exportExamToPDF = async (data: ExamExportData): Promise<void> => {
     startY: statsY,
     body: statsData.map(s => [s.label, s.value]),
     theme: 'plain',
-    styles: { fontSize: 10, font: 'Roboto' },
+    styles: { fontSize: 10, font: 'Roboto', lineWidth: 0 },
     columnStyles: {
       0: { fontStyle: 'bold', cellWidth: 70 },
       1: { cellWidth: 40, halign: 'right' }
@@ -517,7 +537,7 @@ export const exportExamToPDF = async (data: ExamExportData): Promise<void> => {
       // Устанавливаем шрифт Roboto для всех ячеек
       doc.setFont('Roboto', 'normal');
     },
-    margin: { left: margin, right: margin }
+    margin: { left: margin, right: margin + 10 }
   });
 
   // Детальный разбор - устанавливаем шрифт перед autoTable
@@ -554,7 +574,7 @@ export const exportExamToPDF = async (data: ExamExportData): Promise<void> => {
     ]),
     theme: 'striped',
     headStyles: { fillColor: COLORS.primary as [number, number, number], font: 'Roboto' },
-    styles: { fontSize: 8, cellPadding: 3, font: 'Roboto' },
+    styles: { fontSize: 8, cellPadding: 3, font: 'Roboto', lineWidth: 0 },
     columnStyles: {
       0: { cellWidth: 10, halign: 'center' },
       1: { cellWidth: 75 },
@@ -576,7 +596,7 @@ export const exportExamToPDF = async (data: ExamExportData): Promise<void> => {
       // Устанавливаем шрифт Roboto для всех ячеек
       doc.setFont('Roboto', 'normal');
     },
-    margin: { left: margin, right: margin }
+    margin: { left: margin, right: margin + 10 }
   });
 
   // Подвал

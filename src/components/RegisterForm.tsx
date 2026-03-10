@@ -25,28 +25,16 @@ export function RegisterForm() {
   const [emailExists, setEmailExists] = useState(false);
   const [emailTouched, setEmailTouched] = useState(false);
 
-  // Автозаполнение из localStorage
-  const [formData, setFormData] = useState<RegisterUserData>(() => {
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('elbez_register_form');
-      if (saved) {
-        try {
-          return JSON.parse(saved);
-        } catch (e) {
-          // console.error('Ошибка парсинга сохранённых данных формы:', e);
-        }
-      }
-    }
-    return {
-      surname: '',
-      name: '',
-      patronymic: '',
-      birthDate: '',
-      workplace: '',
-      position: '',
-      email: '',
-      password: ''
-    };
+  // 🔒 Убрали автозаполнение из localStorage - не храним персональные данные
+  const [formData, setFormData] = useState<RegisterUserData>({
+    surname: '',
+    name: '',
+    patronymic: '',
+    birthDate: '',
+    workplace: '',
+    position: '',
+    email: '',
+    password: ''
   });
 
   const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -54,16 +42,12 @@ export function RegisterForm() {
     const updatedData = { ...formData, [name]: value };
     setFormData(updatedData);
 
-    // Сохраняем в localStorage для автозаполнения (кроме пароля)
-    if (name !== 'password') {
-      localStorage.setItem('elbez_register_form', JSON.stringify(updatedData));
-    }
-
+    // 🔒 Убрали сохранение в localStorage - не храним персональные данные
     // Очищаем ошибку при изменении поля
     if (validationErrors[name as keyof ValidationErrors]) {
       setValidationErrors(prev => ({ ...prev, [name]: undefined }));
     }
-    
+
     // Сбрасываем статус существования email при изменении поля email
     if (name === 'email') {
       setEmailExists(false);
