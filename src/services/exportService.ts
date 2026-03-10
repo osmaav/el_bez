@@ -158,7 +158,7 @@ export const exportLearningToPDF = async (data: LearningExportData): Promise<voi
 
   // Заголовок
   doc.setFillColor(COLORS.primary[0], COLORS.primary[1], COLORS.primary[2]);
-  doc.rect(0, 0, pageWidth, 25, 'F');
+  doc.rect(0, 0, pageWidth, 35, 'F');
 
   doc.setTextColor(255, 255, 255);
   doc.setFont('Roboto');
@@ -169,42 +169,40 @@ export const exportLearningToPDF = async (data: LearningExportData): Promise<voi
   doc.setFontSize(10);
   doc.text(`${data.sectionInfo.name} — ${data.sectionInfo.description}`, pageWidth / 2, 19, { align: 'center' });
 
-  // Информация
-  doc.setTextColor(COLORS.slate[0], COLORS.slate[1], COLORS.slate[2]);
-  doc.setFontSize(9);
-  doc.text(`Билет №${data.page}`, margin, 32);
-
-  // Информация о пользователе (если есть)
+  // Информация о пользователе справа в заголовке
   const userInfoLines = [];
   if (data.userName) {
-    userInfoLines.push(`ФИО: ${data.userName}`);
+    userInfoLines.push(data.userName);
   }
   if (data.userPatronymic) {
-    userInfoLines.push(`Отчество: ${data.userPatronymic}`);
+    userInfoLines.push(data.userPatronymic);
   }
   if (data.userWorkplace) {
-    userInfoLines.push(`Организация: ${data.userWorkplace}`);
+    userInfoLines.push(data.userWorkplace);
   }
   if (data.userPosition) {
-    userInfoLines.push(`Должность: ${data.userPosition}`);
+    userInfoLines.push(data.userPosition);
   }
 
-  // Вывод информации о пользователе по центру
+  // Вывод информации о пользователе справа
   if (userInfoLines.length > 0) {
-    const userInfoY = 32;
     const lineHeight = 5;
-    userInfoLines.forEach((line, idx) => {
-      doc.text(line, pageWidth / 2, userInfoY + idx * lineHeight, { align: 'center' });
-    });
+    const totalHeight = userInfoLines.length * lineHeight;
+    const startY = 27 - totalHeight / 2;
     
-    // Дата сдвигается ниже, если есть информация о пользователе
-    doc.text(formatDate(data.timestamp), pageWidth - margin, 32 + (userInfoLines.length - 1) * lineHeight, { align: 'right' });
-  } else {
-    doc.text(formatDate(data.timestamp), pageWidth - margin, 32, { align: 'right' });
+    userInfoLines.forEach((line, idx) => {
+      doc.text(line, pageWidth - margin, startY + idx * lineHeight, { align: 'right' });
+    });
   }
+
+  // Номер билета и дата слева внизу заголовка
+  doc.setTextColor(255, 255, 255);
+  doc.setFontSize(9);
+  doc.text(`Билет №${data.page}`, margin, 32);
+  doc.text(formatDate(data.timestamp), pageWidth / 2, 32, { align: 'center' });
 
   // Статистика
-  const statsY = 35;
+  const statsY = 42;
   const statsHeight = 20;
 
   doc.setFillColor(COLORS.light[0], COLORS.light[1], COLORS.light[2]);
@@ -324,7 +322,7 @@ export const exportTrainerToPDF = async (data: TrainerExportData): Promise<void>
 
   // Заголовок
   doc.setFillColor(COLORS.primary[0], COLORS.primary[1], COLORS.primary[2]);
-  doc.rect(0, 0, pageWidth, 25, 'F');
+  doc.rect(0, 0, pageWidth, 35, 'F');
 
   doc.setTextColor(255, 255, 255);
   doc.setFont('Roboto');
@@ -335,43 +333,43 @@ export const exportTrainerToPDF = async (data: TrainerExportData): Promise<void>
   doc.setFontSize(10);
   doc.text(`${data.sectionInfo.name} — ${data.sectionInfo.description}`, pageWidth / 2, 19, { align: 'center' });
 
-  // Дата
-  doc.setTextColor(COLORS.slate[0], COLORS.slate[1], COLORS.slate[2]);
-  doc.setFontSize(9);
-  
-  // Информация о пользователе (если есть)
+  // Информация о пользователе справа в заголовке
   const userInfoLines = [];
   if (data.userName) {
-    userInfoLines.push(`ФИО: ${data.userName}`);
+    userInfoLines.push(data.userName);
   }
   if (data.userPatronymic) {
-    userInfoLines.push(`Отчество: ${data.userPatronymic}`);
+    userInfoLines.push(data.userPatronymic);
   }
   if (data.userWorkplace) {
-    userInfoLines.push(`Организация: ${data.userWorkplace}`);
+    userInfoLines.push(data.userWorkplace);
   }
   if (data.userPosition) {
-    userInfoLines.push(`Должность: ${data.userPosition}`);
+    userInfoLines.push(data.userPosition);
   }
 
-  const userInfoY = 32;
-  const lineHeight = 5;
-  
+  // Вывод информации о пользователе справа
   if (userInfoLines.length > 0) {
+    const lineHeight = 5;
+    const totalHeight = userInfoLines.length * lineHeight;
+    const startY = 27 - totalHeight / 2;
+    
     userInfoLines.forEach((line, idx) => {
-      doc.text(line, pageWidth / 2, userInfoY + idx * lineHeight, { align: 'center' });
+      doc.text(line, pageWidth - margin, startY + idx * lineHeight, { align: 'right' });
     });
-    doc.text(formatDate(data.timestamp), pageWidth - margin, userInfoY + (userInfoLines.length - 1) * lineHeight, { align: 'right' });
-  } else {
-    doc.text(formatDate(data.timestamp), pageWidth - margin, 32, { align: 'right' });
   }
+
+  // Дата слева внизу заголовка
+  doc.setTextColor(255, 255, 255);
+  doc.setFontSize(9);
+  doc.text(formatDate(data.timestamp), margin, 32);
 
   // Общая статистика
   const percentage = data.stats.total > 0
     ? Math.round((data.stats.correct / data.stats.total) * 100)
     : 0;
 
-  const statsY = 40;
+  const statsY = 42;
   doc.setFillColor(COLORS.light[0], COLORS.light[1], COLORS.light[2]);
   doc.roundedRect(margin, statsY, pageWidth - 2 * margin, 30, 3, 3, 'F');
 
@@ -509,7 +507,7 @@ export const exportExamToPDF = async (data: ExamExportData): Promise<void> => {
 
   // Заголовок
   doc.setFillColor(headerColor[0], headerColor[1], headerColor[2]);
-  doc.rect(0, 0, pageWidth, 25, 'F');
+  doc.rect(0, 0, pageWidth, 35, 'F');
 
   doc.setTextColor(255, 255, 255);
   doc.setFont('Roboto');
@@ -525,40 +523,40 @@ export const exportExamToPDF = async (data: ExamExportData): Promise<void> => {
   doc.setFontSize(10);
   doc.text(`Билет №${data.ticketId}`, pageWidth / 2, 19, { align: 'center' });
 
-  // Раздел
-  doc.setTextColor(COLORS.slate[0], COLORS.slate[1], COLORS.slate[2]);
-  doc.setFontSize(9);
-  doc.text(`${data.sectionInfo.name} — ${data.sectionInfo.description}`, margin, 32);
-
-  // Информация о пользователе (если есть)
+  // Информация о пользователе справа в заголовке
   const userInfoLines = [];
   if (data.userName) {
-    userInfoLines.push(`ФИО: ${data.userName}`);
+    userInfoLines.push(data.userName);
   }
   if (data.userPatronymic) {
-    userInfoLines.push(`Отчество: ${data.userPatronymic}`);
+    userInfoLines.push(data.userPatronymic);
   }
   if (data.userWorkplace) {
-    userInfoLines.push(`Организация: ${data.userWorkplace}`);
+    userInfoLines.push(data.userWorkplace);
   }
   if (data.userPosition) {
-    userInfoLines.push(`Должность: ${data.userPosition}`);
+    userInfoLines.push(data.userPosition);
   }
 
-  const userInfoY = 32;
-  const lineHeight = 5;
-  
+  // Вывод информации о пользователе справа
   if (userInfoLines.length > 0) {
+    const lineHeight = 5;
+    const totalHeight = userInfoLines.length * lineHeight;
+    const startY = 27 - totalHeight / 2;
+    
     userInfoLines.forEach((line, idx) => {
-      doc.text(line, pageWidth / 2, userInfoY + idx * lineHeight, { align: 'center' });
+      doc.text(line, pageWidth - margin, startY + idx * lineHeight, { align: 'right' });
     });
-    doc.text(formatDate(data.timestamp), pageWidth - margin, userInfoY + (userInfoLines.length - 1) * lineHeight, { align: 'right' });
-  } else {
-    doc.text(formatDate(data.timestamp), pageWidth - margin, 32, { align: 'right' });
   }
+
+  // Раздел и дата слева внизу заголовка
+  doc.setTextColor(255, 255, 255);
+  doc.setFontSize(9);
+  doc.text(`${data.sectionInfo.name} — ${data.sectionInfo.description}`, margin, 32);
+  doc.text(formatDate(data.timestamp), pageWidth - margin, 32, { align: 'right' });
 
   // Результат
-  const resultY = 40;
+  const resultY = 42;
   doc.setFillColor(COLORS.light[0], COLORS.light[1], COLORS.light[2]);
   doc.roundedRect(margin, resultY, pageWidth - 2 * margin, 35, 3, 3, 'F');
 
