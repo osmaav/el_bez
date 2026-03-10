@@ -267,7 +267,7 @@ export function useLearningProgress(
         });
       }
     }
-  }, [activeQuestions, isSavedStatesLoaded, isSectionChanging, shuffleArray]);
+  }, [activeQuestions, isSavedStatesLoaded, isSectionChanging, currentPage, shuffleArray]);
 
   // ============================================================================
   // Statistics Update
