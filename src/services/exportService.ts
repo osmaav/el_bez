@@ -42,6 +42,9 @@ export interface LearningExportData {
   };
   timestamp: number;
   userName?: string;
+  userPatronymic?: string;
+  userWorkplace?: string;
+  userPosition?: string;
 }
 
 export interface TrainerExportData {
@@ -57,6 +60,9 @@ export interface TrainerExportData {
   };
   timestamp: number;
   userName?: string;
+  userPatronymic?: string;
+  userWorkplace?: string;
+  userPosition?: string;
 }
 
 export interface ExamExportData {
@@ -74,6 +80,9 @@ export interface ExamExportData {
   };
   timestamp: number;
   userName?: string;
+  userPatronymic?: string;
+  userWorkplace?: string;
+  userPosition?: string;
 }
 
 // ============================================================================
@@ -165,12 +174,34 @@ export const exportLearningToPDF = async (data: LearningExportData): Promise<voi
   doc.setFontSize(9);
   doc.text(`Билет №${data.page}`, margin, 32);
 
-  // ФИО пользователя (если есть)
+  // Информация о пользователе (если есть)
+  const userInfoLines = [];
   if (data.userName) {
-    doc.text(`Пользователь: ${data.userName}`, pageWidth / 2, 32, { align: 'center' });
+    userInfoLines.push(`ФИО: ${data.userName}`);
+  }
+  if (data.userPatronymic) {
+    userInfoLines.push(`Отчество: ${data.userPatronymic}`);
+  }
+  if (data.userWorkplace) {
+    userInfoLines.push(`Организация: ${data.userWorkplace}`);
+  }
+  if (data.userPosition) {
+    userInfoLines.push(`Должность: ${data.userPosition}`);
   }
 
-  doc.text(formatDate(data.timestamp), pageWidth - margin, 32, { align: 'right' });
+  // Вывод информации о пользователе по центру
+  if (userInfoLines.length > 0) {
+    const userInfoY = 32;
+    const lineHeight = 5;
+    userInfoLines.forEach((line, idx) => {
+      doc.text(line, pageWidth / 2, userInfoY + idx * lineHeight, { align: 'center' });
+    });
+    
+    // Дата сдвигается ниже, если есть информация о пользователе
+    doc.text(formatDate(data.timestamp), pageWidth - margin, 32 + (userInfoLines.length - 1) * lineHeight, { align: 'right' });
+  } else {
+    doc.text(formatDate(data.timestamp), pageWidth - margin, 32, { align: 'right' });
+  }
 
   // Статистика
   const statsY = 35;
@@ -307,11 +338,32 @@ export const exportTrainerToPDF = async (data: TrainerExportData): Promise<void>
   // Дата
   doc.setTextColor(COLORS.slate[0], COLORS.slate[1], COLORS.slate[2]);
   doc.setFontSize(9);
-  doc.text(formatDate(data.timestamp), pageWidth - margin, 32, { align: 'right' });
-
-  // ФИО пользователя (если есть)
+  
+  // Информация о пользователе (если есть)
+  const userInfoLines = [];
   if (data.userName) {
-    doc.text(`Пользователь: ${data.userName}`, pageWidth / 2, 32, { align: 'center' });
+    userInfoLines.push(`ФИО: ${data.userName}`);
+  }
+  if (data.userPatronymic) {
+    userInfoLines.push(`Отчество: ${data.userPatronymic}`);
+  }
+  if (data.userWorkplace) {
+    userInfoLines.push(`Организация: ${data.userWorkplace}`);
+  }
+  if (data.userPosition) {
+    userInfoLines.push(`Должность: ${data.userPosition}`);
+  }
+
+  const userInfoY = 32;
+  const lineHeight = 5;
+  
+  if (userInfoLines.length > 0) {
+    userInfoLines.forEach((line, idx) => {
+      doc.text(line, pageWidth / 2, userInfoY + idx * lineHeight, { align: 'center' });
+    });
+    doc.text(formatDate(data.timestamp), pageWidth - margin, userInfoY + (userInfoLines.length - 1) * lineHeight, { align: 'right' });
+  } else {
+    doc.text(formatDate(data.timestamp), pageWidth - margin, 32, { align: 'right' });
   }
 
   // Общая статистика
@@ -478,12 +530,32 @@ export const exportExamToPDF = async (data: ExamExportData): Promise<void> => {
   doc.setFontSize(9);
   doc.text(`${data.sectionInfo.name} — ${data.sectionInfo.description}`, margin, 32);
 
-  // ФИО пользователя (если есть)
+  // Информация о пользователе (если есть)
+  const userInfoLines = [];
   if (data.userName) {
-    doc.text(`Пользователь: ${data.userName}`, pageWidth / 2, 32, { align: 'center' });
+    userInfoLines.push(`ФИО: ${data.userName}`);
+  }
+  if (data.userPatronymic) {
+    userInfoLines.push(`Отчество: ${data.userPatronymic}`);
+  }
+  if (data.userWorkplace) {
+    userInfoLines.push(`Организация: ${data.userWorkplace}`);
+  }
+  if (data.userPosition) {
+    userInfoLines.push(`Должность: ${data.userPosition}`);
   }
 
-  doc.text(formatDate(data.timestamp), pageWidth - margin, 32, { align: 'right' });
+  const userInfoY = 32;
+  const lineHeight = 5;
+  
+  if (userInfoLines.length > 0) {
+    userInfoLines.forEach((line, idx) => {
+      doc.text(line, pageWidth / 2, userInfoY + idx * lineHeight, { align: 'center' });
+    });
+    doc.text(formatDate(data.timestamp), pageWidth - margin, userInfoY + (userInfoLines.length - 1) * lineHeight, { align: 'right' });
+  } else {
+    doc.text(formatDate(data.timestamp), pageWidth - margin, 32, { align: 'right' });
+  }
 
   // Результат
   const resultY = 40;

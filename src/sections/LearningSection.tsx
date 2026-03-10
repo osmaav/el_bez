@@ -199,7 +199,10 @@ export function LearningSection() {
         shuffledAnswers: progress.quizState.shuffledAnswers,
         stats: progress.stats,
         timestamp: Date.now(),
-        userName: user ? `${user.surname} ${user.name}`.trim() : undefined
+        userName: user ? `${user.surname} ${user.name}`.trim() : undefined,
+        userPatronymic: user?.patronymic || undefined,
+        userWorkplace: user?.workplace || undefined,
+        userPosition: user?.position || undefined
       };
 
       await exportLearningToPDF(exportData);
