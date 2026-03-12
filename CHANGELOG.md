@@ -5,6 +5,39 @@
 Формат ведётся в соответствии с [Keep a Changelog](https://keepachangelog.com/ru/1.0.0/),
 версионирование следует [Semantic Versioning](https://semver.org/lang/ru/).
 
+## [2026.07] — 2026-03-12
+
+### Добавлено
+- ✅ **Автоматизированные тесты** — 478 тестов (97% проходят)
+  - Learning: 207 тестов (UI, Math, State, Filter, Firebase)
+  - Trainer: 78 тестов (UI, Math, State, Filter, Firebase)
+  - Exam: 109 тестов (UI, Math, State, Filter, Firebase)
+  - Statistics: 66 тестов (UI, Math, State, Firebase)
+- ✅ **Декомпозиция LearningSection** — рефакторинг на хуки и компоненты
+  - useLearningProgress — управление состоянием викторины
+  - useLearningFilter — фильтрация вопросов
+  - useLearningNavigation — навигация по страницам
+  - LearningHeader, LearningProgressBar, LearningQuestionCard, LearningResults
+- ✅ **Firebase моки** — 102 теста для Auth и Database
+  - Регистрация, вход, выход
+  - Сохранение/загрузка прогресса
+  - Управление профилем
+- ✅ **Документация тестов** — TESTING.md, MERGE_GUIDE.md, PUBLISH_CHECKLIST.md
+
+### Изменено
+- 🔄 **Структура тестов** — декомпозиция на мелкие файлы по функциям
+- 🔄 **Math тесты** — 118 тестов для вычисляемых функций
+- 🔄 **State тесты** — 141 тест для состояний приложения
+- 🔄 **Filter тесты** — 54 теста для фильтрации вопросов
+
+### Исправлено
+- 🐛 **localStorage в тестах** — добавлен mock для jsdom
+- 🐛 **Firebase моки** — исправлены импорты и использование
+- 🐛 **State тесты** — добавлены тесты перехода между секциями
+
+### Удалено
+- 🗑️ **Placeholder тесты** — заменены на реальные моки и тесты
+
 ## [2026.07] — 2026-03-04
 
 ### Добавлено
