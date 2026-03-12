@@ -35,11 +35,18 @@ const localStorageMock = (() => {
   };
 })();
 
-Object.defineProperty(global, 'localStorage', {
-  value: localStorageMock,
-  writable: true,
-  configurable: true,
-});
+// Исправление для TypeScript - проверка существования global
+const setGlobalLocalStorage = () => {
+  if (typeof window !== 'undefined') {
+    Object.defineProperty(window, 'localStorage', {
+      value: localStorageMock,
+      writable: true,
+      configurable: true,
+    });
+  }
+};
+
+setGlobalLocalStorage();
 
 // Очистка localStorage перед каждым тестом
 beforeEach(() => {
