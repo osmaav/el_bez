@@ -13,4 +13,7 @@ export default defineConfig({
     setupFiles: './src/tests/setup.ts',
     css: true,
   },
+  esbuild: {
+    loader: 'tsx',
+  },
 })
