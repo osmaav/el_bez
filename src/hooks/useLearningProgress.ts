@@ -253,19 +253,19 @@ export function useLearningProgress(
         hasSavedState: !!savedState,
       });
 
-      // Восстанавливаем состояние только если все вопросы на странице отвечены
-      const allAnswered = savedState && savedState.userAnswers.every(a => a !== null);
+      // Восстанавливаем состояние если есть сохранённые ответы (хотя бы один)
+      const hasAnswers = savedState && savedState.userAnswers && savedState.userAnswers.some(a => a !== null);
       
-      if (savedState && savedState.shuffledAnswers.length === selected.length && allAnswered) {
+      if (savedState && savedState.shuffledAnswers.length === selected.length && hasAnswers) {
         console.log('💾 [useLearningProgress] Восстановление состояния для страницы', currentPage);
         setQuizState({
           currentQuestions: selected,
           shuffledAnswers: savedState.shuffledAnswers,
           userAnswers: savedState.userAnswers,
-          isComplete: savedState.isComplete,
+          isComplete: savedState.isComplete || false,
         });
       } else {
-        // Всегда перемешиваем варианты для новой страницы или страницы с частичными ответами
+        // Перемешиваем варианты для новой страницы без ответов
         console.log('🔀 [useLearningProgress] Перемешивание вариантов для страницы', currentPage);
         const shuffledAnswers = selected.map((q) => {
           const expectedCount = q.answers?.length || q.options?.length || 2;
