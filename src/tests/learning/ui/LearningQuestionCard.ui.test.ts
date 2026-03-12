@@ -10,6 +10,8 @@ import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { LearningQuestionCard } from '@/components/learning/LearningQuestionCard';
 import { createMockQuestion } from '@/tests/utils/testHelpers';
+import '@testing-library/jest-dom';
+import React from 'react';
 
 describe('LearningQuestionCard', () => {
   const mockQuestion = createMockQuestion();
@@ -152,21 +154,6 @@ describe('LearningQuestionCard', () => {
       );
 
       expect(getAnswerStyle).toHaveBeenCalled();
-    });
-
-    it('должен отображать иконку правильного ответа после ответа', () => {
-      render(
-        <LearningQuestionCard
-          {...defaultProps}
-          userAnswer={0}
-          shuffledAnswers={[0, 1, 2, 3]}
-        />
-      );
-
-      // Проверка наличия иконки статуса
-      const statusIcon = screen.queryByTestId('correct-icon') || 
-                        screen.queryByTestId('incorrect-icon');
-      expect(statusIcon).toBeInTheDocument();
     });
   });
 

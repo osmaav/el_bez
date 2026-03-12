@@ -250,7 +250,7 @@ describe('LearningSection', () => {
           useLearningFilter(questions, '1258-20')
         );
 
-        // Без активных фильтров все вопросы должны быть
+        // Без активных фильтров filteredQuestions пуст (используются основные вопросы)
         expect(result.current.filteredQuestions.length).toBe(0);
         expect(result.current.filteredTotalPages).toBe(0);
       });
@@ -420,7 +420,8 @@ describe('LearningSection', () => {
           useLearningFilter(questions, '1258-20')
         );
 
-        // Без фильтра filteredTotalPages = 0
+        // Без фильтра filteredTotalPages = 0 (фильтр не применён)
+        // При применении фильтра с 100 вопросами будет 10 страниц
         expect(result.current.filteredTotalPages).toBe(0);
       });
     });

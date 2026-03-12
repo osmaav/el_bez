@@ -9,6 +9,8 @@
 import { describe, it, expect } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { LearningHeader } from '@/components/learning/LearningHeader';
+import '@testing-library/jest-dom';
+import React from 'react';
 
 describe('LearningHeader', () => {
   const defaultProps = {

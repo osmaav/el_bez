@@ -9,6 +9,8 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { LearningProgressBar } from '@/components/learning/LearningProgressBar';
+import '@testing-library/jest-dom';
+import React from 'react';
 
 describe('LearningProgressBar', () => {
   const defaultProps = {
