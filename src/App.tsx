@@ -10,7 +10,6 @@ import { TrainerSection } from '@/sections/TrainerSection';
 import { ExamSection } from '@/sections/ExamSection';
 import { StatisticsSection } from '@/sections/StatisticsSection';
 import { ToastContainer } from '@/components/ui/toast-message';
-import { UIPatternsShowcase } from '@/components/ui-showcase/UIPatternsShowcase';
 import { useEffect } from 'react';
 import { BrowserRouter, HashRouter, Routes, Route } from 'react-router-dom';
 
@@ -41,7 +40,7 @@ function AppContent() {
 function App() {
   // Для GitHub Pages используем HashRouter вместо BrowserRouter
   const Router = window.location.hostname.includes('github.io') ? HashRouter : BrowserRouter;
-  
+
   return (
     <CookiesProvider>
       <AuthProvider>
@@ -51,12 +50,6 @@ function App() {
               <Routes>
                 {/* Основной маршрут приложения */}
                 <Route path="/" element={<AppContent />} />
-
-                {/* Демо UI-паттернов */}
-                <Route path="/ui-demo" element={<UIPatternsShowcase />} />
-
-                {/* Редирект с любых других путей на главную */}
-                {/* <Route path="*" element={<Navigate to="/" replace />} /> */}
               </Routes>
               <ToastWrapper />
             </Router>
