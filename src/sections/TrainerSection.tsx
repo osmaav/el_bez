@@ -31,6 +31,7 @@ import {
 
 export function TrainerSection() {
   const {
+    questions,
     trainerQuestions,
     trainerCurrentIndex,
     trainerAnswers,
@@ -78,13 +79,25 @@ export function TrainerSection() {
     // Загружаем настройки фильтра при старте
     const filterSettings = questionFilterService.getSettings(currentSection);
     setHiddenQuestionIds(filterSettings.hiddenQuestionIds);
+
+    // Получаем отфильтрованные вопросы
+    const allQuestionStats = statisticsService.getQuestionStats(currentSection);
+    const allQuestionIds = questions.map(q => q.id);
+    const filteredIds = questionFilterService.filterQuestions(
+      allQuestionIds,
+      allQuestionStats,
+      filterSettings
+    );
     
+    const availableQuestions = filteredIds.length > 0 ? filteredIds.length : questions.length;
+    const actualCount = Math.min(questionCount, availableQuestions);
+
     setLoadingModal({
       isOpen: true,
       status: 'loading',
       progress: 0,
       title: 'Запуск тренажёра',
-      description: `Загрузка ${questionCount} вопросов...`
+      description: `Загрузка ${actualCount} вопросов...`
     });
 
     const loadingId = loading('Запуск тренажёра', 'Пожалуйста, подождите...');
@@ -99,7 +112,7 @@ export function TrainerSection() {
 
     setTimeout(() => {
       clearInterval(progressInterval);
-      startTrainer(questionCount);
+      startTrainer(actualCount);
       setLoadingModal(prev => ({
         ...prev,
         status: 'success',
@@ -198,6 +211,22 @@ export function TrainerSection() {
               Вам будет предложено 50 случайных вопросов из базы.
               После ответа вы сразу увидите правильный вариант и сможете перейти к следующему вопросу.
             </p>
+            
+            {/* Кнопка фильтра */}
+            <div className="mb-6">
+              <Button
+                variant="outline"
+                onClick={() => setIsFilterModalOpen(true)}
+                className="text-slate-700 hover:text-slate-900"
+              >
+                <Filter className="w-5 h-5 mr-2" />
+                Настроить фильтр вопросов
+              </Button>
+              <p className="text-xs text-slate-500 mt-2 text-center">
+                Исключите известные и слабые вопросы для эффективной тренировки
+              </p>
+            </div>
+            
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button
                 size="lg"
