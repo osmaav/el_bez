@@ -211,11 +211,11 @@ firebaseMocks.signInWithEmailAndPassword.mockResolvedValue({...});
 - LearningProgressBar: 26 тестов
 - LearningQuestionCard: 14 тестов
 
-#### Math Tests (24 теста) ✅
-- shuffleArray — перемешивание вариантов
-- calculateProgress — расчёт прогресса (0%, 50%, 100%)
-- calculateStats — подсчёт статистики
-- getAnswerStyle — стили ответов
+#### Math Tests (42 теста) ✅
+- shuffleArray (7 тестов) — перемешивание вариантов
+- calculateProgress (12 тестов) — расчёт прогресса
+- calculateStats (10 тестов) — подсчёт статистики
+- getAnswerStyle (13 тестов) — стили ответов
 
 #### State Tests (38 тестов) ✅
 - AnswerGiven: 8 тестов
@@ -281,12 +281,11 @@ firebaseMocks.signInWithEmailAndPassword.mockResolvedValue({...});
 - Навигация
 - Результаты
 
-#### Math Tests (17 тестов) ✅
-- Расчёт процента сдачи
-- Определение сдачи экзамена (≥80%)
-- Подсчёт правильных ответов
-- Генерация билета
-- Общее количество билетов
+#### Math Tests (44 теста) ✅
+- calculatePercentage (17 тестов) — расчёт процента сдачи
+- isPassed (14 тестов) — определение сдачи экзамена (≥80%)
+- countCorrect (9 тестов) — подсчёт правильных ответов
+- generateTicket (4 теста) — генерация билетов
 
 #### State Tests (18 тестов) ✅
 - Выбор билета
@@ -344,16 +343,16 @@ firebaseMocks.signInWithEmailAndPassword.mockResolvedValue({...});
 
 | Секция | UI | Math | State | Filter | Firebase | Итого |
 |--------|----|------|-------|--------|----------|-------|
-| **Learning** | 31 | 24 | 38 | 18 | 7 | **118** |
+| **Learning** | 31 | 42 | 38 | 18 | 7 | **136** |
 | **Trainer** | 13 | 16 | 18 | 10 | 7 | **64** |
-| **Exam** | 13 | 17 | 18 | 9 | 7 | **64** |
+| **Exam** | 13 | 44 | 18 | 9 | 7 | **91** |
 | **Statistics** | 11 | 16 | 15 | 0 | 7 | **49** |
-| **ВСЕГО** | 68 | 73 | 89 | 37 | 28 | **295** |
+| **ВСЕГО** | 68 | 118 | 89 | 37 | 28 | **340** |
 
 ### Процент прохождения
 
-- ✅ Проходят: 300 тестов (96%)
-- 🔄 В разработке: 11 тестов (4%) — UI тесты LearningQuestionCard
+- ✅ Проходят: 342 теста (97%)
+- 🔄 В разработке: 11 тестов (3%) — UI тесты LearningProgressBar
 
 ---
 
