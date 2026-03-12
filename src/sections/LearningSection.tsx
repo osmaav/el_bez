@@ -20,7 +20,7 @@ import { useAuth } from '@/context/AuthContext';
 import { useToast } from '@/context/ToastContext';
 import { SessionTracker, statisticsService } from '@/services/statisticsService';
 import { questionFilterService } from '@/services/questionFilterService';
-import { exportLearningToPDF } from '@/services/exportService';
+import { exportLearningToPDF } from '@/services/export';
 import { FilterModal } from '@/components/ui/FilterModal';
 import { LoadingModal } from '@/components/ui/loading-modal';
 import { ConfirmModal } from '@/components/ui/confirm-modal';

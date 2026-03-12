@@ -1,0 +1,161 @@
+/**
+ * Learning Export - Экспорт результатов обучения в PDF
+ */
+
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
+import { loadCyrillicFont } from '@/lib/pdfCyrillicFont';
+import type { LearningExportData } from './types';
+import { COLORS, formatDate, getAnswerText, truncateText } from './utils';
+
+// Расширяем тип jsPDF для поддержки autoTable
+declare module 'jspdf' {
+  interface jsPDF {
+    lastAutoTable: {
+      finalY: number;
+    };
+  }
+}
+
+/**
+ * Экспорт результатов обучения в PDF
+ */
+export const exportLearningToPDF = async (data: LearningExportData): Promise<void> => {
+  const doc = new jsPDF();
+
+  // Загружаем кириллический шрифт
+  await loadCyrillicFont(doc);
+
+  const pageWidth = doc.internal.pageSize.getWidth();
+  const margin = 10;
+  const contentWidth = pageWidth - 2 * margin;
+
+  // Заголовок
+  doc.setFillColor(COLORS.primary[0], COLORS.primary[1], COLORS.primary[2]);
+  doc.rect(0, 0, pageWidth, 35, 'F');
+
+  doc.setTextColor(255, 255, 255);
+  doc.setFont('Roboto');
+  doc.setFontSize(16);
+  doc.text('Результаты обучения', pageWidth / 2, 12, { align: 'center' });
+
+  doc.setFont('Roboto');
+  doc.setFontSize(10);
+  doc.text(`${data.sectionInfo.name} — ${data.sectionInfo.description}`, pageWidth / 2, 19, { align: 'center' });
+
+  // Информация о пользователе справа в заголовке
+  const userInfoLines = [];
+  if (data.userName) {
+    userInfoLines.push(data.userName);
+  }
+  if (data.userPatronymic) {
+    userInfoLines.push(data.userPatronymic);
+  }
+  if (data.userWorkplace) {
+    userInfoLines.push(data.userWorkplace);
+  }
+  if (data.userPosition) {
+    userInfoLines.push(data.userPosition);
+  }
+
+  // Вывод информации о пользователе справа
+  if (userInfoLines.length > 0) {
+    const lineHeight = 5;
+    const totalHeight = userInfoLines.length * lineHeight;
+    const startY = 27 - totalHeight / 2;
+
+    userInfoLines.forEach((line, idx) => {
+      doc.text(line, pageWidth - margin, startY + idx * lineHeight, { align: 'right' });
+    });
+  }
+
+  // Номер билета и дата слева внизу заголовка
+  doc.setTextColor(255, 255, 255);
+  doc.setFontSize(9);
+  doc.text(`Билет №${data.page}`, margin, 32);
+  doc.text(formatDate(data.timestamp), pageWidth / 2, 32, { align: 'center' });
+
+  // Статистика
+  const statsY = 35;
+  const statsHeight = 20;
+
+  doc.setFillColor(COLORS.light[0], COLORS.light[1], COLORS.light[2]);
+  doc.roundedRect(margin, statsY, contentWidth, statsHeight, 3, 3, 'F');
+
+  doc.setTextColor(COLORS.slate[0], COLORS.slate[1], COLORS.slate[2]);
+  doc.setFont('Roboto');
+  doc.setFontSize(10);
+  doc.text('Статистика страницы:', contentWidth / 2 - margin, statsY + 6);
+
+  doc.setFont('Roboto');
+  doc.setFontSize(9);
+
+  const stats = [
+    { label: 'Правильно', value: data.stats.correct, color: COLORS.success },
+    { label: 'Неправильно', value: data.stats.incorrect, color: COLORS.error },
+    { label: 'Осталось', value: data.stats.remaining, color: COLORS.warning },
+  ];
+
+  const statWidth = (contentWidth - 40) / 3;
+  stats.forEach((stat, idx) => {
+    const x = margin + 10 + idx * (statWidth + 10);
+    doc.setFillColor(stat.color[0], stat.color[1], stat.color[2]);
+    doc.circle(x + 5, statsY + 14, 3, 'F');
+    doc.setTextColor(COLORS.slate[0], COLORS.slate[1], COLORS.slate[2]);
+    doc.text(`${stat.label}: ${stat.value}`, x + 12, statsY + 16);
+  });
+
+  // Вопросы
+  doc.setFont('Roboto', 'normal');
+  const tableStartY = statsY + statsHeight + 3;
+
+  const tableData = data.questions.map((q, qIdx) => {
+    const userAnswerIdx = data.userAnswers[qIdx];
+    const isAnswered = userAnswerIdx !== null;
+    const shuffledIdx = isAnswered ? data.shuffledAnswers[qIdx][userAnswerIdx] : -1;
+
+    return {
+      number: qIdx + 1,
+      question: truncateText(q.text, 300),
+      answer: isAnswered
+        ? truncateText(getAnswerText(q, shuffledIdx), 200)
+        : 'Не отвечено'
+    };
+  });
+
+  autoTable(doc, {
+    startY: tableStartY,
+    head: [['№', 'Вопрос', 'Ваш ответ']],
+    body: tableData.map(row => [
+      row.number,
+      row.question,
+      row.answer
+    ]),
+    theme: 'striped',
+    headStyles: { fillColor: COLORS.primary as [number, number, number] },
+    styles: { fontSize: 8, cellPadding: 3, lineWidth: 0 },
+    columnStyles: {
+      0: { cellWidth: 10, halign: 'center' },
+      1: { cellWidth: 120 },
+      2: { cellWidth: 120 }
+    },
+    willDrawCell: (_data: any) => {
+      doc.setFont('Roboto', 'normal');
+    },
+    margin: { left: margin, right: margin }
+  });
+
+  // Подвал
+  const finalY = doc.lastAutoTable.finalY || tableStartY;
+  doc.setTextColor(COLORS.slate[0], COLORS.slate[1], COLORS.slate[2]);
+  doc.setFontSize(8);
+  doc.text(
+    'Сгенерировано приложением el-bez • https://github.com/osmaav/el_bez',
+    pageWidth / 2,
+    finalY + 10,
+    { align: 'center' }
+  );
+
+  // Сохранение
+  doc.save(`el-bez_learning_ticket_${data.page}_${Date.now()}.pdf`);
+};
