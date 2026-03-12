@@ -77,7 +77,6 @@ export interface SectionSummaryProps {
 export interface StatisticsControlsProps {
   onExport: () => void;
   onClear: () => void;
-  onLoadTestData: () => void;
 }
 
 /**
@@ -91,5 +90,4 @@ export interface UseStatisticsReturn {
   refreshStatistics: () => void;
   handleExport: () => void;
   handleClear: () => void;
-  handleLoadTestData: () => void;
 }

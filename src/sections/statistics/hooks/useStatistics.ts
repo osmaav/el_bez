@@ -1,6 +1,6 @@
 /**
  * useStatistics — хук для управления статистикой
- * 
+ *
  * @description Загрузка, экспорт, очистка статистики
  * @author el-bez Team
  * @version 1.0.0
@@ -9,7 +9,6 @@
 import { useState, useCallback } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { statisticsService } from '@/services/statisticsService';
-import { importTestData } from '@/utils/statisticsTestData';
 import type { UserStatistics } from '@/types';
 import type { StatisticsTab, UseStatisticsReturn } from '../types';
 import { toast as sonnerToast } from 'sonner';
@@ -57,16 +56,6 @@ export function useStatistics(): UseStatisticsReturn {
     }
   }, [loadStatistics]);
 
-  // Загрузка тестовых данных
-  const handleLoadTestData = useCallback(() => {
-    if (confirm('Загрузить тестовые данные для демонстрации статистики? Это перезапишет текущие данные.')) {
-      const userId = user?.id || 'anonymous';
-      importTestData(userId);
-      loadStatistics();
-      sonnerToast.success('Тестовые данные загружены');
-    }
-  }, [user, loadStatistics]);
-
   return {
     statistics,
     isLoading,
@@ -75,7 +64,6 @@ export function useStatistics(): UseStatisticsReturn {
     refreshStatistics: loadStatistics,
     handleExport,
     handleClear,
-    handleLoadTestData,
   };
 }
 

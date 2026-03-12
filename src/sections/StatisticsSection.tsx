@@ -36,7 +36,6 @@ export const StatisticsSection: React.FC = () => {
     refreshStatistics,
     handleExport,
     handleClear,
-    handleLoadTestData,
   } = useStatistics();
 
   // Обновляем статистику при монтировании
@@ -80,7 +79,6 @@ export const StatisticsSection: React.FC = () => {
       <StatisticsControls
         onExport={handleExport}
         onClear={handleClear}
-        onLoadTestData={handleLoadTestData}
       />
 
       {/* Уведомление для новых пользователей */}
