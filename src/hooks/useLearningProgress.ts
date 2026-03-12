@@ -368,6 +368,16 @@ export function useLearningProgress(
     const newState = { ...quizState, userAnswers: newAnswers };
     setQuizState(newState);
 
+    // Сохраняем состояние после каждого ответа
+    setSavedStates(prev => ({
+      ...prev,
+      [currentPage]: {
+        userAnswers: newAnswers,
+        shuffledAnswers: quizState.shuffledAnswers,
+        isComplete: false
+      }
+    }));
+
     const question = quizState.currentQuestions[questionIndex];
     if (sessionTrackerRef.current && question) {
       const shuffledIndex = quizState.shuffledAnswers[questionIndex][answerIndex];
@@ -389,11 +399,12 @@ export function useLearningProgress(
     if (newAnswers.every(a => a !== null)) {
       console.log('✅ [useLearningProgress] Все вопросы отвечены, завершение сессии');
       setQuizState({ ...newState, isComplete: true });
+      
+      // Обновляем статус завершения
       setSavedStates(prev => ({
         ...prev,
         [currentPage]: {
-          userAnswers: newAnswers,
-          shuffledAnswers: quizState.shuffledAnswers,
+          ...prev[currentPage],
           isComplete: true
         }
       }));
@@ -404,7 +415,7 @@ export function useLearningProgress(
         sessionTrackerRef.current = null;
       }
     }
-  }, [quizState]);
+  }, [quizState, currentPage]);
 
   // ============================================================================
   // Reset Progress
