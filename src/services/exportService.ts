@@ -431,21 +431,27 @@ export const exportTrainerToPDF = async (data: TrainerExportData): Promise<void>
 
     return {
       number: idx + 1,
-      question: truncateText(q.text, 70),
-      yourAnswer: isAnswered ? truncateText(getAnswerText(q, userAnswer), 45) : '—',
-      correctAnswer: truncateText(getAnswerText(q, q.correct_index), 45),
-      status: isAnswered ? (isCorrect ? 'Верно' : 'Ошибка') : 'Не отвечено'
+      question: truncateText(q.text, 300),
+      answer: isAnswered
+        ? truncateText(getAnswerText(q, userAnswer), 200)
+        : 'Не отвечено',
+      correct: isAnswered
+        ? (isCorrect ? '✓' : '✗')
+        : '—',
+      status: isAnswered
+        ? (isCorrect ? 'Верно' : 'Ошибка')
+        : 'Не отвечено'
     };
   });
 
   autoTable(doc, {
     startY: tableStartY + 5,
-    head: [['№', 'Вопрос', 'Ваш ответ', 'Правильный', 'Статус']],
+    head: [['№', 'Вопрос', 'Ваш ответ', 'Результат', 'Статус']],
     body: tableData.map(row => [
       row.number,
       row.question,
-      row.yourAnswer,
-      row.correctAnswer,
+      row.answer,
+      row.correct,
       row.status
     ]),
     theme: 'striped',
@@ -453,18 +459,18 @@ export const exportTrainerToPDF = async (data: TrainerExportData): Promise<void>
     styles: { fontSize: 8, cellPadding: 3, font: 'Roboto', lineWidth: 0 },
     columnStyles: {
       0: { cellWidth: 10, halign: 'center' },
-      1: { cellWidth: 75 },
-      2: { cellWidth: 55 },
-      3: { cellWidth: 55 },
-      4: { cellWidth: 25, halign: 'center' }
+      1: { cellWidth: 70 },
+      2: { cellWidth: 70 },
+      3: { cellWidth: 20, halign: 'center' },
+      4: { cellWidth: 20, halign: 'center' }
     },
-    didParseCell: (cellData: any) => {
-      if (cellData.section === 'body') {
-        const row = tableData[cellData.row.index];
+    didParseCell: (data: any) => {
+      if (data.section === 'body') {
+        const row = tableData[data.row.index];
         if (row.status === 'Верно') {
-          cellData.cell.styles.textColor = COLORS.success;
+          data.cell.styles.textColor = COLORS.success;
         } else if (row.status === 'Ошибка') {
-          cellData.cell.styles.textColor = COLORS.error;
+          data.cell.styles.textColor = COLORS.error;
         }
       }
     },
@@ -472,7 +478,7 @@ export const exportTrainerToPDF = async (data: TrainerExportData): Promise<void>
       // Устанавливаем шрифт Roboto для всех ячеек
       doc.setFont('Roboto', 'normal');
     },
-    margin: { left: margin, right: margin + 10 }
+    margin: { left: margin, right: margin }
   });
 
   // Подвал
@@ -621,25 +627,32 @@ export const exportExamToPDF = async (data: ExamExportData): Promise<void> => {
 
   const tableData = data.questions.map((q, idx) => {
     const userAnswer = data.answers[q.id];
+    const isAnswered = userAnswer !== undefined;
     const isCorrect = data.results[q.id] || false;
 
     return {
       number: idx + 1,
-      question: truncateText(q.text, 70),
-      yourAnswer: userAnswer !== undefined ? truncateText(getAnswerText(q, userAnswer), 45) : '—',
-      correctAnswer: truncateText(getAnswerText(q, q.correct_index), 45),
-      status: isCorrect ? 'Верно' : 'Ошибка'
+      question: truncateText(q.text, 300),
+      answer: isAnswered
+        ? truncateText(getAnswerText(q, userAnswer), 200)
+        : 'Не отвечено',
+      correct: isAnswered
+        ? (isCorrect ? '✓' : '✗')
+        : '—',
+      status: isAnswered
+        ? (isCorrect ? 'Верно' : 'Ошибка')
+        : 'Не отвечено'
     };
   });
 
   autoTable(doc, {
     startY: tableStartY + 5,
-    head: [['№', 'Вопрос', 'Ваш ответ', 'Правильный', 'Статус']],
+    head: [['№', 'Вопрос', 'Ваш ответ', 'Результат', 'Статус']],
     body: tableData.map(row => [
       row.number,
       row.question,
-      row.yourAnswer,
-      row.correctAnswer,
+      row.answer,
+      row.correct,
       row.status
     ]),
     theme: 'striped',
@@ -647,18 +660,18 @@ export const exportExamToPDF = async (data: ExamExportData): Promise<void> => {
     styles: { fontSize: 8, cellPadding: 3, font: 'Roboto', lineWidth: 0 },
     columnStyles: {
       0: { cellWidth: 10, halign: 'center' },
-      1: { cellWidth: 75 },
-      2: { cellWidth: 55 },
-      3: { cellWidth: 55 },
-      4: { cellWidth: 25, halign: 'center' }
+      1: { cellWidth: 70 },
+      2: { cellWidth: 70 },
+      3: { cellWidth: 20, halign: 'center' },
+      4: { cellWidth: 20, halign: 'center' }
     },
-    didParseCell: (cellData: any) => {
-      if (cellData.section === 'body') {
-        const row = tableData[cellData.row.index];
+    didParseCell: (data: any) => {
+      if (data.section === 'body') {
+        const row = tableData[data.row.index];
         if (row.status === 'Верно') {
-          cellData.cell.styles.textColor = COLORS.success;
+          data.cell.styles.textColor = COLORS.success;
         } else {
-          cellData.cell.styles.textColor = COLORS.error;
+          data.cell.styles.textColor = COLORS.error;
         }
       }
     },
@@ -666,7 +679,7 @@ export const exportExamToPDF = async (data: ExamExportData): Promise<void> => {
       // Устанавливаем шрифт Roboto для всех ячеек
       doc.setFont('Roboto', 'normal');
     },
-    margin: { left: margin, right: margin + 10 }
+    margin: { left: margin, right: margin }
   });
 
   // Подвал
