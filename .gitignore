@@ -31,7 +31,9 @@ build/
 docs/
 
 # Test
-tests/
+# Тесты (игнорируем только coverage)
+coverage/
+# tests/ - теперь не игнорируем
 coverage/
 *.lcov
 

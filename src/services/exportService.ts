@@ -189,7 +189,7 @@ export const exportLearningToPDF = async (data: LearningExportData): Promise<voi
     const lineHeight = 5;
     const totalHeight = userInfoLines.length * lineHeight;
     const startY = 27 - totalHeight / 2;
-    
+
     userInfoLines.forEach((line, idx) => {
       doc.text(line, pageWidth - margin, startY + idx * lineHeight, { align: 'right' });
     });
@@ -203,7 +203,7 @@ export const exportLearningToPDF = async (data: LearningExportData): Promise<voi
 
   // Статистика
   const statsY = 42;
-  const statsHeight = 20;
+  const statsHeight = 16;
 
   doc.setFillColor(COLORS.light[0], COLORS.light[1], COLORS.light[2]);
   doc.roundedRect(margin, statsY, contentWidth, statsHeight, 3, 3, 'F');
@@ -211,24 +211,24 @@ export const exportLearningToPDF = async (data: LearningExportData): Promise<voi
   doc.setTextColor(COLORS.slate[0], COLORS.slate[1], COLORS.slate[2]);
   doc.setFont('Roboto');
   doc.setFontSize(10);
-  doc.text('Статистика страницы:', contentWidth / 2 - margin, statsY + 6);
+  doc.text('Статистика:', contentWidth / 2 - margin, statsY + 6);
 
   doc.setFont('Roboto');
   doc.setFontSize(9);
 
   const stats = [
-    { label: 'Правильно', value: data.stats.correct, color: COLORS.success },
-    { label: 'Неправильно', value: data.stats.incorrect, color: COLORS.error },
-    { label: 'Осталось', value: data.stats.remaining, color: COLORS.warning },
+    { label: 'Верных ответов', value: data.stats.correct, color: COLORS.success },
+    { label: 'Неверных ответов', value: data.stats.incorrect, color: COLORS.error },
+    // { label: 'Осталось', value: data.stats.remaining, color: COLORS.warning },
   ];
 
-  const statWidth = (contentWidth - 40) / 3;
+  const statWidth = (contentWidth - 40) / stats.length;
   stats.forEach((stat, idx) => {
     const x = margin + 10 + idx * (statWidth + 10);
     doc.setFillColor(stat.color[0], stat.color[1], stat.color[2]);
-    doc.circle(x + 5, statsY + 14, 3, 'F');
+    doc.circle(x + 5 + idx * (statWidth / stats.length + 10), statsY + 8, 3, 'F');
     doc.setTextColor(COLORS.slate[0], COLORS.slate[1], COLORS.slate[2]);
-    doc.text(`${stat.label}: ${stat.value}`, x + 12, statsY + 16);
+    doc.text(`${stat.label}: ${stat.value}`, x + 10 + idx * (statWidth / stats.length + 10), statsY + 9);
   });
 
   // Вопросы - устанавливаем шрифт перед autoTable
@@ -305,7 +305,7 @@ export const exportLearningToPDF = async (data: LearningExportData): Promise<voi
   );
 
   // Сохранение
-  doc.save(`el-bez_learning_page_${data.page}_${Date.now()}.pdf`);
+  doc.save(`el-bez_learning_ticket_${data.page}_${Date.now()}.pdf`);
 };
 
 /**
@@ -353,7 +353,7 @@ export const exportTrainerToPDF = async (data: TrainerExportData): Promise<void>
     const lineHeight = 5;
     const totalHeight = userInfoLines.length * lineHeight;
     const startY = 27 - totalHeight / 2;
-    
+
     userInfoLines.forEach((line, idx) => {
       doc.text(line, pageWidth - margin, startY + idx * lineHeight, { align: 'right' });
     });
@@ -543,7 +543,7 @@ export const exportExamToPDF = async (data: ExamExportData): Promise<void> => {
     const lineHeight = 5;
     const totalHeight = userInfoLines.length * lineHeight;
     const startY = 27 - totalHeight / 2;
-    
+
     userInfoLines.forEach((line, idx) => {
       doc.text(line, pageWidth - margin, startY + idx * lineHeight, { align: 'right' });
     });
