@@ -237,9 +237,8 @@ src/tests/
 
 **Вопросы и предложения:**
 - GitHub Issues: https://github.com/osmaav/el_bez/issues
-- Email: osmaav@example.com
 
 ---
 
-*Релиз опубликован: 12 марта 2026*  
+*Релиз опубликован: 12 марта 2026*
 *Следующий релиз: 2026.08 (апрель 2026)*

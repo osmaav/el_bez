@@ -299,9 +299,8 @@ git push origin hotfix/revert-tests
 
 **Вопросы и предложения:**
 - GitHub Issues: https://github.com/osmaav/el_bez/issues
-- Email: osmaav@example.com
 
 ---
 
-*Документ создан: 12 марта 2026*  
+*Документ создан: 12 марта 2026*
 *Последнее обновление: 12 марта 2026*

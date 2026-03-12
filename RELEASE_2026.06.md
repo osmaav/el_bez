@@ -160,7 +160,7 @@ npm run build
 📖 [LearningSection] === Инициализация ===
 📖 [LearningSection] Раздел: 1256-19
 📦 [LearningSection] Questions loaded: 250
-👤 [LearningSection] Пользователь: user@example.com
+👤 [LearningSection] Пользователь: [user]
 ☁️ [LearningSection] Загрузка прогресса из Firestore...
 📖 [QuestionService] Прогресс обучения загружен из Firestore: {userId, section, pages: 3}
 ```
