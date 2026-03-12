@@ -417,7 +417,7 @@ export const exportTrainerToPDF = async (data: TrainerExportData): Promise<void>
 
   // Детальный разбор - устанавливаем шрифт перед autoTable
   doc.setFont('Roboto', 'normal');
-  const tableStartY = doc.lastAutoTable.finalY + 15;
+  const tableStartY = doc.lastAutoTable.finalY + 3;
 
   doc.setTextColor(COLORS.slate[0], COLORS.slate[1], COLORS.slate[2]);
   doc.setFont('Roboto');
@@ -428,48 +428,51 @@ export const exportTrainerToPDF = async (data: TrainerExportData): Promise<void>
     const userAnswer = data.answers[q.id];
     const isAnswered = userAnswer !== undefined;
     const isCorrect = isAnswered && userAnswer === q.correct_index;
+    const userAnswerText = isAnswered ? getAnswerText(q, userAnswer) : 'Не отвечено';
+    const correctAnswerText = getAnswerText(q, q.correct_index);
 
     return {
       number: idx + 1,
       question: truncateText(q.text, 300),
-      answer: isAnswered
-        ? truncateText(getAnswerText(q, userAnswer), 200)
-        : 'Не отвечено',
-      correct: isAnswered
-        ? (isCorrect ? '✓' : '✗')
-        : '—',
-      status: isAnswered
-        ? (isCorrect ? 'Верно' : 'Ошибка')
-        : 'Не отвечено'
+      yourAnswer: truncateText(userAnswerText, 200),
+      correctAnswer: truncateText(correctAnswerText, 200),
+      result: isAnswered ? (isCorrect ? '✓' : '✗') : '—'
     };
   });
 
   autoTable(doc, {
-    startY: tableStartY + 5,
-    head: [['№', 'Вопрос', 'Ваш ответ', 'Результат', 'Статус']],
+    startY: tableStartY + 3,
+    head: [['№', 'Вопрос', 'Ваш ответ', 'Верный ответ', 'Результат']],
     body: tableData.map(row => [
       row.number,
       row.question,
-      row.answer,
-      row.correct,
-      row.status
+      row.yourAnswer,
+      row.correctAnswer,
+      row.result
     ]),
     theme: 'striped',
-    headStyles: { fillColor: COLORS.primary as [number, number, number], font: 'Roboto' },
-    styles: { fontSize: 8, cellPadding: 3, font: 'Roboto', lineWidth: 0 },
+    headStyles: { 
+      fillColor: COLORS.primary as [number, number, number],
+      font: 'Roboto',
+      halign: 'center'
+    },
+    styles: { fontSize: 8, cellPadding: 2, font: 'Roboto', lineWidth: 0 },
     columnStyles: {
       0: { cellWidth: 10, halign: 'center' },
-      1: { cellWidth: 70 },
-      2: { cellWidth: 70 },
-      3: { cellWidth: 20, halign: 'center' },
+      1: { cellWidth: 60 },
+      2: { cellWidth: 60 },
+      3: { cellWidth: 60 },
       4: { cellWidth: 20, halign: 'center' }
     },
     didParseCell: (data: any) => {
+      if (data.section === 'head') {
+        data.cell.styles.halign = 'center';
+      }
       if (data.section === 'body') {
         const row = tableData[data.row.index];
-        if (row.status === 'Верно') {
+        if (row.result === '✓') {
           data.cell.styles.textColor = COLORS.success;
-        } else if (row.status === 'Ошибка') {
+        } else if (row.result === '✗') {
           data.cell.styles.textColor = COLORS.error;
         }
       }
@@ -569,8 +572,8 @@ export const exportExamToPDF = async (data: ExamExportData): Promise<void> => {
   // Процент
   doc.setTextColor(headerColor[0], headerColor[1], headerColor[2]);
   doc.setFont('Roboto');
-  doc.setFontSize(42);
-  doc.text(`${data.stats.percentage}%`, pageWidth / 2, resultY + 20, { align: 'center' });
+  doc.setFontSize(16);
+  doc.text(`${data.stats.percentage}%`, pageWidth / 2, resultY + 18, { align: 'center' });
 
   doc.setTextColor(COLORS.slate[0], COLORS.slate[1], COLORS.slate[2]);
   doc.setFont('Roboto');
@@ -580,12 +583,12 @@ export const exportExamToPDF = async (data: ExamExportData): Promise<void> => {
       ? 'Поздравляем! Успешная сдача (≥80%)'
       : 'Требуется повторная подготовка',
     pageWidth / 2,
-    resultY + 30,
+    resultY + 28,
     { align: 'center' }
   );
 
   // Статистика
-  const statsY = resultY + 42;
+  const statsY = resultY + 32;
   const statsData = [
     { label: 'Всего вопросов', value: data.stats.total.toString() },
     { label: 'Правильных ответов', value: data.stats.correct.toString(), color: COLORS.success },
@@ -618,7 +621,7 @@ export const exportExamToPDF = async (data: ExamExportData): Promise<void> => {
 
   // Детальный разбор - устанавливаем шрифт перед autoTable
   doc.setFont('Roboto', 'normal');
-  const tableStartY = doc.lastAutoTable.finalY + 15;
+  const tableStartY = doc.lastAutoTable.finalY + 3;
 
   doc.setTextColor(COLORS.slate[0], COLORS.slate[1], COLORS.slate[2]);
   doc.setFont('Roboto');
@@ -629,46 +632,49 @@ export const exportExamToPDF = async (data: ExamExportData): Promise<void> => {
     const userAnswer = data.answers[q.id];
     const isAnswered = userAnswer !== undefined;
     const isCorrect = data.results[q.id] || false;
+    const userAnswerText = isAnswered ? getAnswerText(q, userAnswer) : 'Не отвечено';
+    const correctAnswerText = getAnswerText(q, q.correct_index);
 
     return {
       number: idx + 1,
       question: truncateText(q.text, 300),
-      answer: isAnswered
-        ? truncateText(getAnswerText(q, userAnswer), 200)
-        : 'Не отвечено',
-      correct: isAnswered
-        ? (isCorrect ? '✓' : '✗')
-        : '—',
-      status: isAnswered
-        ? (isCorrect ? 'Верно' : 'Ошибка')
-        : 'Не отвечено'
+      yourAnswer: truncateText(userAnswerText, 200),
+      correctAnswer: truncateText(correctAnswerText, 200),
+      result: isAnswered ? (isCorrect ? '✓' : '✗') : '—'
     };
   });
 
   autoTable(doc, {
-    startY: tableStartY + 5,
-    head: [['№', 'Вопрос', 'Ваш ответ', 'Результат', 'Статус']],
+    startY: tableStartY + 3,
+    head: [['№', 'Вопрос', 'Ваш ответ', 'Верный ответ', 'Результат']],
     body: tableData.map(row => [
       row.number,
       row.question,
-      row.answer,
-      row.correct,
-      row.status
+      row.yourAnswer,
+      row.correctAnswer,
+      row.result
     ]),
     theme: 'striped',
-    headStyles: { fillColor: COLORS.primary as [number, number, number], font: 'Roboto' },
-    styles: { fontSize: 8, cellPadding: 3, font: 'Roboto', lineWidth: 0 },
+    headStyles: { 
+      fillColor: COLORS.primary as [number, number, number],
+      font: 'Roboto',
+      halign: 'center'
+    },
+    styles: { fontSize: 8, cellPadding: 2, font: 'Roboto', lineWidth: 0 },
     columnStyles: {
       0: { cellWidth: 10, halign: 'center' },
-      1: { cellWidth: 70 },
-      2: { cellWidth: 70 },
-      3: { cellWidth: 20, halign: 'center' },
+      1: { cellWidth: 60 },
+      2: { cellWidth: 60 },
+      3: { cellWidth: 60 },
       4: { cellWidth: 20, halign: 'center' }
     },
     didParseCell: (data: any) => {
+      if (data.section === 'head') {
+        data.cell.styles.halign = 'center';
+      }
       if (data.section === 'body') {
         const row = tableData[data.row.index];
-        if (row.status === 'Верно') {
+        if (row.result === '✓') {
           data.cell.styles.textColor = COLORS.success;
         } else {
           data.cell.styles.textColor = COLORS.error;
