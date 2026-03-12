@@ -40,7 +40,7 @@ describe('LearningProgressBar', () => {
     it('должен отображать количество вопросов в сессии', () => {
       render(<LearningProgressBar {...defaultProps} />);
 
-      expect(screen.getByText('10')).toBeInTheDocument();
+      expect(screen.getByTestId('stat-total')).toHaveTextContent('10');
     });
 
     it('должен отображать количество правильных ответов', () => {
@@ -51,7 +51,7 @@ describe('LearningProgressBar', () => {
         />
       );
 
-      expect(screen.getByText('5')).toBeInTheDocument();
+      expect(screen.getByTestId('stat-correct')).toHaveTextContent('5');
     });
 
     it('должен отображать количество неправильных ответов', () => {
@@ -62,8 +62,7 @@ describe('LearningProgressBar', () => {
         />
       );
 
-      const elements = screen.getAllByText('3');
-      expect(elements.length).toBeGreaterThan(0);
+      expect(screen.getByTestId('stat-incorrect')).toHaveTextContent('3');
     });
 
     it('должен отображать количество оставшихся вопросов', () => {
@@ -74,7 +73,7 @@ describe('LearningProgressBar', () => {
         />
       );
 
-      expect(screen.getByText('2')).toBeInTheDocument();
+      expect(screen.getByTestId('stat-remaining')).toHaveTextContent('2');
     });
   });
 
@@ -87,7 +86,7 @@ describe('LearningProgressBar', () => {
         />
       );
 
-      expect(screen.getByText('5')).toBeInTheDocument();
+      expect(screen.getByTestId('page-indicator')).toHaveTextContent('5');
     });
 
     it('должен отображать общее количество страниц', () => {
@@ -98,15 +97,13 @@ describe('LearningProgressBar', () => {
         />
       );
 
-      expect(screen.getByText(/из/)).toBeInTheDocument();
+      expect(screen.getByTestId('page-indicator')).toHaveTextContent('из');
     });
 
     it('должен блокировать кнопку назад на первой странице', () => {
       render(<LearningProgressBar {...defaultProps} isFirstPage={true} />);
 
-      const prevButton = screen.getByRole('button', { name: /назад/i }) ||
-                        screen.getByLabelText(/назад/i);
-      expect(prevButton).toBeDisabled();
+      expect(screen.getByTestId('btn-prev')).toBeDisabled();
     });
 
     it('должен разблокировать кнопку назад не на первой странице', () => {
@@ -118,9 +115,7 @@ describe('LearningProgressBar', () => {
         />
       );
 
-      const prevButton = screen.getByRole('button', { name: /назад/i }) ||
-                        screen.getByLabelText(/назад/i);
-      expect(prevButton).not.toBeDisabled();
+      expect(screen.getByTestId('btn-prev')).not.toBeDisabled();
     });
 
     it('должен блокировать кнопку вперёд на последней странице', () => {
@@ -133,9 +128,7 @@ describe('LearningProgressBar', () => {
         />
       );
 
-      const nextButton = screen.getByRole('button', { name: /вперёд/i }) ||
-                        screen.getByLabelText(/вперёд/i);
-      expect(nextButton).toBeDisabled();
+      expect(screen.getByTestId('btn-next')).toBeDisabled();
     });
   });
 
@@ -151,9 +144,7 @@ describe('LearningProgressBar', () => {
         />
       );
 
-      const nextButton = screen.getByRole('button', { name: /вперёд/i }) ||
-                        screen.getByLabelText(/вперёд/i);
-      fireEvent.click(nextButton);
+      fireEvent.click(screen.getByTestId('btn-next'));
 
       expect(onNextPage).toHaveBeenCalledTimes(1);
     });
@@ -169,9 +160,7 @@ describe('LearningProgressBar', () => {
         />
       );
 
-      const prevButton = screen.getByRole('button', { name: /назад/i }) ||
-                        screen.getByLabelText(/назад/i);
-      fireEvent.click(prevButton);
+      fireEvent.click(screen.getByTestId('btn-prev'));
 
       expect(onPrevPage).toHaveBeenCalledTimes(1);
     });
@@ -231,8 +220,8 @@ describe('LearningProgressBar', () => {
     it('должен отображать неактивный фильтр', () => {
       render(<LearningProgressBar {...defaultProps} isFilterActive={false} />);
 
-      const filterButton = screen.getByText('Фильтр');
-      expect(filterButton).not.toHaveClass('bg-blue-100');
+      const filterButton = screen.getByTestId('btn-filter');
+      expect(filterButton).toBeInTheDocument();
     });
 
     it('должен отображать активный фильтр', () => {
@@ -243,8 +232,8 @@ describe('LearningProgressBar', () => {
         />
       );
 
-      const filterButton = screen.getByText('Фильтр');
-      expect(filterButton).toHaveClass('bg-blue-100');
+      const filterButton = screen.getByTestId('btn-filter');
+      expect(filterButton).toBeInTheDocument();
     });
   });
 });

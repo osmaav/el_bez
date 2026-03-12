@@ -96,16 +96,20 @@ describe('useExamState', () => {
   });
 
   it('должен отслеживать время', async () => {
+    vi.useFakeTimers();
+    
     const { result } = renderHook(() =>
       useExamState({ ticket: mockTicket, timeLimit: 10 })
     );
 
     // Пропускаем 1 секунду
-    vi.advanceTimersByTime(1000);
-
-    await waitFor(() => {
-      expect(result.current.timeSpent).toBeGreaterThanOrEqual(1);
+    act(() => {
+      vi.advanceTimersByTime(1000);
     });
+
+    expect(result.current.timeSpent).toBeGreaterThanOrEqual(1);
+    
+    vi.useRealTimers();
   });
 
   it('должен сбрасывать экзамен', () => {

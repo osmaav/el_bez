@@ -82,28 +82,28 @@ export function LearningProgressBar({
           {/* Statistics */}
           <div className="flex items-center gap-0.5 sm:gap-2 md:gap-4">
             {/* Total */}
-            <div className="flex items-center gap-0.5 sm:gap-2">
+            <div className="flex items-center gap-0.5 sm:gap-2" data-testid="stat-total">
               <Target className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600" />
               <span className="text-sm font-medium min-w-[40px] sm:min-w-[70px]">
                 <span className="hidden sm:inline">Всего: </span>
                 {questionsPerSession}
               </span>
             </div>
-            
+
             {/* Correct */}
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2" data-testid="stat-correct">
               <CheckCircle2 className="w-4 h-4 sm:w-5 sm:h-5 text-green-600" />
               <span className="text-sm font-medium text-green-600">{stats.correct}</span>
             </div>
-            
+
             {/* Incorrect */}
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2" data-testid="stat-incorrect">
               <XCircle className="w-4 h-4 sm:w-5 sm:h-5 text-red-600" />
               <span className="text-sm font-medium text-red-600">{stats.incorrect}</span>
             </div>
-            
+
             {/* Remaining */}
-            <div className="flex items-center gap-1.5 sm:gap-2">
+            <div className="flex items-center gap-1.5 sm:gap-2" data-testid="stat-remaining">
               <AlertCircle className="w-4 h-4 sm:w-5 sm:h-5 text-orange-600" />
               <span className="text-sm font-medium text-orange-600">{stats.remaining}</span>
             </div>
@@ -118,18 +118,19 @@ export function LearningProgressBar({
               onClick={onPrevPage}
               disabled={isFirstPage}
               className="h-8 w-8 p-0"
+              data-testid="btn-prev"
             >
               <ChevronLeft className="w-4 h-4" />
             </Button>
-            
+
             {/* Page Indicator */}
-            <span className="text-xs font-medium text-center px-1">
+            <span className="text-xs font-medium text-center px-1" data-testid="page-indicator">
               <span className="hidden md:inline">стр. </span>
               {currentPage}
               <span className="hidden md:inline"> из </span>
               <span className="hidden md:inline">{totalPages}</span>
             </span>
-            
+
             {/* Next Page */}
             <Button
               variant="outline"
@@ -137,21 +138,23 @@ export function LearningProgressBar({
               onClick={onNextPage}
               disabled={isLastPage}
               className="h-8 w-8 p-0"
+              data-testid="btn-next"
             >
               <ChevronRight className="w-4 h-4" />
             </Button>
-            
+
             {/* Reset */}
             <Button
               variant="outline"
               size="sm"
               onClick={onReset}
               className="text-red-600 hover:text-red-700 px-2"
+              data-testid="btn-reset"
             >
               <RotateCcw className="w-4 h-4" />
               <span className="hidden md:inline ml-1">Сброс</span>
             </Button>
-            
+
             {/* Filter */}
             <RichTooltip
               type="info"
@@ -166,6 +169,7 @@ export function LearningProgressBar({
                 size="sm"
                 onClick={onFilterClick}
                 className={isFilterActive ? 'bg-blue-100 hover:bg-blue-200 text-blue-700 border-blue-300' : ''}
+                data-testid="btn-filter"
               >
                 <Filter className="w-4 h-4" />
                 <span className="hidden md:inline ml-1">Фильтр</span>
