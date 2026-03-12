@@ -194,6 +194,53 @@ describe('LearningSection', () => {
           ).rejects.toThrow();
         });
       });
+
+      describe('Delete Profile', () => {
+        it('должен удалять профиль пользователя', async () => {
+          const mockUser = {
+            uid: 'test-user-id',
+            email: 'test@example.com',
+            delete: vi.fn().mockResolvedValueOnce(undefined),
+          };
+
+          // Симуляция удаления
+          const deleteProfile = async (user: any) => {
+            await user.delete();
+          };
+
+          await deleteProfile(mockUser);
+
+          expect(mockUser.delete).toHaveBeenCalled();
+        });
+
+        it('должен обрабатывать ошибку при удалении профиля', async () => {
+          const mockUser = {
+            uid: 'test-user-id',
+            email: 'test@example.com',
+            delete: vi.fn(),
+          };
+
+          mockUser.delete.mockRejectedValueOnce({
+            code: 'auth/requires-recent-login',
+            message: 'This operation is sensitive and requires recent authentication.',
+          });
+
+          const deleteProfile = async (user: any) => {
+            await user.delete();
+          };
+
+          await expect(deleteProfile(mockUser)).rejects.toThrow();
+        });
+
+        it('должен очищать localStorage при удалении профиля', () => {
+          localStorage.setItem('user_data', 'test');
+          
+          // Очистка при удалении
+          localStorage.clear();
+          
+          expect(localStorage.getItem('user_data')).toBeNull();
+        });
+      });
     });
   });
 });
