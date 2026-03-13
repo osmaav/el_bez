@@ -272,8 +272,6 @@ export function LearningSection() {
 
   // Обработка применения фильтра
   const handleApplyFilter = useCallback((filteredIds: number[], settings: { excludeKnown: boolean; excludeWeak: boolean; hiddenQuestionIds: number[] }) => {
-    console.log('🔍 [LearningSection] Фильтр применён:', filteredIds.length, 'вопросов');
-
     // Фильтруем вопросы
     const filtered = questions.filter(q => filteredIds.includes(q.id));
 
@@ -286,8 +284,14 @@ export function LearningSection() {
 
     // Сбрасываем на первую страницу
     resetPage();
+  }, [questions, setHiddenQuestionIds, resetPage]);
 
-    console.log('🔄 [LearningSection] Фильтр применён, вопросы обновлены');
+  // Обработка сброса фильтра (прямой вызов для корректного сброса isFilterActive)
+  const handleResetFilter = useCallback(() => {
+    setHiddenQuestionIds([]);
+    setFilteredQuestions(questions);
+    setFilteredTotalPages(Math.ceil(questions.length / QUESTIONS_PER_SESSION));
+    resetPage();
   }, [questions, setHiddenQuestionIds, resetPage]);
 
   // Рендер
@@ -385,6 +389,7 @@ export function LearningSection() {
         isOpen={isFilterModalOpen}
         onClose={() => setIsFilterModalOpen(false)}
         onApply={handleApplyFilter}
+        onReset={handleResetFilter}
         questionStats={statisticsService.getQuestionStats(currentSection)}
         hiddenQuestionIds={hiddenQuestionIds}
         onHiddenChange={setHiddenQuestionIds}

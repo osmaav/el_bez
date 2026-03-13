@@ -34,6 +34,7 @@ export interface FilterModalProps {
   isOpen: boolean;
   onClose: () => void;
   onApply: (filteredIds: number[], settings: { excludeKnown: boolean; excludeWeak: boolean; hiddenQuestionIds: number[] }) => void;
+  onReset?: () => void; // Опциональный callback для сброса
   questionStats: QuestionStats[];
   questions?: Question[]; // Текст вопросов для отображения
   hiddenQuestionIds: number[];
@@ -45,6 +46,7 @@ export function FilterModal({
   isOpen,
   onClose,
   onApply,
+  onReset,
   questionStats,
   questions,
   hiddenQuestionIds,
@@ -120,9 +122,17 @@ export function FilterModal({
     setExcludeWeak(false);
     setPendingHiddenIds([]);
     questionFilterService.resetSettings(currentSection);
-    const allQuestionIds = questions?.map(q => q.id) || questionStats.map(q => q.questionId);
-    onHiddenChange([]);
-    onApply(allQuestionIds, { excludeKnown: false, excludeWeak: false, hiddenQuestionIds: [] });
+    
+    // Если есть onReset, используем его для полного сброса
+    if (onReset) {
+      onReset();
+    } else {
+      // Fallback: старый способ
+      const allQuestionIds = questions?.map(q => q.id) || questionStats.map(q => q.questionId);
+      onHiddenChange([]);
+      onApply(allQuestionIds, { excludeKnown: false, excludeWeak: false, hiddenQuestionIds: [] });
+    }
+    
     onClose();
   };
 
