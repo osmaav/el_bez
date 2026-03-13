@@ -112,8 +112,8 @@ export const ActivityCalendar: React.FC<ActivityCalendarProps> = ({ data }) => {
 
       // Дни месяца
       for (let day = 1; day <= daysInMonth; day++) {
-        const date = new Date(year, month, day);
-        const dateStr = date.toISOString().split('T')[0];
+        // Форматируем дату в локальном timezone (не через toISOString чтобы избежать сдвига)
+        const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
         const questionsAnswered = activityMap.get(dateStr) || 0;
 
         currentWeek.push({
@@ -181,9 +181,9 @@ export const ActivityCalendar: React.FC<ActivityCalendarProps> = ({ data }) => {
   // Форматируем дату для подсказки
   const formatDateTooltip = (dateStr: string) => {
     // Разбиваем дату на части для корректного отображения в локальном timezone
-    const [year, month, day] = dateStr.split('-');
-    const date = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
-    return date.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long' });
+    const [year, month, day] = dateStr.split('-').map(Number);
+    const date = new Date(year, month - 1, day);
+    return date.toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' });
   };
 
   return (
