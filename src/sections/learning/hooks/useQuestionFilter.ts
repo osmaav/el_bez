@@ -79,17 +79,10 @@ export function useQuestionFilter({
     setFilteredQuestions(filtered);
     setTotalPages(Math.ceil(filtered.length / questionsPerPage));
 
-    // Сохраняем hiddenQuestionIds в сервис (если они изменились)
-    if (filterSettings.hiddenQuestionIds.length !== hiddenQuestionIds.length ||
-        !filterSettings.hiddenQuestionIds.every((id, i) => id === hiddenQuestionIds[i])) {
-      filterSettings.hiddenQuestionIds = hiddenQuestionIds;
-      questionFilterService.saveSettings(filterSettings);
-    }
-
     // Проверяем активность фильтра
     const isActive = filterSettings.excludeKnown ||
                      filterSettings.excludeWeak ||
-                     filterSettings.hiddenQuestionIds.length > 0;
+                     hiddenQuestionIds.length > 0;
     setIsFilterActive(isActive);
 
     console.log('🔍 [useQuestionFilter] Фильтр применён:', {
@@ -103,6 +96,22 @@ export function useQuestionFilter({
   const setHiddenQuestionIds = useCallback((ids: number[]) => {
     setHiddenQuestionIdsState(ids);
   }, []);
+
+  // Обновление isFilterActive и сохранение hiddenQuestionIds при изменении
+  useEffect(() => {
+    const filterSettings = questionFilterService.getSettings(currentSection);
+    const isActive = filterSettings.excludeKnown ||
+                     filterSettings.excludeWeak ||
+                     hiddenQuestionIds.length > 0;
+    setIsFilterActive(isActive);
+
+    // Сохраняем hiddenQuestionIds в сервис
+    if (filterSettings.hiddenQuestionIds.length !== hiddenQuestionIds.length ||
+        !filterSettings.hiddenQuestionIds.every((id, i) => id === hiddenQuestionIds[i])) {
+      filterSettings.hiddenQuestionIds = hiddenQuestionIds;
+      questionFilterService.saveSettings(filterSettings);
+    }
+  }, [currentSection, hiddenQuestionIds]);
 
   // Сброс фильтра
   const resetFilter = useCallback(() => {

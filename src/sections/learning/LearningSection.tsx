@@ -271,33 +271,24 @@ export function LearningSection() {
   }, []);
 
   // Обработка применения фильтра
-  const handleApplyFilter = useCallback((filteredIds: number[]) => {
+  const handleApplyFilter = useCallback((filteredIds: number[], settings: { excludeKnown: boolean; excludeWeak: boolean; hiddenQuestionIds: number[] }) => {
     console.log('🔍 [LearningSection] Фильтр применён:', filteredIds.length, 'вопросов');
 
     // Фильтруем вопросы
     const filtered = questions.filter(q => filteredIds.includes(q.id));
-    
+
     // Сначала обновляем filteredQuestions
     setFilteredQuestions(filtered);
     setFilteredTotalPages(Math.ceil(filtered.length / QUESTIONS_PER_SESSION));
 
-    // Обновляем фильтр в хуке
-    applyFilter();
+    // Обновляем hiddenQuestionIds напрямую (избегаем проблем с async обновлением состояния)
+    setHiddenQuestionIds(settings.hiddenQuestionIds);
 
     // Сбрасываем на первую страницу
     resetPage();
 
-    // НЕ очищаем savedStates - useQuizState сам создаст новое состояние
-    // потому что savedStates[1] не будет совпадать с новыми вопросами
-    
     console.log('🔄 [LearningSection] Фильтр применён, вопросы обновлены');
-  }, [questions, applyFilter, resetPage]);
-
-  // Обработка скрытия вопросов
-  const handleHiddenChange = useCallback((newHiddenIds: number[]) => {
-    setHiddenQuestionIds(newHiddenIds);
-    // applyFilter вызывается отдельно после onApply в FilterModal
-  }, [setHiddenQuestionIds]);
+  }, [questions, setHiddenQuestionIds, resetPage]);
 
   // Рендер
   const currentSectionInfo = sections.find(s => s.id === currentSection);
@@ -396,7 +387,7 @@ export function LearningSection() {
         onApply={handleApplyFilter}
         questionStats={statisticsService.getQuestionStats(currentSection)}
         hiddenQuestionIds={hiddenQuestionIds}
-        onHiddenChange={handleHiddenChange}
+        onHiddenChange={setHiddenQuestionIds}
         currentSection={currentSection}
       />
 

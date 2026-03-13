@@ -33,7 +33,7 @@ interface QuestionStats {
 export interface FilterModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onApply: (filteredIds: number[], settings: { excludeKnown: boolean; excludeWeak: boolean }) => void;
+  onApply: (filteredIds: number[], settings: { excludeKnown: boolean; excludeWeak: boolean; hiddenQuestionIds: number[] }) => void;
   questionStats: QuestionStats[];
   questions?: Question[]; // Текст вопросов для отображения
   hiddenQuestionIds: number[];
@@ -108,9 +108,9 @@ export function FilterModal({
     settings.hiddenQuestionIds = pendingHiddenIds;
     questionFilterService.saveSettings(settings);
 
-    // Применяем скрытые вопросы и фильтры
+    // Применяем скрытые вопросы и фильтры (передаём hiddenQuestionIds в onApply)
     onHiddenChange(pendingHiddenIds);
-    onApply(filteredIds, { excludeKnown, excludeWeak });
+    onApply(filteredIds, { excludeKnown, excludeWeak, hiddenQuestionIds: pendingHiddenIds });
     onClose();
   };
 
@@ -122,7 +122,7 @@ export function FilterModal({
     questionFilterService.resetSettings(currentSection);
     const allQuestionIds = questions?.map(q => q.id) || questionStats.map(q => q.questionId);
     onHiddenChange([]);
-    onApply(allQuestionIds, { excludeKnown: false, excludeWeak: false });
+    onApply(allQuestionIds, { excludeKnown: false, excludeWeak: false, hiddenQuestionIds: [] });
     onClose();
   };
 
