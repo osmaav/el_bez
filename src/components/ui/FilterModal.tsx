@@ -105,14 +105,7 @@ export function FilterModal({
         })
         .map(q => q.id);
 
-      // Сохраняем ВСЕ настройки в сервис (включая hiddenQuestionIds)
-      const settings = questionFilterService.getSettings(currentSection);
-      settings.excludeKnown = excludeKnown;
-      settings.excludeWeak = excludeWeak;
-      settings.hiddenQuestionIds = pendingHiddenIds;
-      questionFilterService.saveSettings(settings);
-
-      // Применяем скрытые вопросы и фильтры (передаём hiddenQuestionIds в onApply)
+      // Применяем скрытые вопросы и фильтры (настройки сохранятся через useEffect в useQuestionFilter)
       onHiddenChange(pendingHiddenIds);
       onApply(filteredIds, { excludeKnown, excludeWeak, hiddenQuestionIds: pendingHiddenIds });
       console.log('🔍 [FilterModal] Вызов onClose()');

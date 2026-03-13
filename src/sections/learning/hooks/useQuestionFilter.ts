@@ -103,19 +103,18 @@ export function useQuestionFilter({
     setHiddenQuestionIdsState(ids);
   }, []);
 
-  // Обновление isFilterActive при изменении параметров фильтра
+  // Обновление isFilterActive и сохранение настроек при изменении параметров фильтра
   useEffect(() => {
     // Проверяем активность фильтра напрямую по состоянию
     const isActive = excludeKnown || excludeWeak || hiddenQuestionIds.length > 0;
     setIsFilterActive(isActive);
 
-    // Сохраняем hiddenQuestionIds в сервис
+    // Сохраняем ВСЕ настройки в сервис
     const filterSettings = questionFilterService.getSettings(currentSection);
-    if (filterSettings.hiddenQuestionIds.length !== hiddenQuestionIds.length ||
-        !filterSettings.hiddenQuestionIds.every((id, i) => id === hiddenQuestionIds[i])) {
-      filterSettings.hiddenQuestionIds = hiddenQuestionIds;
-      questionFilterService.saveSettings(filterSettings);
-    }
+    filterSettings.excludeKnown = excludeKnown;
+    filterSettings.excludeWeak = excludeWeak;
+    filterSettings.hiddenQuestionIds = hiddenQuestionIds;
+    questionFilterService.saveSettings(filterSettings);
   }, [currentSection, excludeKnown, excludeWeak, hiddenQuestionIds]);
 
   // Установка excludeKnown
