@@ -354,6 +354,7 @@ export function LearningSection() {
             onClose={() => filter.setIsFilterModalOpen(false)}
             onApply={handleFilterApply}
             questionStats={getQuestionStats()}
+            questions={questions}
             hiddenQuestionIds={filter.hiddenQuestionIds}
             onHiddenChange={handleHiddenChange}
             currentSection={currentSection}

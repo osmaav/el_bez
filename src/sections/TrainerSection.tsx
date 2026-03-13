@@ -266,6 +266,7 @@ export function TrainerSection() {
             setHiddenQuestionIds(filterSettings.hiddenQuestionIds);
           }}
           questionStats={statisticsService.getQuestionStats(currentSection)}
+          questions={questions}
           hiddenQuestionIds={hiddenQuestionIds}
           onHiddenChange={(newHiddenIds) => {
             setHiddenQuestionIds(newHiddenIds);
