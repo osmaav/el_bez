@@ -53,6 +53,7 @@ export function FilterModal({
 }: FilterModalProps) {
   const [excludeKnown, setExcludeKnown] = useState(false);
   const [excludeWeak, setExcludeWeak] = useState(false);
+  const [pendingHiddenIds, setPendingHiddenIds] = useState<number[]>([]);
 
   // При открытии модального окна блокируем прокрутку страницы
   React.useEffect(() => {
@@ -61,7 +62,7 @@ export function FilterModal({
     } else {
       document.body.style.overflow = '';
     }
-    
+
     return () => {
       document.body.style.overflow = '';
     };
@@ -73,8 +74,9 @@ export function FilterModal({
       const settings = questionFilterService.getSettings(currentSection);
       setExcludeKnown(settings.excludeKnown);
       setExcludeWeak(settings.excludeWeak);
+      setPendingHiddenIds(hiddenQuestionIds);
     }
-  }, [isOpen, currentSection]);
+  }, [isOpen, currentSection, hiddenQuestionIds]);
 
   // Статистика по вопросам
   const stats = useMemo(() => {
@@ -94,7 +96,7 @@ export function FilterModal({
         const qStats = questionStats.find(s => s.questionId === q.id);
         if (excludeKnown && qStats?.isKnown) return false;
         if (excludeWeak && qStats?.isWeak) return false;
-        if (hiddenQuestionIds.includes(q.id)) return false;
+        if (pendingHiddenIds.includes(q.id)) return false;
         return true;
       })
       .map(q => q.id);
@@ -105,6 +107,8 @@ export function FilterModal({
     settings.excludeWeak = excludeWeak;
     questionFilterService.saveSettings(settings);
 
+    // Применяем скрытые вопросы и фильтры
+    onHiddenChange(pendingHiddenIds);
     onApply(filteredIds, { excludeKnown, excludeWeak });
     onClose();
   };
@@ -119,13 +123,13 @@ export function FilterModal({
     onClose();
   };
 
-  // Скрыть/показать вопрос
+  // Скрыть/показать вопрос (только в pending состоянии)
   const toggleHideQuestion = (questionId: number) => {
-    const newHidden = hiddenQuestionIds.includes(questionId)
-      ? hiddenQuestionIds.filter(id => id !== questionId)
-      : [...hiddenQuestionIds, questionId];
+    const newPending = pendingHiddenIds.includes(questionId)
+      ? pendingHiddenIds.filter(id => id !== questionId)
+      : [...pendingHiddenIds, questionId];
 
-    onHiddenChange(newHidden);
+    setPendingHiddenIds(newPending);
   };
 
   // Предварительный просмотр количества вопросов
@@ -135,10 +139,10 @@ export function FilterModal({
       const qStats = questionStats.find(s => s.questionId === q.id);
       if (excludeKnown && qStats?.isKnown) return false;
       if (excludeWeak && qStats?.isWeak) return false;
-      if (hiddenQuestionIds.includes(q.id)) return false;
+      if (pendingHiddenIds.includes(q.id)) return false;
       return true;
     }).length;
-  }, [excludeKnown, excludeWeak, hiddenQuestionIds, questionStats, questions]);
+  }, [excludeKnown, excludeWeak, pendingHiddenIds, questionStats, questions]);
 
   return (
     <AnimatePresence>
@@ -266,17 +270,17 @@ export function FilterModal({
                 </div>
 
                 {/* Предупреждение о скрытых вопросах */}
-                {hiddenQuestionIds.length > 0 && (
+                {pendingHiddenIds.length > 0 && (
                   <Alert className="bg-amber-50 dark:bg-amber-950/20 border-amber-200">
                     <AlertDescription className="text-amber-800 dark:text-amber-300">
                       <div className="flex items-center justify-between">
                         <span className="text-sm">
-                          Скрыто вопросов: {hiddenQuestionIds.length}
+                          Скрыто вопросов: {pendingHiddenIds.length}
                         </span>
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => onHiddenChange([])}
+                          onClick={() => setPendingHiddenIds([])}
                           className="h-6 text-xs"
                         >
                           Показать все
@@ -318,7 +322,7 @@ export function FilterModal({
                               >
                                 {accuracy}%
                               </Badge>
-                              {hiddenQuestionIds.includes(q.id) && (
+                              {pendingHiddenIds.includes(q.id) && (
                                 <Badge variant="outline" className="h-4 text-[9px] border-amber-500 text-amber-600">
                                   Скрыт
                                 </Badge>
@@ -334,7 +338,7 @@ export function FilterModal({
                             onClick={() => toggleHideQuestion(q.id)}
                             className="h-6 w-6 p-0 flex-shrink-0 hover:bg-slate-100 dark:hover:bg-slate-800"
                           >
-                            {hiddenQuestionIds.includes(q.id) ? (
+                            {pendingHiddenIds.includes(q.id) ? (
                               <EyeOff className="w-3 h-3 text-amber-600" />
                             ) : (
                               <Eye className="w-3 h-3" />
