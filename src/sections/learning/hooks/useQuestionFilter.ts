@@ -6,7 +6,7 @@
  * @version 1.0.0
  */
 
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { questionFilterService } from '@/services/questionFilterService';
 import { statisticsService } from '@/services/statisticsService';
 import type { Question, SectionType } from '@/types';
@@ -72,6 +72,7 @@ export function useQuestionFilter({
         pages: Math.ceil(filtered.length / questionsPerPage)
       });
     }
+    // НЕ сохраняем настройки при инициализации - только загружаем
   }, [currentSection, questions.length, questionsPerPage]);
 
   // Применение фильтра
@@ -103,8 +104,17 @@ export function useQuestionFilter({
     setHiddenQuestionIdsState(ids);
   }, []);
 
+  // Флаг для отслеживания первой загрузки
+  const isInitialMount = useRef(true);
+
   // Обновление isFilterActive и сохранение настроек при изменении параметров фильтра
   useEffect(() => {
+    // Пропускаем первую загрузку (когда значения только что установлены из localStorage)
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      return;
+    }
+
     // Проверяем активность фильтра напрямую по состоянию
     const isActive = excludeKnown || excludeWeak || hiddenQuestionIds.length > 0;
     setIsFilterActive(isActive);

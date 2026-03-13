@@ -256,7 +256,7 @@ export function LearningSection() {
       setExcludeWeak(settings.excludeWeak);
       setFilteredQuestions(questions.filter(q => filteredIds.includes(q.id)));
       setFilteredTotalPages(Math.ceil(filteredIds.length / QUESTIONS_PER_SESSION));
-      navigation.resetPage();
+      navigation.goToPage(1);
       console.log('✅ [LearningSection] handleFilterApply завершён успешно');
     } catch (error) {
       console.error('❌ [LearningSection] Ошибка в handleFilterApply:', error);
@@ -271,7 +271,7 @@ export function LearningSection() {
       setExcludeWeak(false);
       setFilteredQuestions(questions);
       setFilteredTotalPages(Math.ceil(questions.length / QUESTIONS_PER_SESSION));
-      navigation.resetPage();
+      navigation.goToPage(1);
       console.log('✅ [LearningSection] handleResetFilter завершён успешно');
     } catch (error) {
       console.error('❌ [LearningSection] Ошибка в handleResetFilter:', error);
