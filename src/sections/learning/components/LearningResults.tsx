@@ -31,11 +31,11 @@ export function LearningResults({
       <CardContent className="pt-8 pb-8">
         <div className="text-center">
           <Trophy className="w-16 h-16 text-yellow-500 mx-auto mb-4" />
-          
+
           <h2 className="text-2xl font-bold text-slate-900 mb-2">
             {currentPage === totalPages ? "Сессия завершена!" : "Вы ответили на все вопросы текущей страницы."}
           </h2>
-          
+
           <p className="text-slate-600 mb-6">
             Правильных ответов: {stats.correct} из {totalQuestions} ({percentage}%)
           </p>
@@ -62,7 +62,7 @@ export function LearningResults({
               </Button>
             ) : (
               <Button onClick={onNextPage} size="lg" className="gap-2">
-                Далее...
+                Далее
                 <ChevronRight className="w-5 h-5" />
               </Button>
             )}

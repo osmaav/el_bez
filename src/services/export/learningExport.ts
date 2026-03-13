@@ -27,7 +27,7 @@ export const exportLearningToPDF = async (data: LearningExportData): Promise<voi
   await loadCyrillicFont(doc);
 
   const pageWidth = doc.internal.pageSize.getWidth();
-  const margin = 10;
+  const margin = 6;
   const contentWidth = pageWidth - 2 * margin;
 
   // Заголовок
@@ -76,33 +76,32 @@ export const exportLearningToPDF = async (data: LearningExportData): Promise<voi
   doc.text(formatDate(data.timestamp), pageWidth / 2, 32, { align: 'center' });
 
   // Статистика
-  const statsY = 35;
-  const statsHeight = 20;
+  const statsY = 39;
+  const statsHeight = 17;
 
   doc.setFillColor(COLORS.light[0], COLORS.light[1], COLORS.light[2]);
   doc.roundedRect(margin, statsY, contentWidth, statsHeight, 3, 3, 'F');
 
   doc.setTextColor(COLORS.slate[0], COLORS.slate[1], COLORS.slate[2]);
   doc.setFont('Roboto');
-  doc.setFontSize(10);
+  doc.setFontSize(12);
   doc.text('Статистика страницы:', contentWidth / 2 - margin, statsY + 6);
 
   doc.setFont('Roboto');
   doc.setFontSize(9);
 
   const stats = [
-    { label: 'Правильно', value: data.stats.correct, color: COLORS.success },
-    { label: 'Неправильно', value: data.stats.incorrect, color: COLORS.error },
-    { label: 'Осталось', value: data.stats.remaining, color: COLORS.warning },
+    { label: 'Верных', value: data.stats.correct, color: COLORS.success },
+    { label: 'Неверных', value: data.stats.incorrect, color: COLORS.error },
   ];
 
-  const statWidth = (contentWidth - 40) / 3;
+  const statWidth = contentWidth / 2;
   stats.forEach((stat, idx) => {
-    const x = margin + 10 + idx * (statWidth + 10);
+    const x = margin + 7 + idx * (statWidth + 60);
     doc.setFillColor(stat.color[0], stat.color[1], stat.color[2]);
-    doc.circle(x + 5, statsY + 14, 3, 'F');
+    doc.circle(x, statsY + 8, 3, 'F');
     doc.setTextColor(COLORS.slate[0], COLORS.slate[1], COLORS.slate[2]);
-    doc.text(`${stat.label}: ${stat.value}`, x + 12, statsY + 16);
+    doc.text(`${stat.label}: ${stat.value}`, x + 6, statsY + 9);
   });
 
   // Вопросы
@@ -117,27 +116,25 @@ export const exportLearningToPDF = async (data: LearningExportData): Promise<voi
     return {
       number: qIdx + 1,
       question: truncateText(q.text, 300),
-      answer: isAnswered
-        ? truncateText(getAnswerText(q, shuffledIdx), 200)
-        : 'Не отвечено'
+      answer: truncateText(getAnswerText(q, shuffledIdx), 200)
     };
   });
 
   autoTable(doc, {
     startY: tableStartY,
-    head: [['№', 'Вопрос', 'Ваш ответ']],
+    head: [['№', 'Вопрос', 'Ответ']],
     body: tableData.map(row => [
       row.number,
       row.question,
       row.answer
     ]),
     theme: 'striped',
-    headStyles: { fillColor: COLORS.primary as [number, number, number] },
+    headStyles: { fillColor: COLORS.primary as [number, number, number], halign: 'center' },
     styles: { fontSize: 8, cellPadding: 3, lineWidth: 0 },
     columnStyles: {
       0: { cellWidth: 10, halign: 'center' },
-      1: { cellWidth: 120 },
-      2: { cellWidth: 120 }
+      1: { cellWidth: 95, cellPadding: 5 },
+      2: { cellWidth: 93, cellPadding: 5 }
     },
     willDrawCell: (_data: any) => {
       doc.setFont('Roboto', 'normal');

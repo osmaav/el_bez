@@ -49,7 +49,7 @@ export function TrainerSection() {
   } = useApp();
 
   const { user } = useAuth();
-  const { success, loading, updateToast } = useToast();
+  const { success, error: toastError, loading, updateToast } = useToast();
 
   const currentSectionInfo = sections.find(s => s.id === currentSection);
 
@@ -166,7 +166,10 @@ export function TrainerSection() {
           remaining: trainerStats.remaining
         },
         timestamp: Date.now(),
-        userName: user ? `${user.surname} ${user.name}`.trim() : undefined
+        userName: user ? `${user.surname} ${user.name}`.trim() : undefined,
+        userPatronymic: user?.patronymic || undefined,
+        userWorkplace: user?.workplace || undefined,
+        userPosition: user?.position || undefined
       };
 
       await exportTrainerToPDF(exportData);
@@ -176,6 +179,7 @@ export function TrainerSection() {
     } catch (err: any) {
       console.error('❌ [TrainerSection] Ошибка экспорта PDF:', err);
       updateToast(loadingId, { type: 'error', title: 'Ошибка сохранения' });
+      toastError('Ошибка экспорта', 'Не удалось сохранить PDF');
     }
   };
 

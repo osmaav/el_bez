@@ -181,7 +181,7 @@ interface ResultsPieChartProps {
 export const ResultsPieChart: React.FC<ResultsPieChartProps> = ({ correct, incorrect }) => {
   const data = [
     { name: 'Верных', value: correct, color: '#3b82f6' }, // blue-500 из палитры Activity
-    { name: 'Ошибки', value: incorrect, color: '#ef4444' }, // red-500
+    { name: 'Ошибок', value: incorrect, color: '#ef4444' }, // red-500
   ];
 
   const total = correct + incorrect;
@@ -216,18 +216,19 @@ export const ResultsPieChart: React.FC<ResultsPieChartProps> = ({ correct, incor
                 ))}
               </Pie>
               <Tooltip
-                formatter={(value: number) => [`${value} ответов`, '']}
+                formatter={(value: number) => [`${value}`, 'ответов']}
                 contentStyle={{
                   backgroundColor: 'hsl(var(--background))',
                   border: '1px solid hsl(var(--border))',
                   borderRadius: '8px',
+                  padding: '0px 6px 0px 6px'
                 }}
               />
             </PieChart>
           </ResponsiveContainer>
         </div>
         <div className="text-center mt-4">
-          <div className="text-3xl font-bold">{accuracy}%</div>
+          <div className="text-3xl text-blue-400 font-bold">{accuracy}%</div>
           <div className="text-sm text-muted-foreground">Общая точность</div>
           <Progress value={accuracy} className="mt-2 h-2" />
         </div>

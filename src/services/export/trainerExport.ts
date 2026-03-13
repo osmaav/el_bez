@@ -27,7 +27,7 @@ export const exportTrainerToPDF = async (data: TrainerExportData): Promise<void>
   await loadCyrillicFont(doc);
 
   const pageWidth = doc.internal.pageSize.getWidth();
-  const margin = 14;
+  const margin = 6;
 
   // Заголовок
   doc.setFillColor(COLORS.primary[0], COLORS.primary[1], COLORS.primary[2]);
@@ -78,28 +78,28 @@ export const exportTrainerToPDF = async (data: TrainerExportData): Promise<void>
     ? Math.round((data.stats.correct / data.stats.total) * 100)
     : 0;
 
-  const statsY = 42;
+  const statsY = 40;
   doc.setFillColor(COLORS.light[0], COLORS.light[1], COLORS.light[2]);
-  doc.roundedRect(margin, statsY, pageWidth - 2 * margin, 30, 3, 3, 'F');
+  doc.roundedRect(margin, statsY, pageWidth - 2 * margin, 14, 3, 3, 'F');
 
   // Процент в центре
   doc.setTextColor(COLORS.primary[0], COLORS.primary[1], COLORS.primary[2]);
   doc.setFont('Roboto');
   doc.setFontSize(16);
-  doc.text(`${percentage}%`, pageWidth / 2, statsY + 18, { align: 'center' });
+  doc.text(`${percentage}%`, pageWidth / 2, statsY + 6, { align: 'center' });
 
   doc.setTextColor(COLORS.slate[0], COLORS.slate[1], COLORS.slate[2]);
   doc.setFont('Roboto');
   doc.setFontSize(10);
-  doc.text('Правильных ответов', pageWidth / 2, statsY + 26, { align: 'center' });
+  doc.text('Правильных ответов', pageWidth / 2, statsY + 12, { align: 'center' });
 
   // Детальная статистика
-  const detailStatsY = statsY + 38;
+  const detailStatsY = statsY + 16;
   const statsData = [
-    { label: 'Всего вопросов', value: data.stats.total.toString() },
-    { label: 'Правильно', value: data.stats.correct.toString(), color: COLORS.success },
-    { label: 'Неправильно', value: data.stats.incorrect.toString(), color: COLORS.error },
-    { label: 'Точность', value: `${percentage}%` },
+    { label: 'Всего вопросов:', value: data.stats.total.toString() },
+    { label: 'Правильно:', value: data.stats.correct.toString(), color: COLORS.success },
+    { label: 'Неправильно:', value: data.stats.incorrect.toString(), color: COLORS.error },
+    { label: 'Точность:', value: `${percentage}%` },
   ];
 
   autoTable(doc, {
@@ -108,8 +108,8 @@ export const exportTrainerToPDF = async (data: TrainerExportData): Promise<void>
     theme: 'plain',
     styles: { fontSize: 10, font: 'Roboto', lineWidth: 0 },
     columnStyles: {
-      0: { fontStyle: 'bold', cellWidth: 60 },
-      1: { cellWidth: 40, halign: 'right' }
+      0: { cellWidth: 33 },
+      1: { cellWidth: 15, halign: 'right' }
     },
     didParseCell: (cellData: any) => {
       const row = statsData[cellData.row.index];
@@ -125,11 +125,11 @@ export const exportTrainerToPDF = async (data: TrainerExportData): Promise<void>
 
   // Детальный разбор
   doc.setFont('Roboto', 'normal');
-  const tableStartY = doc.lastAutoTable.finalY + 3;
+  const tableStartY = doc.lastAutoTable.finalY + 6;
 
   doc.setTextColor(COLORS.slate[0], COLORS.slate[1], COLORS.slate[2]);
   doc.setFont('Roboto');
-  doc.setFontSize(11);
+  doc.setFontSize(10);
   doc.text('Детальный разбор ответов:', margin, tableStartY);
 
   const tableData = data.questions.map((q, idx) => {
@@ -156,14 +156,15 @@ export const exportTrainerToPDF = async (data: TrainerExportData): Promise<void>
       row.correctAnswer
     ]),
     theme: 'striped',
-    headStyles: { 
+    headStyles: {
       fillColor: COLORS.primary as [number, number, number],
       font: 'Roboto',
-      halign: 'center'
+      halign: 'center',
+      fontSize: 10
     },
-    styles: { fontSize: 8, cellPadding: 2, font: 'Roboto', lineWidth: 0 },
+    styles: { fontSize: 8, cellPadding: 3, font: 'Roboto', lineWidth: 0 },
     columnStyles: {
-      0: { cellWidth: 10, halign: 'center' },
+      0: { cellWidth: 10, halign: 'center', cellPadding: 3 },
       1: { cellWidth: 60 },
       2: { cellWidth: 60 },
       3: { cellWidth: 60 }
