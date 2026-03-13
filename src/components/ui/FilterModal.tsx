@@ -118,8 +118,10 @@ export function FilterModal({
   const handleReset = () => {
     setExcludeKnown(false);
     setExcludeWeak(false);
+    setPendingHiddenIds([]);
     questionFilterService.resetSettings(currentSection);
     const allQuestionIds = questions?.map(q => q.id) || questionStats.map(q => q.questionId);
+    onHiddenChange([]);
     onApply(allQuestionIds, { excludeKnown: false, excludeWeak: false });
     onClose();
   };
