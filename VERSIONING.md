@@ -1,7 +1,7 @@
 # 📋 Правила версионирования el-bez
 
-**Версия документа:** 1.0  
-**Дата:** 12 марта 2026
+**Версия документа:** 1.1
+**Дата:** 13 марта 2026
 
 ---
 
@@ -10,7 +10,7 @@
 Используется формат **ГГГГ.ММ.ДД.XX** (YYYY.MM.DD.XX):
 
 ```
-2026.03.12.00
+2026.03.13.10
 │    │  │  │
 │    │  │  └─ Номер релиза в день (00-99)
 │    │  └──── День месяца (01-31)
@@ -83,12 +83,12 @@
 
 | Версия | Тип | Описание |
 |--------|-----|----------|
-| `2026.03.12.00` | Main | Основной релиз Tests Integration |
-| `2026.03.12.01` | Fix | Исправление UI тестов |
-| `2026.03.12.02` | Fix | Исправление Filter тестов |
-| `2026.03.12.10` | Feature | Добавление экспорта PDF |
-| `2026.03.12.11` | Feature | Добавление тёмной темы |
-| `2026.03.13.00` | Main | Ежедневный основной релиз |
+| `2026.03.13.00` | Main | Основной релиз Tests Integration |
+| `2026.03.13.01` | Fix | Исправление UI тестов |
+| `2026.03.13.02` | Fix | Исправление Filter тестов |
+| `2026.03.13.10` | Feature | Исправление фильтрации и пагинации |
+| `2026.03.13.11` | Feature | Исправление отображения всех вопросов в фильтре |
+| `2026.03.14.00` | Main | Ежедневный основной релиз |
 
 ---
 
@@ -98,7 +98,7 @@
 
 ```bash
 # 1. Создание ветки
-git checkout -b release/2026.03.12.00
+git checkout -b release/2026.03.13.00
 
 # 2. Внесение изменений
 # ... работа над функциями ...
@@ -108,7 +108,7 @@ npm run test
 
 # 4. Слияние с test
 git checkout test
-git merge release/2026.03.12.00
+git merge release/2026.03.13.00
 
 # 5. Финальное тестирование
 npm run test
@@ -116,19 +116,19 @@ npm run test
 # 6. Слияние с master
 git checkout master
 git pull origin master
-git merge test --no-ff -m "merge: Release 2026.03.12.00"
+git merge test --no-ff -m "merge: Release 2026.03.13.00"
 
 # 7. Публикация
 git push origin master
-git tag 2026.03.12.00
-git push origin 2026.03.12.00
+git tag 2026.03.13.00
+git push origin 2026.03.13.00
 ```
 
 ### Исправление (.01–.09)
 
 ```bash
 # 1. Создание ветки hotfix
-git checkout -b hotfix/2026.03.12.01
+git checkout -b hotfix/2026.03.13.01
 
 # 2. Исправление бага
 # ... исправление ...
@@ -138,19 +138,19 @@ npm run test
 
 # 4. Слияние с master
 git checkout master
-git merge hotfix/2026.03.12.01 --no-ff -m "merge: Hotfix 2026.03.12.01"
+git merge hotfix/2026.03.13.01 --no-ff -m "merge: Hotfix 2026.03.13.01"
 
 # 5. Публикация
 git push origin master
-git tag 2026.03.12.01
-git push origin 2026.03.12.01
+git tag 2026.03.13.01
+git push origin 2026.03.13.01
 ```
 
 ### Новый функционал (.10–.99)
 
 ```bash
 # 1. Создание ветки feature
-git checkout -b feature/2026.03.12.10
+git checkout -b feature/2026.03.13.10
 
 # 2. Разработка функции
 # ... разработка ...
@@ -160,16 +160,16 @@ npm run test
 
 # 4. Слияние с test
 git checkout test
-git merge feature/2026.03.12.10
+git merge feature/2026.03.13.10
 
 # 5. Слияние с master
 git checkout master
-git merge test --no-ff -m "merge: Feature 2026.03.12.10"
+git merge test --no-ff -m "merge: Feature 2026.03.13.10"
 
 # 6. Публикация
 git push origin master
-git tag 2026.03.12.10
-git push origin 2026.03.12.10
+git tag 2026.03.13.10
+git push origin 2026.03.13.10
 ```
 
 ---
@@ -250,22 +250,22 @@ git show 2026.03.12.00
 
 ```bash
 # Основной релиз
-release/2026.03.12.00
+release/2026.03.13.00
 
 # Исправление
-hotfix/2026.03.12.01
+hotfix/2026.03.13.01
 
 # Новый функционал
-feature/2026.03.12.10
-feature/pdf-export-2026.03.12.11
-feature/dark-theme-2026.03.12.12
+feature/2026.03.13.10
+feature/pdf-export-2026.03.13.11
+feature/dark-theme-2026.03.13.12
 ```
 
 ### Сообщения коммитов
 
 ```bash
 # Основной релиз
-git commit -m "release: 2026.03.12.00 - Tests Integration
+git commit -m "release: 2026.03.13.00 - Tests Integration
 
 Добавлено:
 - 478 автоматизированных тестов
@@ -273,13 +273,13 @@ git commit -m "release: 2026.03.12.00 - Tests Integration
 - Документация"
 
 # Исправление
-git commit -m "fix: 2026.03.12.01 - Исправление UI тестов
+git commit -m "fix: 2026.03.13.01 - Исправление UI тестов
 
 Исправлено:
 - 12 failing тестов LearningProgressBar"
 
 # Новый функционал
-git commit -m "feat: 2026.03.12.10 - Экспорт в PDF
+git commit -m "feat: 2026.03.13.10 - Экспорт в PDF
 
 Добавлено:
 - Экспорт результатов обучения
@@ -298,5 +298,6 @@ git commit -m "feat: 2026.03.12.10 - Экспорт в PDF
 
 ---
 
-*Документ создан: 12 марта 2026*  
-*Версия: 1.0*
+*Документ создан: 12 марта 2026*
+*Последнее обновление: 13 марта 2026*
+*Версия: 1.1*
