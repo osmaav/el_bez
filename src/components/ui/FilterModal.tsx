@@ -78,24 +78,26 @@ export function FilterModal({
 
   // Статистика по вопросам
   const stats = useMemo(() => {
-    const total = questionStats.length;
+    const total = questions?.length || questionStats.length;
     const known = questionStats.filter(q => q.isKnown).length;
     const weak = questionStats.filter(q => q.isWeak).length;
     const normal = total - known - weak;
 
     return { total, known, weak, normal };
-  }, [questionStats]);
+  }, [questionStats, questions]);
 
   // Применяем фильтры
   const handleApply = () => {
-    const filteredIds = questionStats
+    const allQuestions = questions || [];
+    const filteredIds = allQuestions
       .filter(q => {
-        if (excludeKnown && q.isKnown) return false;
-        if (excludeWeak && q.isWeak) return false;
-        if (hiddenQuestionIds.includes(q.questionId)) return false;
+        const qStats = questionStats.find(s => s.questionId === q.id);
+        if (excludeKnown && qStats?.isKnown) return false;
+        if (excludeWeak && qStats?.isWeak) return false;
+        if (hiddenQuestionIds.includes(q.id)) return false;
         return true;
       })
-      .map(q => q.questionId);
+      .map(q => q.id);
 
     // Сохраняем настройки в сервис
     const settings = questionFilterService.getSettings(currentSection);
@@ -112,7 +114,8 @@ export function FilterModal({
     setExcludeKnown(false);
     setExcludeWeak(false);
     questionFilterService.resetSettings(currentSection);
-    onApply(questionStats.map(q => q.questionId), { excludeKnown: false, excludeWeak: false });
+    const allQuestionIds = questions?.map(q => q.id) || questionStats.map(q => q.questionId);
+    onApply(allQuestionIds, { excludeKnown: false, excludeWeak: false });
     onClose();
   };
 
@@ -127,13 +130,15 @@ export function FilterModal({
 
   // Предварительный просмотр количества вопросов
   const previewCount = useMemo(() => {
-    return questionStats.filter(q => {
-      if (excludeKnown && q.isKnown) return false;
-      if (excludeWeak && q.isWeak) return false;
-      if (hiddenQuestionIds.includes(q.questionId)) return false;
+    const allQuestions = questions || [];
+    return allQuestions.filter(q => {
+      const qStats = questionStats.find(s => s.questionId === q.id);
+      if (excludeKnown && qStats?.isKnown) return false;
+      if (excludeWeak && qStats?.isWeak) return false;
+      if (hiddenQuestionIds.includes(q.id)) return false;
       return true;
     }).length;
-  }, [excludeKnown, excludeWeak, hiddenQuestionIds, questionStats]);
+  }, [excludeKnown, excludeWeak, hiddenQuestionIds, questionStats, questions]);
 
   return (
     <AnimatePresence>
