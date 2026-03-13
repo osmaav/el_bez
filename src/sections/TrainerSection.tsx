@@ -191,62 +191,91 @@ export function TrainerSection() {
   // Начальный экран
   if (trainerQuestions.length === 0) {
     return (
-      <div className="max-w-7xl mx-auto px-4 py-8">
-        <div className="mb-6">
-          <h2 className="text-3xl font-bold text-slate-900">Тренажер</h2>
-          <p className="text-slate-600 mt-2">
-            {currentSectionInfo?.name} — {currentSectionInfo?.description}
-          </p>
+      <>
+        <div className="max-w-7xl mx-auto px-4 py-8">
+          <div className="mb-6">
+            <h2 className="text-3xl font-bold text-slate-900">Тренажер</h2>
+            <p className="text-slate-600 mt-2">
+              {currentSectionInfo?.name} — {currentSectionInfo?.description}
+            </p>
+          </div>
+
+          <Card className="max-w-2xl mx-auto">
+            <CardContent className="p-8 text-center">
+              <div className="w-20 h-20 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                <Target className="w-10 h-10 text-yellow-600" />
+              </div>
+              <h3 className="text-2xl font-bold text-slate-900 mb-4">
+                Готовы начать тренировку?
+              </h3>
+              <p className="text-slate-600 mb-8">
+                Вам будет предложено 50 случайных вопросов из базы.
+                После ответа вы сразу увидите правильный вариант и сможете перейти к следующему вопросу.
+              </p>
+
+              {/* Кнопка фильтра */}
+              <div className="mb-6">
+                <Button
+                  variant="outline"
+                  onClick={() => setIsFilterModalOpen(true)}
+                  className="text-slate-700 hover:text-slate-900"
+                >
+                  <Filter className="w-5 h-5 mr-2" />
+                  Настроить фильтр вопросов
+                </Button>
+                <p className="text-xs text-slate-500 mt-2 text-center">
+                  Исключите известные и слабые вопросы для эффективной тренировки
+                </p>
+              </div>
+
+              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                <Button
+                  size="lg"
+                  onClick={() => handleStartTrainer(50)}
+                  className="bg-yellow-500 hover:bg-yellow-600"
+                >
+                  <Play className="w-5 h-5 mr-2" />
+                  Начать тренировку (50 вопросов)
+                </Button>
+                <Button
+                  size="lg"
+                  variant="outline"
+                  onClick={() => handleStartTrainer(20)}
+                >
+                  Короткая тренировка (20 вопросов)
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
         </div>
 
-        <Card className="max-w-2xl mx-auto">
-          <CardContent className="p-8 text-center">
-            <div className="w-20 h-20 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-6">
-              <Target className="w-10 h-10 text-yellow-600" />
-            </div>
-            <h3 className="text-2xl font-bold text-slate-900 mb-4">
-              Готовы начать тренировку?
-            </h3>
-            <p className="text-slate-600 mb-8">
-              Вам будет предложено 50 случайных вопросов из базы.
-              После ответа вы сразу увидите правильный вариант и сможете перейти к следующему вопросу.
-            </p>
-            
-            {/* Кнопка фильтра */}
-            <div className="mb-6">
-              <Button
-                variant="outline"
-                onClick={() => setIsFilterModalOpen(true)}
-                className="text-slate-700 hover:text-slate-900"
-              >
-                <Filter className="w-5 h-5 mr-2" />
-                Настроить фильтр вопросов
-              </Button>
-              <p className="text-xs text-slate-500 mt-2 text-center">
-                Исключите известные и слабые вопросы для эффективной тренировки
-              </p>
-            </div>
-            
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button
-                size="lg"
-                onClick={() => handleStartTrainer(50)}
-                className="bg-yellow-500 hover:bg-yellow-600"
-              >
-                <Play className="w-5 h-5 mr-2" />
-                Начать тренировку (50 вопросов)
-              </Button>
-              <Button
-                size="lg"
-                variant="outline"
-                onClick={() => handleStartTrainer(20)}
-              >
-                Короткая тренировка (20 вопросов)
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+        {/* Фильтр вопросов - модальное окно */}
+        <FilterModal
+          isOpen={isFilterModalOpen}
+          onClose={() => setIsFilterModalOpen(false)}
+          onApply={(filteredIds, settings) => {
+            console.log('🔍 [TrainerSection] Фильтр применён, вопросов:', filteredIds.length, 'настройки:', settings);
+
+            // Сохраняем настройки фильтра
+            const filterSettings = questionFilterService.getSettings(currentSection);
+            filterSettings.excludeKnown = settings.excludeKnown;
+            filterSettings.excludeWeak = settings.excludeWeak;
+            questionFilterService.saveSettings(filterSettings);
+
+            // Обновляем скрытые вопросы
+            setHiddenQuestionIds(filterSettings.hiddenQuestionIds);
+          }}
+          questionStats={statisticsService.getQuestionStats(currentSection)}
+          hiddenQuestionIds={hiddenQuestionIds}
+          onHiddenChange={(newHiddenIds) => {
+            setHiddenQuestionIds(newHiddenIds);
+            const settings = questionFilterService.getSettings(currentSection);
+            settings.hiddenQuestionIds = newHiddenIds;
+            questionFilterService.saveSettings(settings);
+          }}
+          currentSection={currentSection}
+        />
+      </>
     );
   }
 
@@ -501,33 +530,6 @@ export function TrainerSection() {
           </div>
           <Progress value={progress} className="h-2" />
         </div>
-
-        {/* Фильтр вопросов - модальное окно */}
-        <FilterModal
-          isOpen={isFilterModalOpen}
-          onClose={() => setIsFilterModalOpen(false)}
-          onApply={(filteredIds, settings) => {
-            console.log('🔍 [TrainerSection] Фильтр применён, вопросов:', filteredIds.length, 'настройки:', settings);
-            
-            // Сохраняем настройки фильтра
-            const filterSettings = questionFilterService.getSettings(currentSection);
-            filterSettings.excludeKnown = settings.excludeKnown;
-            filterSettings.excludeWeak = settings.excludeWeak;
-            questionFilterService.saveSettings(filterSettings);
-            
-            // Обновляем скрытые вопросы
-            setHiddenQuestionIds(filterSettings.hiddenQuestionIds);
-          }}
-          questionStats={statisticsService.getQuestionStats(currentSection)}
-          hiddenQuestionIds={hiddenQuestionIds}
-          onHiddenChange={(newHiddenIds) => {
-            setHiddenQuestionIds(newHiddenIds);
-            const settings = questionFilterService.getSettings(currentSection);
-            settings.hiddenQuestionIds = newHiddenIds;
-            questionFilterService.saveSettings(settings);
-          }}
-          currentSection={currentSection}
-        />
 
         {/* Вопрос */}
         <Card className="mb-6 py-2 gap-0">
