@@ -131,10 +131,15 @@ export const exportLearningToPDF = async (data: LearningExportData): Promise<voi
       row.answer
     ]),
     theme: 'striped',
-    headStyles: { fillColor: COLORS.primary as [number, number, number], halign: 'center' },
-    styles: { fontSize: 8, cellPadding: 3, lineWidth: 0 },
+    headStyles: {
+      fillColor: COLORS.primary as [number, number, number],
+      font: 'Roboto',
+      halign: 'center',
+      fontSize: 10
+    },
+    styles: { fontSize: 8, cellPadding: 3, font: 'Roboto', lineWidth: 0 },
     columnStyles: {
-      0: { cellWidth: 10, halign: 'center' },
+      0: { cellWidth: 10, halign: 'center', cellPadding: 3 },
       1: { cellWidth: 95, cellPadding: 5 },
       2: { cellWidth: 93, cellPadding: 5 }
     },
