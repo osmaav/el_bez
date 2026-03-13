@@ -106,12 +106,25 @@ export function useQuestionFilter({
 
   // Флаг для отслеживания первой загрузки
   const isInitialMount = useRef(true);
+  const prevSettings = useRef<{ excludeKnown: boolean; excludeWeak: boolean; hiddenQuestionIds: number[] } | null>(null);
 
   // Обновление isFilterActive и сохранение настроек при изменении параметров фильтра
   useEffect(() => {
     // Пропускаем первую загрузку (когда значения только что установлены из localStorage)
     if (isInitialMount.current) {
       isInitialMount.current = false;
+      // Сохраняем начальные значения для последующего сравнения
+      prevSettings.current = { excludeKnown, excludeWeak, hiddenQuestionIds };
+      return;
+    }
+
+    // Проверяем, изменились ли значения
+    if (prevSettings.current &&
+        prevSettings.current.excludeKnown === excludeKnown &&
+        prevSettings.current.excludeWeak === excludeWeak &&
+        prevSettings.current.hiddenQuestionIds.length === hiddenQuestionIds.length &&
+        prevSettings.current.hiddenQuestionIds.every((id, i) => id === hiddenQuestionIds[i])) {
+      // Значения не изменились, не сохраняем
       return;
     }
 
@@ -125,6 +138,9 @@ export function useQuestionFilter({
     filterSettings.excludeWeak = excludeWeak;
     filterSettings.hiddenQuestionIds = hiddenQuestionIds;
     questionFilterService.saveSettings(filterSettings);
+
+    // Обновляем предыдущие значения
+    prevSettings.current = { excludeKnown, excludeWeak, hiddenQuestionIds };
   }, [currentSection, excludeKnown, excludeWeak, hiddenQuestionIds]);
 
   // Установка excludeKnown

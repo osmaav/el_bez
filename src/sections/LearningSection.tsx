@@ -248,34 +248,22 @@ export function LearningSection() {
     filteredIds: number[],
     settings: { excludeKnown: boolean; excludeWeak: boolean; hiddenQuestionIds: number[] }
   ) => {
-    console.log('🔍 [LearningSection] handleFilterApply вызван');
-    try {
-      // Обновляем все параметры фильтра
-      setHiddenQuestionIds(settings.hiddenQuestionIds);
-      setExcludeKnown(settings.excludeKnown);
-      setExcludeWeak(settings.excludeWeak);
-      setFilteredQuestions(questions.filter(q => filteredIds.includes(q.id)));
-      setFilteredTotalPages(Math.ceil(filteredIds.length / QUESTIONS_PER_SESSION));
-      navigation.goToPage(1);
-      console.log('✅ [LearningSection] handleFilterApply завершён успешно');
-    } catch (error) {
-      console.error('❌ [LearningSection] Ошибка в handleFilterApply:', error);
-    }
+    // Обновляем все параметры фильтра
+    setHiddenQuestionIds(settings.hiddenQuestionIds);
+    setExcludeKnown(settings.excludeKnown);
+    setExcludeWeak(settings.excludeWeak);
+    setFilteredQuestions(questions.filter(q => filteredIds.includes(q.id)));
+    setFilteredTotalPages(Math.ceil(filteredIds.length / QUESTIONS_PER_SESSION));
+    navigation.goToPage(1);
   }, [questions, setHiddenQuestionIds, setExcludeKnown, setExcludeWeak, setFilteredQuestions, setFilteredTotalPages, navigation]);
 
   const handleResetFilter = useCallback(() => {
-    console.log('🔄 [LearningSection] handleResetFilter вызван');
-    try {
-      setHiddenQuestionIds([]);
-      setExcludeKnown(false);
-      setExcludeWeak(false);
-      setFilteredQuestions(questions);
-      setFilteredTotalPages(Math.ceil(questions.length / QUESTIONS_PER_SESSION));
-      navigation.goToPage(1);
-      console.log('✅ [LearningSection] handleResetFilter завершён успешно');
-    } catch (error) {
-      console.error('❌ [LearningSection] Ошибка в handleResetFilter:', error);
-    }
+    setHiddenQuestionIds([]);
+    setExcludeKnown(false);
+    setExcludeWeak(false);
+    setFilteredQuestions(questions);
+    setFilteredTotalPages(Math.ceil(questions.length / QUESTIONS_PER_SESSION));
+    navigation.goToPage(1);
   }, [questions, setHiddenQuestionIds, setExcludeKnown, setExcludeWeak, setFilteredQuestions, setFilteredTotalPages, navigation]);
 
   const handleHiddenChange = useCallback((newHiddenIds: number[]) => {

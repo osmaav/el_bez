@@ -92,54 +92,41 @@ export function FilterModal({
 
   // Применяем фильтры
   const handleApply = () => {
-    console.log('🔍 [FilterModal] handleApply вызван');
-    try {
-      const allQuestions = questions || [];
-      const filteredIds = allQuestions
-        .filter(q => {
-          const qStats = questionStats.find(s => s.questionId === q.id);
-          if (excludeKnown && qStats?.isKnown) return false;
-          if (excludeWeak && qStats?.isWeak) return false;
-          if (pendingHiddenIds.includes(q.id)) return false;
-          return true;
-        })
-        .map(q => q.id);
+    const allQuestions = questions || [];
+    const filteredIds = allQuestions
+      .filter(q => {
+        const qStats = questionStats.find(s => s.questionId === q.id);
+        if (excludeKnown && qStats?.isKnown) return false;
+        if (excludeWeak && qStats?.isWeak) return false;
+        if (pendingHiddenIds.includes(q.id)) return false;
+        return true;
+      })
+      .map(q => q.id);
 
-      // Применяем скрытые вопросы и фильтры (настройки сохранятся через useEffect в useQuestionFilter)
-      onHiddenChange(pendingHiddenIds);
-      onApply(filteredIds, { excludeKnown, excludeWeak, hiddenQuestionIds: pendingHiddenIds });
-      console.log('🔍 [FilterModal] Вызов onClose()');
-      onClose();
-    } catch (error) {
-      console.error('❌ [FilterModal] Ошибка в handleApply:', error);
-    }
+    // Применяем скрытые вопросы и фильтры (настройки сохранятся через useEffect в useQuestionFilter)
+    onHiddenChange(pendingHiddenIds);
+    onApply(filteredIds, { excludeKnown, excludeWeak, hiddenQuestionIds: pendingHiddenIds });
+    onClose();
   };
 
   // Сброс фильтров
   const handleReset = () => {
-    console.log('🔄 [FilterModal] handleReset вызван');
-    try {
-      setExcludeKnown(false);
-      setExcludeWeak(false);
-      setPendingHiddenIds([]);
-      questionFilterService.resetSettings(currentSection);
+    setExcludeKnown(false);
+    setExcludeWeak(false);
+    setPendingHiddenIds([]);
+    questionFilterService.resetSettings(currentSection);
 
-      // Если есть onReset, используем его для полного сброса
-      if (onReset) {
-        console.log('🔄 [FilterModal] Вызов onReset()');
-        onReset();
-      } else {
-        // Fallback: старый способ
-        const allQuestionIds = questions?.map(q => q.id) || questionStats.map(q => q.questionId);
-        onHiddenChange([]);
-        onApply(allQuestionIds, { excludeKnown: false, excludeWeak: false, hiddenQuestionIds: [] });
-      }
-
-      console.log('🔄 [FilterModal] Вызов onClose()');
-      onClose();
-    } catch (error) {
-      console.error('❌ [FilterModal] Ошибка в handleReset:', error);
+    // Если есть onReset, используем его для полного сброса
+    if (onReset) {
+      onReset();
+    } else {
+      // Fallback: старый способ
+      const allQuestionIds = questions?.map(q => q.id) || questionStats.map(q => q.questionId);
+      onHiddenChange([]);
+      onApply(allQuestionIds, { excludeKnown: false, excludeWeak: false, hiddenQuestionIds: [] });
     }
+
+    onClose();
   };
 
   // Скрыть/показать вопрос (только в pending состоянии)
