@@ -101,10 +101,11 @@ export function FilterModal({
       })
       .map(q => q.id);
 
-    // Сохраняем настройки в сервис
+    // Сохраняем ВСЕ настройки в сервис (включая hiddenQuestionIds)
     const settings = questionFilterService.getSettings(currentSection);
     settings.excludeKnown = excludeKnown;
     settings.excludeWeak = excludeWeak;
+    settings.hiddenQuestionIds = pendingHiddenIds;
     questionFilterService.saveSettings(settings);
 
     // Применяем скрытые вопросы и фильтры

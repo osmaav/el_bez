@@ -296,8 +296,8 @@ export function LearningSection() {
   // Обработка скрытия вопросов
   const handleHiddenChange = useCallback((newHiddenIds: number[]) => {
     setHiddenQuestionIds(newHiddenIds);
-    applyFilter();
-  }, [setHiddenQuestionIds, applyFilter]);
+    // applyFilter вызывается отдельно после onApply в FilterModal
+  }, [setHiddenQuestionIds]);
 
   // Рендер
   const currentSectionInfo = sections.find(s => s.id === currentSection);
