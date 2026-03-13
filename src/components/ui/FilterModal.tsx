@@ -170,6 +170,19 @@ export function FilterModal({
     }).length;
   }, [excludeKnown, excludeWeak, pendingHiddenIds, questionStats, questions]);
 
+  // Фильтрованный список вопросов для отображения (исключая известные/слабые)
+  const filteredQuestionsList = useMemo(() => {
+    if (!questions) return [];
+    return questions.filter(q => {
+      const qStats = questionStats.find(s => s.questionId === q.id);
+      // Если включено исключение известных и вопрос известный — скрываем
+      if (excludeKnown && qStats?.isKnown) return false;
+      // Если включено исключение слабых и вопрос слабый — скрываем
+      if (excludeWeak && qStats?.isWeak) return false;
+      return true;
+    });
+  }, [questions, questionStats, excludeKnown, excludeWeak]);
+
   return (
     <AnimatePresence>
       {isOpen && (
@@ -320,7 +333,7 @@ export function FilterModal({
                 <div className="space-y-2">
                   <Label className="text-xs font-medium">Ручное скрытие вопросов:</Label>
                   <div className="grid gap-1 max-h-60 overflow-y-auto p-2 rounded-lg bg-slate-50 dark:bg-slate-950/20">
-                    {questions?.map((q) => {
+                    {filteredQuestionsList?.map((q) => {
                       const qStats = questionStats.find(s => s.questionId === q.id);
                       const accuracy = qStats?.accuracy || 0;
                       const isKnown = qStats?.isKnown || false;
