@@ -180,8 +180,8 @@ export const ActivityCalendar: React.FC<ActivityCalendarProps> = ({ data }) => {
 
   // Форматируем дату для подсказки
   const formatDateTooltip = (dateStr: string) => {
-    const date = new Date(dateStr);
-    return date.toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' });
+    const date = new Date(dateStr + 'T00:00:00'); // Добавляем время чтобы избежать проблем с timezone
+    return date.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long' });
   };
 
   return (

@@ -93,11 +93,11 @@ export const ProgressChart: React.FC<ProgressChartProps> = ({ data }) => {
   const chartConfig = {
     accuracy: {
       label: 'Точность %',
-      color: 'hsl(var(--chart-1))',
+      color: '#3b82f6', // blue-500 из палитры Activity
     },
     sessions: {
       label: 'Сессии',
-      color: 'hsl(var(--chart-2))',
+      color: '#60a5fa', // blue-400 из палитры Activity
     },
   };
 
@@ -180,7 +180,7 @@ interface ResultsPieChartProps {
 
 export const ResultsPieChart: React.FC<ResultsPieChartProps> = ({ correct, incorrect }) => {
   const data = [
-    { name: 'Правильные', value: correct, color: '#22c55e' }, // green-500
+    { name: 'Верных', value: correct, color: '#3b82f6' }, // blue-500 из палитры Activity
     { name: 'Ошибки', value: incorrect, color: '#ef4444' }, // red-500
   ];
 
@@ -209,6 +209,7 @@ export const ResultsPieChart: React.FC<ResultsPieChartProps> = ({ correct, incor
                 dataKey="value"
                 label={({ name, value }) => `${name}: ${value}`}
                 labelLine={{ stroke: 'hsl(var(--muted-foreground))', strokeWidth: 1 }}
+                style={{ fontSize: '0.875rem' }}
               >
                 {data.map((entry, index) => (
                   <Cell key={`cell-${index}`} fill={entry.color} />
@@ -477,7 +478,7 @@ export const SessionsBarChart: React.FC<SessionsBarChartProps> = ({ sessions }) 
   const chartConfig = {
     accuracy: {
       label: 'Точность %',
-      color: 'hsl(var(--chart-1))',
+      color: '#3b82f6', // blue-500 из палитры Activity
     },
   };
 
