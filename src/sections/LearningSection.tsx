@@ -26,8 +26,7 @@ import { LoadingModal } from '@/components/ui/loading-modal';
 import { ConfirmModal } from '@/components/ui/confirm-modal';
 import { LearningHeader, LearningProgressBar, LearningQuestionCard, LearningResults } from '@/components/learning';
 import { useLearningProgress } from '@/hooks/useLearningProgress';
-import { useLearningFilter } from '@/hooks/useLearningFilter';
-import { useLearningNavigation } from '@/hooks/useLearningNavigation';
+import { useQuestionFilter } from '@/sections/learning/hooks';
 import type { SectionType } from '@/types';
 
 const QUESTIONS_PER_SESSION = 10;
@@ -100,6 +99,7 @@ export function LearningSection() {
 
   // Modal states
   const [showResetConfirm, setShowResetConfirm] = useState(false);
+  const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
   const [loadingModal, setLoadingModal] = useState<LoadingModalState>({
     isOpen: false,
     status: 'loading',
@@ -113,15 +113,30 @@ export function LearningSection() {
   const lastSectionRef = useRef<SectionType | null>(null);
 
   // Filter hook
-  const filter = useLearningFilter(questions, currentSection);
+  const {
+    filteredQuestions,
+    totalPages: filterTotalPages,
+    isFilterActive,
+    hiddenQuestionIds,
+    applyFilter,
+    setHiddenQuestionIds,
+    setExcludeKnown,
+    setExcludeWeak,
+    setFilteredQuestions,
+    setFilteredTotalPages,
+  } = useQuestionFilter({
+    currentSection,
+    questions,
+    questionsPerPage: QUESTIONS_PER_SESSION,
+  });
 
   // Calculate total pages
-  const TOTAL_PAGES = filter.filteredTotalPages > 0 ? filter.filteredTotalPages : Math.ceil(questions.length / QUESTIONS_PER_SESSION);
+  const TOTAL_PAGES = filterTotalPages > 0 ? filterTotalPages : Math.ceil(questions.length / QUESTIONS_PER_SESSION);
 
   // Progress hook (должен быть перед navigation для синхронизации currentPage)
   const progress = useLearningProgress(
-    filter.filteredQuestions.length > 0 ? filter.filteredQuestions : questions,
-    filter.filteredTotalPages,
+    filteredQuestions.length > 0 ? filteredQuestions : questions,
+    filterTotalPages,
     shuffleArray
   );
 
@@ -230,30 +245,29 @@ export function LearningSection() {
 
   const handleFilterApply = useCallback((
     filteredIds: number[],
-    settings: { excludeKnown: boolean; excludeWeak: boolean }
+    settings: { excludeKnown: boolean; excludeWeak: boolean; hiddenQuestionIds: number[] }
   ) => {
-    // Получаем hiddenQuestionIds из текущего состояния фильтра
-    const currentHiddenIds = filter.hiddenQuestionIds;
-    
-    filter.handleApplyFilter(filteredIds, settings);
-    
-    // Обновляем hiddenQuestionIds
-    filter.setHiddenQuestionIds(currentHiddenIds);
-    
-    // Сохраняем настройки фильтра
-    const filterSettings = questionFilterService.getSettings(currentSection);
-    filterSettings.excludeKnown = settings.excludeKnown;
-    filterSettings.excludeWeak = settings.excludeWeak;
-    questionFilterService.saveSettings(filterSettings);
-  }, [filter, currentSection]);
+    // Обновляем все параметры фильтра
+    setHiddenQuestionIds(settings.hiddenQuestionIds);
+    setExcludeKnown(settings.excludeKnown);
+    setExcludeWeak(settings.excludeWeak);
+    setFilteredQuestions(questions.filter(q => filteredIds.includes(q.id)));
+    setFilteredTotalPages(Math.ceil(filteredIds.length / QUESTIONS_PER_SESSION));
+    progress.resetPage();
+  }, [questions, setHiddenQuestionIds, setExcludeKnown, setExcludeWeak, setFilteredQuestions, setFilteredTotalPages, progress]);
+
+  const handleResetFilter = useCallback(() => {
+    setHiddenQuestionIds([]);
+    setExcludeKnown(false);
+    setExcludeWeak(false);
+    setFilteredQuestions(questions);
+    setFilteredTotalPages(Math.ceil(questions.length / QUESTIONS_PER_SESSION));
+    progress.resetPage();
+  }, [questions, setHiddenQuestionIds, setExcludeKnown, setExcludeWeak, setFilteredQuestions, setFilteredTotalPages, progress]);
 
   const handleHiddenChange = useCallback((newHiddenIds: number[]) => {
-    filter.setHiddenQuestionIds(newHiddenIds);
-    const settings = questionFilterService.getSettings(currentSection);
-    settings.hiddenQuestionIds = newHiddenIds;
-    questionFilterService.saveSettings(settings);
-    filter.applyFilter();
-  }, [filter, currentSection]);
+    setHiddenQuestionIds(newHiddenIds);
+  }, [setHiddenQuestionIds]);
 
   const getQuestionStats = useCallback(() => {
     const allStats = statisticsService.getQuestionStats(currentSection);
@@ -318,11 +332,11 @@ export function LearningSection() {
             totalPages={TOTAL_PAGES}
             isFirstPage={navigation.currentPage === 1}
             isLastPage={navigation.currentPage === TOTAL_PAGES}
-            isFilterActive={filter.isFilterActive}
+            isFilterActive={isFilterActive}
             onPrevPage={navigation.prevPage}
             onNextPage={navigation.nextPage}
             onReset={handleReset}
-            onFilterClick={() => filter.setIsFilterModalOpen(true)}
+            onFilterClick={() => setIsFilterModalOpen(true)}
             questionsPerSession={QUESTIONS_PER_SESSION}
             activeQuestionsCount={activeQuestions.length}
           />
@@ -350,13 +364,14 @@ export function LearningSection() {
 
           {/* Filter Modal */}
           <FilterModal
-            isOpen={filter.isFilterModalOpen}
-            onClose={() => filter.setIsFilterModalOpen(false)}
+            isOpen={isFilterModalOpen}
+            onClose={() => setIsFilterModalOpen(false)}
             onApply={handleFilterApply}
+            onReset={handleResetFilter}
             questionStats={getQuestionStats()}
             questions={questions}
-            hiddenQuestionIds={filter.hiddenQuestionIds}
-            onHiddenChange={handleHiddenChange}
+            hiddenQuestionIds={hiddenQuestionIds}
+            onHiddenChange={setHiddenQuestionIds}
             currentSection={currentSection}
           />
 
