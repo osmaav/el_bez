@@ -135,13 +135,6 @@ export function FilterModal({
     }).length;
   }, [excludeKnown, excludeWeak, hiddenQuestionIds, questionStats]);
 
-  // Создаём map вопросов для быстрого доступа
-  const questionMap = useMemo(() => {
-    const map = new Map<number, Question>();
-    questions?.forEach(q => map.set(q.id, q));
-    return map;
-  }, [questions]);
-
   return (
     <AnimatePresence>
       {isOpen && (
@@ -289,61 +282,64 @@ export function FilterModal({
                 )}
 
                 {/* Список вопросов для ручного скрытия */}
-                {questionStats.length > 0 && (
-                  <div className="space-y-2">
-                    <Label className="text-xs font-medium">Ручное скрытие вопросов:</Label>
-                    <div className="grid gap-1 max-h-60 overflow-y-auto p-2 rounded-lg bg-slate-50 dark:bg-slate-950/20">
-                      {questionStats.map((q) => {
-                        const question = questionMap.get(q.questionId);
-                        const questionText = question?.text || question?.question || `Вопрос ${q.questionId}`;
-                        const truncatedText = questionText.length > 80 
-                          ? questionText.substring(0, 80) + '...' 
-                          : questionText;
+                <div className="space-y-2">
+                  <Label className="text-xs font-medium">Ручное скрытие вопросов:</Label>
+                  <div className="grid gap-1 max-h-60 overflow-y-auto p-2 rounded-lg bg-slate-50 dark:bg-slate-950/20">
+                    {questions?.map((q) => {
+                      const qStats = questionStats.find(s => s.questionId === q.id);
+                      const accuracy = qStats?.accuracy || 0;
+                      const isKnown = qStats?.isKnown || false;
+                      const isWeak = qStats?.isWeak || false;
+                      const ticket = qStats?.ticket || q.ticket;
+                      
+                      const questionText = q.text || q.question || `Вопрос ${q.id}`;
+                      const truncatedText = questionText.length > 80
+                        ? questionText.substring(0, 80) + '...'
+                        : questionText;
 
-                        return (
-                          <div
-                            key={q.questionId}
-                            className="flex items-start gap-2 p-2 rounded-md bg-white dark:bg-slate-900 text-xs border border-slate-200 dark:border-slate-800"
-                          >
-                            <div className="flex-1 min-w-0">
-                              <div className="flex items-center gap-2 mb-1 flex-wrap">
-                                <span className="font-medium text-slate-700 dark:text-slate-300">
-                                  Билет {q.ticket}, Вопрос {q.questionId}
-                                </span>
-                                <Badge
-                                  variant={q.isKnown ? 'default' : q.isWeak ? 'destructive' : 'secondary'}
-                                  className="h-4 text-[9px]"
-                                >
-                                  {q.accuracy}%
+                      return (
+                        <div
+                          key={q.id}
+                          className="flex items-start gap-2 p-2 rounded-md bg-white dark:bg-slate-900 text-xs border border-slate-200 dark:border-slate-800"
+                        >
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 mb-1 flex-wrap">
+                              <span className="font-medium text-slate-700 dark:text-slate-300">
+                                Билет {ticket}, Вопрос {q.id}
+                              </span>
+                              <Badge
+                                variant={isKnown ? 'default' : isWeak ? 'destructive' : 'secondary'}
+                                className="h-4 text-[9px]"
+                              >
+                                {accuracy}%
+                              </Badge>
+                              {hiddenQuestionIds.includes(q.id) && (
+                                <Badge variant="outline" className="h-4 text-[9px] border-amber-500 text-amber-600">
+                                  Скрыт
                                 </Badge>
-                                {hiddenQuestionIds.includes(q.questionId) && (
-                                  <Badge variant="outline" className="h-4 text-[9px] border-amber-500 text-amber-600">
-                                    Скрыт
-                                  </Badge>
-                                )}
-                              </div>
-                              <p className="text-slate-600 dark:text-slate-400 leading-tight">
-                                {truncatedText}
-                              </p>
-                            </div>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => toggleHideQuestion(q.questionId)}
-                              className="h-6 w-6 p-0 flex-shrink-0 hover:bg-slate-100 dark:hover:bg-slate-800"
-                            >
-                              {hiddenQuestionIds.includes(q.questionId) ? (
-                                <EyeOff className="w-3 h-3 text-amber-600" />
-                              ) : (
-                                <Eye className="w-3 h-3" />
                               )}
-                            </Button>
+                            </div>
+                            <p className="text-slate-600 dark:text-slate-400 leading-tight">
+                              {truncatedText}
+                            </p>
                           </div>
-                        );
-                      })}
-                    </div>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => toggleHideQuestion(q.id)}
+                            className="h-6 w-6 p-0 flex-shrink-0 hover:bg-slate-100 dark:hover:bg-slate-800"
+                          >
+                            {hiddenQuestionIds.includes(q.id) ? (
+                              <EyeOff className="w-3 h-3 text-amber-600" />
+                            ) : (
+                              <Eye className="w-3 h-3" />
+                            )}
+                          </Button>
+                        </div>
+                      );
+                    })}
                   </div>
-                )}
+                </div>
 
                 {/* Кнопки действий */}
                 <div className="flex gap-2 pt-4 border-t">
