@@ -76,6 +76,8 @@ export function LearningSection() {
     hiddenQuestionIds,
     applyFilter,
     setHiddenQuestionIds,
+    setExcludeKnown,
+    setExcludeWeak,
     setFilteredQuestions,
     setFilteredTotalPages,
   } = useQuestionFilter({
@@ -279,20 +281,24 @@ export function LearningSection() {
     setFilteredQuestions(filtered);
     setFilteredTotalPages(Math.ceil(filtered.length / QUESTIONS_PER_SESSION));
 
-    // Обновляем hiddenQuestionIds напрямую (избегаем проблем с async обновлением состояния)
+    // Обновляем все параметры фильтра напрямую
     setHiddenQuestionIds(settings.hiddenQuestionIds);
+    setExcludeKnown(settings.excludeKnown);
+    setExcludeWeak(settings.excludeWeak);
 
     // Сбрасываем на первую страницу
     resetPage();
-  }, [questions, setHiddenQuestionIds, resetPage]);
+  }, [questions, setFilteredQuestions, setFilteredTotalPages, setHiddenQuestionIds, setExcludeKnown, setExcludeWeak, resetPage]);
 
   // Обработка сброса фильтра (прямой вызов для корректного сброса isFilterActive)
   const handleResetFilter = useCallback(() => {
     setHiddenQuestionIds([]);
+    setExcludeKnown(false);
+    setExcludeWeak(false);
     setFilteredQuestions(questions);
     setFilteredTotalPages(Math.ceil(questions.length / QUESTIONS_PER_SESSION));
     resetPage();
-  }, [questions, setHiddenQuestionIds, resetPage]);
+  }, [questions, setHiddenQuestionIds, setExcludeKnown, setExcludeWeak, setFilteredQuestions, setFilteredTotalPages, resetPage]);
 
   // Рендер
   const currentSectionInfo = sections.find(s => s.id === currentSection);
