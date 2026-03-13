@@ -137,12 +137,14 @@ export const exportTrainerToPDF = async (data: TrainerExportData): Promise<void>
     const isAnswered = userAnswer !== undefined;
     const userAnswerText = isAnswered ? getAnswerText(q, userAnswer) : 'Не отвечено';
     const correctAnswerText = getAnswerText(q, q.correct_index);
+    const isCorrect = isAnswered && userAnswer === q.correct_index;
 
     return {
       number: idx + 1,
       question: truncateText(q.text, 300),
       yourAnswer: truncateText(userAnswerText, 200),
-      correctAnswer: truncateText(correctAnswerText, 200)
+      correctAnswer: truncateText(correctAnswerText, 200),
+      isCorrect
     };
   });
 
@@ -168,6 +170,13 @@ export const exportTrainerToPDF = async (data: TrainerExportData): Promise<void>
       1: { cellWidth: 60 },
       2: { cellWidth: 60 },
       3: { cellWidth: 60 }
+    },
+    didParseCell: (cellData: any) => {
+      const row = tableData[cellData.row.index];
+      // Окрашиваем неверные ответы красным
+      if (cellData.column.index === 2 && !row.isCorrect) {
+        cellData.cell.styles.textColor = COLORS.error;
+      }
     },
     willDrawCell: (_data: any) => {
       doc.setFont('Roboto', 'normal');

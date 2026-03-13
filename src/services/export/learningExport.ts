@@ -112,11 +112,13 @@ export const exportLearningToPDF = async (data: LearningExportData): Promise<voi
     const userAnswerIdx = data.userAnswers[qIdx];
     const isAnswered = userAnswerIdx !== null;
     const shuffledIdx = isAnswered ? data.shuffledAnswers[qIdx][userAnswerIdx] : -1;
+    const isCorrect = isAnswered && shuffledIdx === q.correct_index;
 
     return {
       number: qIdx + 1,
       question: truncateText(q.text, 300),
-      answer: truncateText(getAnswerText(q, shuffledIdx), 200)
+      answer: truncateText(getAnswerText(q, shuffledIdx), 200),
+      isCorrect
     };
   });
 
@@ -135,6 +137,13 @@ export const exportLearningToPDF = async (data: LearningExportData): Promise<voi
       0: { cellWidth: 10, halign: 'center' },
       1: { cellWidth: 95, cellPadding: 5 },
       2: { cellWidth: 93, cellPadding: 5 }
+    },
+    didParseCell: (cellData: any) => {
+      const row = tableData[cellData.row.index];
+      // Окрашиваем неверные ответы красным
+      if (cellData.column.index === 2 && !row.isCorrect) {
+        cellData.cell.styles.textColor = COLORS.error;
+      }
     },
     willDrawCell: (_data: any) => {
       doc.setFont('Roboto', 'normal');
