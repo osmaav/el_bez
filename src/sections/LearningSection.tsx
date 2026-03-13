@@ -26,6 +26,7 @@ import { LoadingModal } from '@/components/ui/loading-modal';
 import { ConfirmModal } from '@/components/ui/confirm-modal';
 import { LearningHeader, LearningProgressBar, LearningQuestionCard, LearningResults } from '@/components/learning';
 import { useLearningProgress } from '@/hooks/useLearningProgress';
+import { useLearningNavigation } from '@/hooks/useLearningNavigation';
 import { useQuestionFilter } from '@/sections/learning/hooks';
 import type { SectionType } from '@/types';
 
