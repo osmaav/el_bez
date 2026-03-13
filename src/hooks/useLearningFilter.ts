@@ -91,6 +91,33 @@ export function useLearningFilter(
     }
   }, [currentSection, questions.length]);
 
+  // Re-apply filter when hiddenQuestionIds change
+  useEffect(() => {
+    if (questions.length === 0) return;
+    
+    if (hiddenQuestionIds.length === 0) {
+      // Сброс фильтра - очищаем отфильтрованные вопросы
+      setFilteredQuestions([]);
+      setFilteredTotalPages(0);
+      // Не сбрасываем isFilterActive - он управляется из initialize и applyFilter
+      console.log('🔍 [useLearningFilter] Фильтр сброшен');
+      return;
+    }
+    
+    const allQuestionIds = questions.map(q => q.id);
+    const filteredIds = allQuestionIds.filter(id => !hiddenQuestionIds.includes(id));
+    const filtered = questions.filter(q => filteredIds.includes(q.id));
+    setFilteredQuestions(filtered);
+    setFilteredTotalPages(Math.ceil(filtered.length / QUESTIONS_PER_SESSION));
+    setIsFilterActive(true);
+    
+    console.log('🔍 [useLearningFilter] Скрытые вопросы обновлены:', {
+      total: questions.length,
+      filtered: filtered.length,
+      pages: Math.ceil(filtered.length / QUESTIONS_PER_SESSION)
+    });
+  }, [hiddenQuestionIds, currentSection, questions]);
+
   // ============================================================================
   // Apply Filter
   // ============================================================================
