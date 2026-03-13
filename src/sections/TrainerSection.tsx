@@ -95,7 +95,12 @@ export function TrainerSection() {
       filterSettings
     );
     
-    const availableQuestions = filteredIds.length > 0 ? filteredIds.length : questions.length;
+    // Фильтруем вопросы
+    const filteredQuestions = filteredIds.length > 0
+      ? questions.filter(q => filteredIds.includes(q.id))
+      : questions;
+    
+    const availableQuestions = filteredQuestions.length;
     const actualCount = Math.min(questionCount, availableQuestions);
 
     setLoadingModal({
@@ -118,7 +123,8 @@ export function TrainerSection() {
 
     setTimeout(() => {
       clearInterval(progressInterval);
-      startTrainer(actualCount);
+      // Передаём отфильтрованные вопросы для случайной выборки
+      startTrainer(actualCount, filteredQuestions);
       setLoadingModal(prev => ({
         ...prev,
         status: 'success',
