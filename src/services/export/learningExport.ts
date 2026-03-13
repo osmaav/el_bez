@@ -113,22 +113,26 @@ export const exportLearningToPDF = async (data: LearningExportData): Promise<voi
     const isAnswered = userAnswerIdx !== null;
     const shuffledIdx = isAnswered ? data.shuffledAnswers[qIdx][userAnswerIdx] : -1;
     const isCorrect = isAnswered && shuffledIdx === q.correct_index;
+    const userAnswerText = isAnswered ? getAnswerText(q, shuffledIdx) : 'Не отвечено';
+    const correctAnswerText = getAnswerText(q, q.correct_index);
 
     return {
       number: qIdx + 1,
       question: truncateText(q.text, 300),
-      answer: truncateText(getAnswerText(q, shuffledIdx), 200),
+      yourAnswer: truncateText(userAnswerText, 200),
+      correctAnswer: truncateText(correctAnswerText, 200),
       isCorrect
     };
   });
 
   autoTable(doc, {
     startY: tableStartY,
-    head: [['№', 'Вопрос', 'Ответ']],
+    head: [['№', 'Вопрос', 'Ваш ответ', 'Верный ответ']],
     body: tableData.map(row => [
       row.number,
       row.question,
-      row.answer
+      row.yourAnswer,
+      row.correctAnswer
     ]),
     theme: 'striped',
     headStyles: {
@@ -140,8 +144,9 @@ export const exportLearningToPDF = async (data: LearningExportData): Promise<voi
     styles: { fontSize: 8, cellPadding: 3, font: 'Roboto', lineWidth: 0 },
     columnStyles: {
       0: { cellWidth: 10, halign: 'center', cellPadding: 3 },
-      1: { cellWidth: 95, cellPadding: 5 },
-      2: { cellWidth: 93, cellPadding: 5 }
+      1: { cellWidth: 60 },
+      2: { cellWidth: 60 },
+      3: { cellWidth: 60 }
     },
     didParseCell: (cellData: any) => {
       const row = tableData[cellData.row.index];
