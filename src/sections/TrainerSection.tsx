@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useApp } from '@/context/AppContext';
 import { useAuth } from '@/context/AuthContext';
 import { useToast } from '@/context/ToastContext';
@@ -10,8 +10,8 @@ import { LoadingModal } from '@/components/ui/loading-modal';
 import { ConfirmModal } from '@/components/ui/confirm-modal';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
+import { Progress } from '@/components/ui/progress';
 import {
   Play,
   RotateCcw,
@@ -73,6 +73,12 @@ export function TrainerSection() {
   // Состояния для фильтра вопросов
   const [hiddenQuestionIds, setHiddenQuestionIds] = useState<number[]>([]);
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
+
+  // Проверка активных фильтров
+  const hasActiveFilters = useMemo(() => {
+    const filterSettings = questionFilterService.getSettings(currentSection);
+    return filterSettings.excludeKnown || filterSettings.excludeWeak || hiddenQuestionIds.length > 0;
+  }, [currentSection, hiddenQuestionIds]);
 
   // Обёртка для startTrainer с LoadingModal и Toast
   const handleStartTrainer = (questionCount: number) => {
@@ -216,12 +222,20 @@ export function TrainerSection() {
               {/* Кнопка фильтра */}
               <div className="mb-6">
                 <Button
-                  variant="outline"
+                  variant={hasActiveFilters ? 'default' : 'outline'}
                   onClick={() => setIsFilterModalOpen(true)}
-                  className="text-slate-700 hover:text-slate-900"
+                  className={hasActiveFilters 
+                    ? 'bg-blue-600 hover:bg-blue-700 text-white' 
+                    : 'text-slate-700 hover:text-slate-900'
+                  }
                 >
                   <Filter className="w-5 h-5 mr-2" />
                   Настроить фильтр вопросов
+                  {hasActiveFilters && (
+                    <Badge variant="secondary" className="ml-2 h-5 text-xs bg-white/20 text-white">
+                      Активен
+                    </Badge>
+                  )}
                 </Button>
                 <p className="text-xs text-slate-500 mt-2 text-center">
                   Исключите известные и слабые вопросы для эффективной тренировки

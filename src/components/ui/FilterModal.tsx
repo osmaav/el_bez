@@ -308,7 +308,7 @@ export function FilterModal({
                             <div className="flex-1 min-w-0">
                               <div className="flex items-center gap-2 mb-1 flex-wrap">
                                 <span className="font-medium text-slate-700 dark:text-slate-300">
-                                  Билет {q.ticket}
+                                  Билет {q.ticket}, Вопрос {q.questionId}
                                 </span>
                                 <Badge
                                   variant={q.isKnown ? 'default' : q.isWeak ? 'destructive' : 'secondary'}
