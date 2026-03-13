@@ -122,7 +122,7 @@ export function FilterModal({
     setExcludeWeak(false);
     setPendingHiddenIds([]);
     questionFilterService.resetSettings(currentSection);
-    
+
     // Если есть onReset, используем его для полного сброса
     if (onReset) {
       onReset();
@@ -132,7 +132,7 @@ export function FilterModal({
       onHiddenChange([]);
       onApply(allQuestionIds, { excludeKnown: false, excludeWeak: false, hiddenQuestionIds: [] });
     }
-    
+
     onClose();
   };
 
