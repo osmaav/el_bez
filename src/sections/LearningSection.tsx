@@ -197,7 +197,7 @@ export function LearningSection() {
   // Computed
   const currentSectionInfo = sections.find(s => s.id === currentSection);
   const TOTAL_QUESTIONS = questions.length;
-  const activeQuestions = filter.filteredQuestions.length > 0 ? filter.filteredQuestions : questions;
+  const activeQuestions = filteredQuestions.length > 0 ? filteredQuestions : questions;
 
   // ============================================================================
   // Handlers
