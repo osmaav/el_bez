@@ -18,9 +18,15 @@ vi.mock('@/services/questionFilterService', () => ({
       excludeKnown: false,
       excludeWeak: false,
       hiddenQuestionIds: [],
+      section: '1258-20',
     })),
     saveSettings: vi.fn(),
     filterQuestions: vi.fn((ids, _stats, settings) => {
+      // Если фильтр не активен, возвращаем все ID
+      if (!settings.excludeKnown && !settings.excludeWeak && settings.hiddenQuestionIds.length === 0) {
+        return ids;
+      }
+      // Эмулируем фильтрацию
       if (settings.excludeKnown) {
         return ids.filter((_, idx) => idx % 2 === 0);
       }
@@ -29,6 +35,12 @@ vi.mock('@/services/questionFilterService', () => ({
       }
       return ids;
     }),
+    toggleExcludeKnown: vi.fn(),
+    toggleExcludeWeak: vi.fn(),
+    hideQuestion: vi.fn(),
+    showQuestion: vi.fn(),
+    resetSettings: vi.fn(),
+    getFilterStats: vi.fn(() => ({ total: 0, known: 0, weak: 0, normal: 0 })),
   },
 }));
 

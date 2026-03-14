@@ -94,29 +94,28 @@ export function useLearningFilter(
   // Re-apply filter when hiddenQuestionIds change
   useEffect(() => {
     if (questions.length === 0) return;
-    
-    if (hiddenQuestionIds.length === 0) {
-      // Сброс фильтра - очищаем отфильтрованные вопросы
-      setFilteredQuestions([]);
-      setFilteredTotalPages(0);
-      // Не сбрасываем isFilterActive - он управляется из initialize и applyFilter
-      console.log('🔍 [useLearningFilter] Фильтр сброшен');
-      return;
-    }
-    
+
     const allQuestionIds = questions.map(q => q.id);
-    const filteredIds = allQuestionIds.filter(id => !hiddenQuestionIds.includes(id));
+    const questionStats = statisticsService.getQuestionStats(currentSection);
+    const filterSettings = questionFilterService.getSettings(currentSection);
+
+    // Получаем отфильтрованные ID с учётом всех настроек (включая excludeKnown/excludeWeak)
+    const filteredIds = questionFilterService.filterQuestions(allQuestionIds, questionStats, filterSettings);
     const filtered = questions.filter(q => filteredIds.includes(q.id));
     setFilteredQuestions(filtered);
     setFilteredTotalPages(Math.ceil(filtered.length / QUESTIONS_PER_SESSION));
-    setIsFilterActive(true);
-    
+
+    // Обновляем флаг активности фильтра на основе настроек
+    const isFilterEnabled = filterSettings.excludeKnown || filterSettings.excludeWeak || filterSettings.hiddenQuestionIds.length > 0;
+    setIsFilterActive(isFilterEnabled);
+
     console.log('🔍 [useLearningFilter] Скрытые вопросы обновлены:', {
       total: questions.length,
       filtered: filtered.length,
-      pages: Math.ceil(filtered.length / QUESTIONS_PER_SESSION)
+      pages: Math.ceil(filtered.length / QUESTIONS_PER_SESSION),
+      active: isFilterEnabled
     });
-  }, [hiddenQuestionIds, currentSection, questions]);
+  }, [hiddenQuestionIds, currentSection, questions.length]);
 
   // ============================================================================
   // Apply Filter
