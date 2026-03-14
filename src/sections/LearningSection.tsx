@@ -19,7 +19,6 @@ import { useApp } from '@/context/AppContext';
 import { useAuth } from '@/context/AuthContext';
 import { useToast } from '@/context/ToastContext';
 import { SessionTracker, statisticsService } from '@/services/statisticsService';
-import { questionFilterService } from '@/services/questionFilterService';
 import { exportLearningToPDF } from '@/services/export';
 import { FilterModal } from '@/components/ui/FilterModal';
 import { LoadingModal } from '@/components/ui/loading-modal';
@@ -119,7 +118,6 @@ export function LearningSection() {
     totalPages: filterTotalPages,
     isFilterActive,
     hiddenQuestionIds,
-    applyFilter,
     setHiddenQuestionIds,
     setExcludeKnown,
     setExcludeWeak,
@@ -265,10 +263,6 @@ export function LearningSection() {
     setFilteredTotalPages(Math.ceil(questions.length / QUESTIONS_PER_SESSION));
     navigation.goToPage(1);
   }, [questions, setHiddenQuestionIds, setExcludeKnown, setExcludeWeak, setFilteredQuestions, setFilteredTotalPages, navigation]);
-
-  const handleHiddenChange = useCallback((newHiddenIds: number[]) => {
-    setHiddenQuestionIds(newHiddenIds);
-  }, [setHiddenQuestionIds]);
 
   const getQuestionStats = useCallback(() => {
     const allStats = statisticsService.getQuestionStats(currentSection);

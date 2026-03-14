@@ -74,7 +74,6 @@ export function LearningSection() {
     totalPages,
     isFilterActive,
     hiddenQuestionIds,
-    applyFilter,
     setHiddenQuestionIds,
     setExcludeKnown,
     setExcludeWeak,
