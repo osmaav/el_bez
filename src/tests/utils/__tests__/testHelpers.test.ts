@@ -71,7 +71,7 @@ describe('testHelpers', () => {
       // Проверяем что нет неожиданных полей
       const allowedKeys = ['id', 'ticket', 'text', 'options', 'correct_index', 'question', 'answers', 'correct', 'link'];
       const questionKeys = Object.keys(question);
-      
+
       questionKeys.forEach(key => {
         expect(allowedKeys).toContain(key);
       });
@@ -159,7 +159,6 @@ describe('testHelpers', () => {
       expect(user).toHaveProperty('workplace');
       expect(user).toHaveProperty('position');
       expect(user).toHaveProperty('emailVerified');
-      expect(user).toHaveProperty('provider');
       expect(user).toHaveProperty('createdAt');
       expect(user).toHaveProperty('updatedAt');
     });
@@ -175,7 +174,6 @@ describe('testHelpers', () => {
       expect(typeof user.workplace).toBe('string');
       expect(typeof user.position).toBe('string');
       expect(typeof user.emailVerified).toBe('boolean');
-      expect(typeof user.provider).toBe('string');
       expect(typeof user.createdAt).toBe('string');
       expect(typeof user.updatedAt).toBe('string');
     });

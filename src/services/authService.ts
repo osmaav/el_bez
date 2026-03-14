@@ -10,8 +10,6 @@ import {
   onAuthStateChanged,
   type User,
   sendEmailVerification,
-  OAuthProvider,
-  signInWithPopup,
   reload,
   sendPasswordResetEmail
 } from 'firebase/auth';
@@ -27,7 +25,7 @@ import {
   getDocs
 } from 'firebase/firestore';
 import { auth, db, isFirebaseReady } from '@/lib/firebase';
-import type { RegisterUserData, LoginUserData, UserProfile, OAuthProvider as OAuthProviderType } from '@/types/auth';
+import type { RegisterUserData, LoginUserData, UserProfile } from '@/types/auth';
 
 /**
  * Коллекция пользователей в Firestore
@@ -170,7 +168,7 @@ export const loginUser = async (userData: LoginUserData): Promise<UserProfile> =
     // Полная обработка ошибок Firebase REST API
     const errorMessage = error?.message || '';
     const errorData = error?.response?.data || error?.response || null;
-    
+
     // Парсинг ошибок из Firebase REST API (JSON формат)
     if (errorData) {
       const restMessage = errorData?.error?.message || errorData?.message || '';
@@ -187,7 +185,7 @@ export const loginUser = async (userData: LoginUserData): Promise<UserProfile> =
         throw Object.assign(new Error('Аккаунт отключён'), { code: 'USER_DISABLED' });
       }
     }
-    
+
     // Прямая проверка сообщения об ошибке
     if (errorMessage.includes('EMAIL_NOT_FOUND')) {
       throw Object.assign(new Error('Пользователь не найден'), { code: 'EMAIL_NOT_FOUND' });
@@ -201,7 +199,7 @@ export const loginUser = async (userData: LoginUserData): Promise<UserProfile> =
     if (errorMessage.includes('USER_DISABLED')) {
       throw Object.assign(new Error('Аккаунт отключён'), { code: 'USER_DISABLED' });
     }
-    
+
     // Стандартная обработка ошибок Firebase Auth
     throw handleAuthError(error);
   }
@@ -226,102 +224,6 @@ const mockLoginUser = async (userData: LoginUserData): Promise<UserProfile> => {
   localStorage.setItem(STORAGE_KEY_AUTH, 'true');
 
   return user;
-};
-
-/**
- * Вход через OAuth провайдер
- */
-export const signInWithOAuth = async (provider: OAuthProviderType): Promise<UserProfile> => {
-  // Проверка готовности Firebase
-  if (!isFirebaseReady()) {
-    // console.log('🔧 Mock OAuth вход (Firebase не настроен)');
-    return mockOAuthSignIn(provider);
-  }
-
-  try {
-    let firebaseProvider;
-
-    switch (provider) {
-      case 'apple':
-        firebaseProvider = new OAuthProvider('apple.com');
-        break;
-      case 'yandex':
-        firebaseProvider = new OAuthProvider('oidc.yandex');
-        break;
-      case 'telegram':
-        throw new Error('Telegram OAuth требует кастомной реализации');
-      case 'max':
-        throw new Error('Max Messenger OAuth требует кастомной реализации');
-      default:
-        throw new Error(`Неподдерживаемый провайдер: ${provider}`);
-    }
-
-    const result = await signInWithPopup(auth, firebaseProvider);
-    const user = result.user;
-
-    // Проверка существования профиля
-    const existingProfile = await getUserProfile(user.uid);
-
-    if (!existingProfile) {
-      // Создание нового профиля
-      const userProfile: UserProfile = {
-        id: user.uid,
-        email: user.email || '',
-        surname: '',
-        name: user.displayName?.split(' ')[0] || '',
-        patronymic: '',
-        birthDate: '',
-        workplace: '',
-        position: '',
-        photoURL: user.photoURL || undefined,
-        provider: provider,
-        providerId: user.providerData[0]?.providerId,
-        emailVerified: user.emailVerified,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-      };
-
-      await setDoc(doc(db, USERS_COLLECTION, user.uid), userProfile);
-      return userProfile;
-    }
-
-    return existingProfile;
-  } catch (error: any) {
-    throw handleAuthError(error);
-  }
-};
-
-/**
- * Mock OAuth вход для разработки
- */
-const mockOAuthSignIn = async (provider: OAuthProviderType): Promise<UserProfile> => {
-  // Имитация задержки сети
-  await new Promise(resolve => setTimeout(resolve, 500));
-
-  const userId = `${provider}_user_${Date.now()}`;
-  const userProfile: UserProfile = {
-    id: userId,
-    email: `user@${provider}.com`,
-    surname: 'OAuth',
-    name: provider.charAt(0).toUpperCase() + provider.slice(1),
-    patronymic: '',
-    birthDate: '',
-    workplace: '',
-    position: '',
-    provider: provider,
-    emailVerified: true,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString()
-  };
-
-  mockUsers[userId] = userProfile;
-  
-  // 🔒 Сохраняем ТОЛЬКО ID в localStorage
-  localStorage.setItem(STORAGE_KEY_USER_ID, userId);
-  localStorage.setItem(STORAGE_KEY_AUTH, 'true');
-
-  // console.log(`✅ Mock ${provider} вход выполнен`);
-  return userProfile;
 };
 
 /**
@@ -381,7 +283,7 @@ export const checkEmailExists = async (email: string): Promise<boolean> => {
       where('email', '==', email.toLowerCase().trim()),
       limit(1)
     );
-    
+
     const querySnapshot = await getDocs(q);
     return !querySnapshot.empty;
   } catch (error: any) {
@@ -473,7 +375,7 @@ const handleAuthError = (error: any): Error => {
   // Получаем код ошибки
   const errorCode = error.code || '';
   const errorMessage = error.message || '';
-  
+
   // Обработка ошибок Firebase REST API
   if (errorMessage.includes('INVALID_PASSWORD')) {
     return new Error('Неверный пароль');
@@ -493,7 +395,7 @@ const handleAuthError = (error: any): Error => {
   if (errorMessage.includes('NETWORK_REQUEST_FAILED')) {
     return new Error('Ошибка сети. Проверьте подключение к интернету.');
   }
-  
+
   // Стандартные ошибки Firebase Auth
   const message = errorMessages[errorCode] || error.message || 'Произошла ошибка при входе';
   return new Error(message);
@@ -696,14 +598,14 @@ export const sendPasswordResetEmailService = async (email: string): Promise<void
     // console.log('✅ [sendPasswordResetEmail] Письмо отправлено на:', email);
   } catch (error: any) {
     // console.error('❌ [sendPasswordResetEmail] Ошибка отправки:', error);
-    
+
     // Обработка ошибок Firebase Auth
     const errorCode = error.code;
     const errorMessage = error.message || '';
-    
+
     // Парсинг ошибок Firebase REST API
     let userFriendlyMessage = 'Не удалось отправить письмо. Попробуйте позже.';
-    
+
     if (errorCode === 'auth/user-not-found' || errorMessage.includes('EMAIL_NOT_FOUND')) {
       userFriendlyMessage = 'Пользователь с таким email не найден. Проверьте email или зарегистрируйтесь.';
     } else if (errorCode === 'auth/invalid-email' || errorMessage.includes('INVALID_EMAIL')) {
@@ -717,7 +619,7 @@ export const sendPasswordResetEmailService = async (email: string): Promise<void
     } else if (errorMessage.includes('OPERATION_NOT_ALLOWED')) {
       userFriendlyMessage = 'Функция сброса пароля временно недоступна.';
     }
-    
+
     throw new Error(userFriendlyMessage);
   }
 };
