@@ -81,18 +81,21 @@ export function LearningSection() {
   // Применяем фильтр к вопросам
   const filteredQuestions = useMemo(() => {
     if (!isFilterActive) return questions;
+
+    // Получаем статистику один раз
+    const questionStats = statisticsService.getQuestionStats(currentSection);
     
     return questions.filter(q => {
       // Скрытые вопросы
       if (hiddenQuestionIds.includes(q.id)) return false;
       // Известные вопросы (100% точность)
       if (filterExcludeKnown) {
-        const stats = statisticsService.getQuestionStats(currentSection).find(s => s.questionId === q.id);
+        const stats = questionStats.find(s => s.questionId === q.id);
         if (stats?.isKnown) return false;
       }
       // Слабые вопросы (< 70% точность)
       if (filterExcludeWeak) {
-        const stats = statisticsService.getQuestionStats(currentSection).find(s => s.questionId === q.id);
+        const stats = questionStats.find(s => s.questionId === q.id);
         if (stats?.isWeak) return false;
       }
       return true;
