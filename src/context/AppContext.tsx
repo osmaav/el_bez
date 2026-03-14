@@ -209,22 +209,14 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     if (stored) {
       try {
         const settings = JSON.parse(stored);
-        // Загружаем настройки только если они отличаются от текущих
-        const currentHiddenIds = JSON.stringify(filterHiddenQuestionIds);
-        const storedHiddenIds = JSON.stringify(settings.hiddenQuestionIds || []);
-        
-        if (currentHiddenIds !== storedHiddenIds ||
-            filterExcludeKnown !== (settings.excludeKnown || false) ||
-            filterExcludeWeak !== (settings.excludeWeak || false)) {
-          setFilterHiddenQuestionIdsState(settings.hiddenQuestionIds || []);
-          setFilterExcludeKnown(settings.excludeKnown || false);
-          setFilterExcludeWeak(settings.excludeWeak || false);
-        }
+        setFilterHiddenQuestionIdsState(settings.hiddenQuestionIds || []);
+        setFilterExcludeKnown(settings.excludeKnown || false);
+        setFilterExcludeWeak(settings.excludeWeak || false);
       } catch (error) {
         console.error('❌ [AppContext] Error loading filter settings:', error);
       }
     }
-  }, [currentSection, filterHiddenQuestionIds, filterExcludeKnown, filterExcludeWeak]);
+  }, [currentSection]);
 
   // Загрузка вопросов при изменении раздела
   useEffect(() => {

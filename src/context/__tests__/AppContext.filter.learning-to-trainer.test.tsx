@@ -1,14 +1,20 @@
 /**
  * Тест воспроизведения бага: фильтр не синхронизируется при переходе Обучение → Тренажёр
  * 
+ * Сценарий:
+ * 1. Пользователь в Обучении скрывает вопрос
+ * 2. Применяет фильтр
+ * 3. Переходит в Тренажёр (LearningSection размонтируется, TrainerSection монтируется)
+ * 4. Фильтр должен быть активен в Тренажёре
+ * 
  * @group Filter
  * @section BugReproduction
  * @scenario Learning to Trainer Filter Sync
  */
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { renderHook, act, waitFor } from '@testing-library/react';
+import { renderHook, act, waitFor, render, screen } from '@testing-library/react';
 import { AppProvider, useApp } from '@/context/AppContext';
 import { AuthProvider } from '@/context/AuthContext';
 
@@ -21,31 +27,39 @@ const wrapper = ({ children }: { children: React.ReactNode }) => (
   </AuthProvider>
 );
 
-// Хук для тестирования
-const useFilterTest = () => {
-  const {
-    filterHiddenQuestionIds,
-    filterExcludeKnown,
-    filterExcludeWeak,
-    setFilterHiddenQuestionIds,
-    setFilterExcludeKnown,
-    setFilterExcludeWeak,
-    isFilterActive,
-    currentSection,
-    setCurrentSection,
-  } = useApp();
+// Компонент который симулирует LearningSection
+const LearningSectionMock = ({ onFilterChange }: { onFilterChange?: (ids: number[]) => void }) => {
+  const { filterHiddenQuestionIds, setFilterHiddenQuestionIds, isFilterActive } = useApp();
+  
+  useEffect(() => {
+    if (onFilterChange) {
+      onFilterChange(filterHiddenQuestionIds);
+    }
+  }, [filterHiddenQuestionIds, onFilterChange]);
+  
+  return (
+    <div data-testid="learning-section">
+      <span data-testid="is-filter-active">{isFilterActive ? 'true' : 'false'}</span>
+      <button
+        data-testid="hide-question"
+        onClick={() => setFilterHiddenQuestionIds([5])}
+      >
+        Hide Question 5
+      </button>
+    </div>
+  );
+};
 
-  return {
-    filterHiddenQuestionIds,
-    filterExcludeKnown,
-    filterExcludeWeak,
-    setFilterHiddenQuestionIds,
-    setFilterExcludeKnown,
-    setFilterExcludeWeak,
-    isFilterActive,
-    currentSection,
-    setCurrentSection,
-  };
+// Компонент который симулирует TrainerSection
+const TrainerSectionMock = () => {
+  const { filterHiddenQuestionIds, isFilterActive } = useApp();
+  
+  return (
+    <div data-testid="trainer-section">
+      <span data-testid="is-filter-active">{isFilterActive ? 'true' : 'false'}</span>
+      <span data-testid="hidden-ids">{JSON.stringify(filterHiddenQuestionIds)}</span>
+    </div>
+  );
 };
 
 describe('BUG: Фильтр не синхронизируется Обучение → Тренажёр', () => {
@@ -59,110 +73,85 @@ describe('BUG: Фильтр не синхронизируется Обучени
     localStorage.clear();
   });
 
-  it('должен сохранять фильтр активным при переходе из Обучения в Тренажёр', async () => {
-    const { result } = renderHook(() => useFilterTest(), { wrapper });
+  it('должен сохранять фильтр активным при переходе из Обучения в Тренажёр (реальный сценарий)', async () => {
+    // 1. Рендерим LearningSection
+    const { rerender } = render(<LearningSectionMock />, { wrapper });
 
-    // 1. Изначально фильтр не активен
-    await waitFor(() => {
-      expect(result.current.isFilterActive).toBe(false);
-      expect(result.current.filterHiddenQuestionIds).toEqual([]);
-    });
+    // Проверяем что изначально фильтр не активен
+    expect(screen.getByTestId('is-filter-active').textContent).toBe('false');
 
-    // 2. В "Обучении" скрываем вопрос вручную
+    // 2. Скрываем вопрос в Обучении
+    const hideButton = screen.getByTestId('hide-question');
     await act(async () => {
-      result.current.setFilterHiddenQuestionIds([5]);
+      hideButton.click();
     });
 
-    // 3. Проверяем что фильтр активен в "Обучении"
+    // Проверяем что фильтр активен в Обучении
     await waitFor(() => {
-      expect(result.current.isFilterActive).toBe(true);
-      expect(result.current.filterHiddenQuestionIds).toEqual([5]);
+      expect(screen.getByTestId('is-filter-active').textContent).toBe('true');
     });
 
-    // 4. Проверяем что настройки сохранены в localStorage
+    // 3. Проверяем что настройки сохранены в localStorage
     const stored = localStorage.getItem(storageKey);
     expect(stored).toBeTruthy();
     const settings = JSON.parse(stored!);
     expect(settings.hiddenQuestionIds).toEqual([5]);
 
-    // 5. "Переходим в Тренажёр" (переключаем секцию, но раздел тот же)
-    // В реальном приложении это происходит через setCurrentPage('trainer')
-    // Но фильтр должен остаться активным потому что раздел не изменился
+    // 4. "Переходим в Тренажёр" - размонтируем LearningSection, монтируем TrainerSection
+    rerender(<TrainerSectionMock />, { wrapper });
 
-    // 6. Проверяем что фильтр ВСЁ ЕЩЁ активен
-    // Это ключевая проверка - фильтр не должен сбрасываться
+    // 5. КРИТИЧЕСКАЯ ПРОВЕРКА: фильтр должен быть активен в Тренажёре
+    // Это ключевая проверка которая сейчас падает
     await waitFor(() => {
-      expect(result.current.isFilterActive).toBe(true);
-      expect(result.current.filterHiddenQuestionIds).toEqual([5]);
-    });
+      expect(screen.getByTestId('is-filter-active').textContent).toBe('true');
+      expect(screen.getByTestId('hidden-ids').textContent).toBe('[5]');
+    }, { timeout: 2000 });
   });
 
-  it('должен сохранять фильтр после применения и перехода в Тренажёр', async () => {
-    const { result } = renderHook(() => useFilterTest(), { wrapper });
-
-    // 1. Активируем фильтр в "Обучении"
-    await act(async () => {
-      result.current.setFilterHiddenQuestionIds([1, 2, 3]);
-      result.current.setFilterExcludeKnown(true);
-    });
-
-    await waitFor(() => {
-      expect(result.current.isFilterActive).toBe(true);
-      expect(result.current.filterHiddenQuestionIds).toEqual([1, 2, 3]);
-      expect(result.current.filterExcludeKnown).toBe(true);
-    });
-
-    // 2. Проверяем сохранение в localStorage
-    const stored = localStorage.getItem(storageKey);
-    const settings = JSON.parse(stored!);
-    expect(settings.hiddenQuestionIds).toEqual([1, 2, 3]);
-    expect(settings.excludeKnown).toBe(true);
-
-    // 3. "Переходим в Тренажёр" - фильтр должен остаться активным
-    await waitFor(() => {
-      expect(result.current.isFilterActive).toBe(true);
-      expect(result.current.filterHiddenQuestionIds).toEqual([1, 2, 3]);
-      expect(result.current.filterExcludeKnown).toBe(true);
-    });
-  });
-
-  it('должен загружать настройки из localStorage сразу после инициализации', async () => {
-    // Сохраняем настройки заранее
+  it('должен загружать настройки из localStorage при первом рендере TrainerSection', async () => {
+    // Сохраняем настройки заранее (как будто они были сохранены в предыдущей сессии)
     localStorage.setItem(storageKey, JSON.stringify({
       excludeKnown: false,
       excludeWeak: false,
       hiddenQuestionIds: [7, 14],
     }));
 
-    // Создаём НОВЫЙ хук (симуляция перехода на страницу)
-    const { result } = renderHook(() => useFilterTest(), { wrapper });
+    // Рендерим TrainerSection (симуляция первого захода в Тренажёр)
+    render(<TrainerSectionMock />, { wrapper });
 
-    // Проверяем что настройки загрузились СРАЗУ
+    // Проверяем что настройки загрузились
     await waitFor(() => {
-      expect(result.current.filterHiddenQuestionIds).toEqual([7, 14]);
-      expect(result.current.isFilterActive).toBe(true);
-    });
+      expect(screen.getByTestId('is-filter-active').textContent).toBe('true');
+      expect(screen.getByTestId('hidden-ids').textContent).toBe('[7,14]');
+    }, { timeout: 2000 });
   });
 
-  it('НЕ должен сбрасывать фильтр при изменении currentPage', async () => {
-    const { result } = renderHook(() => useFilterTest(), { wrapper });
+  it('должен сохранять и восстанавливать настройки при множественных переключениях', async () => {
+    // 1. LearningSection
+    const { rerender } = render(<LearningSectionMock />, { wrapper });
 
     // Активируем фильтр
     await act(async () => {
-      result.current.setFilterHiddenQuestionIds([10]);
+      screen.getByTestId('hide-question').click();
     });
 
     await waitFor(() => {
-      expect(result.current.isFilterActive).toBe(true);
+      expect(screen.getByTestId('is-filter-active').textContent).toBe('true');
     });
 
-    // "Переходим на другую страницу" (в реальном приложении это learning → trainer)
-    // Но currentSection не меняется, поэтому фильтр должен остаться активным
-    
-    // Проверяем что фильтр не сбросился
+    // 2. Переход в TrainerSection
+    rerender(<TrainerSectionMock />, { wrapper });
+
     await waitFor(() => {
-      expect(result.current.isFilterActive).toBe(true);
-      expect(result.current.filterHiddenQuestionIds).toEqual([10]);
+      expect(screen.getByTestId('is-filter-active').textContent).toBe('true');
+    });
+
+    // 3. Возврат в LearningSection
+    rerender(<LearningSectionMock />, { wrapper });
+
+    // Фильтр должен остаться активным
+    await waitFor(() => {
+      expect(screen.getByTestId('is-filter-active').textContent).toBe('true');
     });
   });
 });
