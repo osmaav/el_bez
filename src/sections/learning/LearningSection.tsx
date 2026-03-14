@@ -315,7 +315,10 @@ export function LearningSection() {
 
   // Обработка применения фильтра
   const handleApplyFilter = useCallback((_filteredIds: number[], settings: { excludeKnown: boolean; excludeWeak: boolean; hiddenQuestionIds: number[] }) => {
-    console.log('🔍 [LearningSection] Применение фильтра из модального окна:', settings);
+    console.log('🔍 [LearningSection] handleApplyFilter вызван:', {
+      settings,
+      _filteredIds_length: _filteredIds.length
+    });
     
     // Обновляем все параметры фильтра напрямую
     setHiddenQuestionIds(settings.hiddenQuestionIds);
