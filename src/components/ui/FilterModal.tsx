@@ -288,26 +288,27 @@ export function FilterModal({
                   </div>
                 </div>
 
-                {/* Предупреждение о скрытых вопросах */}
-                {pendingHiddenIds.length > 0 && (
-                  <Alert className="bg-amber-50 dark:bg-amber-950/20 border-amber-200">
-                    <AlertDescription className="text-amber-800 dark:text-amber-300">
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm">
-                          Скрыто вопросов: {pendingHiddenIds.length}
-                        </span>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => setPendingHiddenIds([])}
-                          className="h-6 text-xs"
-                        >
-                          Показать все
-                        </Button>
-                      </div>
-                    </AlertDescription>
-                  </Alert>
-                )}
+                {/* Предупреждение о скрытых вопросах — всегда рендерится для предотвращения "прыгания" окна */}
+                <Alert className={`bg-amber-50 dark:bg-amber-950/20 border-amber-200 transition-opacity duration-200 ${
+                  pendingHiddenIds.length > 0 ? 'opacity-100' : 'opacity-0 pointer-events-none'
+                }`}>
+                  <AlertDescription className="text-amber-800 dark:text-amber-300">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm">
+                        Скрыто вопросов: {pendingHiddenIds.length}
+                      </span>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setPendingHiddenIds([])}
+                        className="h-6 text-xs"
+                        disabled={pendingHiddenIds.length === 0}
+                      >
+                        Показать все
+                      </Button>
+                    </div>
+                  </AlertDescription>
+                </Alert>
 
                 {/* Список вопросов для ручного скрытия */}
                 <div className="space-y-2">
