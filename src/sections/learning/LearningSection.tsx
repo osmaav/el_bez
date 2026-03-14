@@ -78,6 +78,14 @@ export function LearningSection() {
     isFilterActive,
   } = useApp();
 
+  // Отладка: лог значений из useApp
+  console.log('🔵 [LearningSection] Значения из useApp:', {
+    filterExcludeKnown,
+    filterExcludeWeak,
+    hiddenQuestionIds: hiddenQuestionIds.length,
+    isFilterActive
+  });
+
   // Применяем фильтр к вопросам
   const filteredQuestions = useMemo(() => {
     console.log('🔍 [LearningSection] Применение фильтра:', {
