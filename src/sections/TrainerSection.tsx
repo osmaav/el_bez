@@ -45,7 +45,13 @@ export function TrainerSection() {
     finishTrainer,
     resetTrainer,
     currentSection,
-    sections
+    sections,
+    filterHiddenQuestionIds,
+    setFilterHiddenQuestionIds,
+    filterExcludeKnown,
+    setFilterExcludeKnown,
+    filterExcludeWeak,
+    setFilterExcludeWeak,
   } = useApp();
 
   const { user } = useAuth();
@@ -70,21 +76,17 @@ export function TrainerSection() {
     description: ''
   });
   
-  // Состояния для фильтра вопросов
-  const [hiddenQuestionIds, setHiddenQuestionIds] = useState<number[]>([]);
+  // Состояния для фильтра вопросов - используем фильтр из AppContext
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
 
   // Проверка активных фильтров
   const hasActiveFilters = useMemo(() => {
-    const filterSettings = questionFilterService.getSettings(currentSection);
-    return filterSettings.excludeKnown || filterSettings.excludeWeak || hiddenQuestionIds.length > 0;
-  }, [currentSection, hiddenQuestionIds]);
+    return filterExcludeKnown || filterExcludeWeak || filterHiddenQuestionIds.length > 0;
+  }, [filterExcludeKnown, filterExcludeWeak, filterHiddenQuestionIds]);
 
   // Обёртка для startTrainer с LoadingModal и Toast
   const handleStartTrainer = (questionCount: number) => {
-    // Загружаем настройки фильтра при старте
-    const filterSettings = questionFilterService.getSettings(currentSection);
-    setHiddenQuestionIds(filterSettings.hiddenQuestionIds);
+    // Настройки фильтра уже загружены из AppContext через filterHiddenQuestionIds
 
     // Получаем отфильтрованные вопросы
     const allQuestionStats = statisticsService.getQuestionStats(currentSection);
@@ -92,9 +94,14 @@ export function TrainerSection() {
     const filteredIds = questionFilterService.filterQuestions(
       allQuestionIds,
       allQuestionStats,
-      filterSettings
+      {
+        excludeKnown: filterExcludeKnown,
+        excludeWeak: filterExcludeWeak,
+        hiddenQuestionIds: filterHiddenQuestionIds,
+        section: currentSection,
+      }
     );
-    
+
     // Фильтруем вопросы
     const filteredQuestions = filteredIds.length > 0
       ? questions.filter(q => filteredIds.includes(q.id))
@@ -277,26 +284,17 @@ export function TrainerSection() {
         <FilterModal
           isOpen={isFilterModalOpen}
           onClose={() => setIsFilterModalOpen(false)}
-          onApply={(filteredIds, settings) => {
-            console.log('🔍 [TrainerSection] Фильтр применён, вопросов:', filteredIds.length, 'настройки:', settings);
-
-            // Сохраняем настройки фильтра
-            const filterSettings = questionFilterService.getSettings(currentSection);
-            filterSettings.excludeKnown = settings.excludeKnown;
-            filterSettings.excludeWeak = settings.excludeWeak;
-            questionFilterService.saveSettings(filterSettings);
-
-            // Обновляем скрытые вопросы
-            setHiddenQuestionIds(filterSettings.hiddenQuestionIds);
+          onApply={(_filteredIds, settings) => {
+            // Обновляем настройки фильтра в AppContext
+            setFilterHiddenQuestionIds(settings.hiddenQuestionIds);
+            setFilterExcludeKnown(settings.excludeKnown);
+            setFilterExcludeWeak(settings.excludeWeak);
           }}
           questionStats={statisticsService.getQuestionStats(currentSection)}
           questions={questions}
-          hiddenQuestionIds={hiddenQuestionIds}
+          hiddenQuestionIds={filterHiddenQuestionIds}
           onHiddenChange={(newHiddenIds) => {
-            setHiddenQuestionIds(newHiddenIds);
-            const settings = questionFilterService.getSettings(currentSection);
-            settings.hiddenQuestionIds = newHiddenIds;
-            questionFilterService.saveSettings(settings);
+            setFilterHiddenQuestionIds(newHiddenIds);
           }}
           currentSection={currentSection}
         />
