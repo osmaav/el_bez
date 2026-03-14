@@ -1,15 +1,11 @@
 /**
- * Тестовые утилиты для el-bez
- * 
+ * Тестовые утилиты для работы с вопросами
+ *
  * @description Общие вспомогательные функции для всех тестов
  */
 
 import { vi } from 'vitest';
-import type { Question, SectionType, UserProfile } from '@/types';
-
-// ============================================================================
-// Mock данных
-// ============================================================================
+import type { Question, SectionType } from '@/types';
 
 /**
  * Создание тестового вопроса
@@ -21,25 +17,44 @@ export const createMockQuestion = (overrides?: Partial<Question>): Question => (
   options: ['Вариант 1', 'Вариант 2', 'Вариант 3', 'Вариант 4'],
   correct_index: 0,
   correct: 0,
+  section: '1258-20',
   ...overrides,
 });
 
 /**
- * Создание массива тестовых вопросов
+ * Создание массива тестовых вопросов для конкретного раздела
+ * Количество вопросов берётся из актуальной базы Firebase
  */
-export const createMockQuestions = (count: number, _section: SectionType = '1258-20'): Question[] => {
+export const createMockQuestions = (count: number, section: SectionType = '1258-20'): Question[] => {
   return Array.from({ length: count }, (_, i) =>
     createMockQuestion({
       id: i + 1,
       ticket: Math.floor(i / 10) + 1,
+      section,
     })
   );
 };
 
 /**
+ * Актуальное количество вопросов по разделам (из Firebase на 2026.03.13)
+ * Эти данные должны обновляться при изменении количества вопросов в Firebase
+ */
+export const QUESTIONS_BY_SECTION: Record<SectionType, number> = {
+  '1256-19': 250,  // III группа до 1000 В
+  '1258-20': 310,  // IV группа до 1000 В
+};
+
+/**
+ * Получение актуального количества вопросов для раздела
+ */
+export const getSectionTotalQuestions = (section: SectionType): number => {
+  return QUESTIONS_BY_SECTION[section] || 0;
+};
+
+/**
  * Создание тестового пользователя
  */
-export const createMockUser = (overrides?: Partial<UserProfile>): UserProfile => ({
+export const createMockUser = (overrides?: Partial<any>): any => ({
   id: 'test-user-id',
   email: 'test@example.com',
   surname: 'Иванов',
@@ -54,10 +69,6 @@ export const createMockUser = (overrides?: Partial<UserProfile>): UserProfile =>
   updatedAt: new Date().toISOString(),
   ...overrides,
 });
-
-// ============================================================================
-// Mock Firebase
-// ============================================================================
 
 /**
  * Моки для Firebase Authentication
@@ -101,10 +112,6 @@ export const restoreAllMocks = () => {
   vi.restoreAllMocks();
 };
 
-// ============================================================================
-// Утилиты для тестирования UI
-// ============================================================================
-
 /**
  * Ожидание следующего тика event loop
  */
@@ -123,10 +130,9 @@ export const pressKey = async (key: string) => {
   await waitForNextTick();
 };
 
-// ============================================================================
-// Константы для тестов
-// ============================================================================
-
+/**
+ * Константы для тестов
+ */
 export const TEST_SECTIONS: SectionType[] = ['1256-19', '1258-20'];
 
 export const TEST_PAGES = ['theory', 'learning', 'trainer', 'exam', 'statistics'] as const;

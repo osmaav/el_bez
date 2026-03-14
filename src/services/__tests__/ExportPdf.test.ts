@@ -7,7 +7,8 @@
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { createMockQuestions } from '@/tests/utils/testHelpers';
+import { createMockQuestions, getSectionTotalQuestions } from '@/tests/utils/testHelpers';
+import type { SectionType } from '@/types';
 
 // Моки для jsPDF и autoTable (используем hoisted для корректной работы)
 const mocks = vi.hoisted(() => ({
@@ -49,16 +50,19 @@ import { exportTrainerToPDF } from '@/services/export/trainerExport';
 import { exportExamToPDF } from '@/services/export/examExport';
 
 describe('Export to PDF', () => {
+  const SECTION_1258_20: SectionType = '1258-20';
+  const totalQuestions = getSectionTotalQuestions(SECTION_1258_20);
+
   describe('Learning Export', () => {
     it('должен экспортировать результаты обучения без ошибок', async () => {
-      const questions = createMockQuestions(10);
+      const questions = createMockQuestions(10, SECTION_1258_20);
       const exportData = {
-        section: '1258-20' as const,
+        section: SECTION_1258_20,
         sectionInfo: {
-          id: '1258-20',
+          id: SECTION_1258_20,
           name: 'ЭБ 1258.20',
           description: 'IV группа до 1000 В',
-          totalQuestions: questions.length,
+          totalQuestions,
           totalTickets: 31,
         },
         page: 1,
@@ -79,14 +83,14 @@ describe('Export to PDF', () => {
     });
 
     it('должен использовать правильный формат имени файла', async () => {
-      const questions = createMockQuestions(10);
+      const questions = createMockQuestions(10, SECTION_1258_20);
       const exportData = {
-        section: '1258-20' as const,
+        section: SECTION_1258_20,
         sectionInfo: {
-          id: '1258-20',
+          id: SECTION_1258_20,
           name: 'ЭБ 1258.20',
           description: 'IV группа до 1000 В',
-          totalQuestions: questions.length,
+          totalQuestions,
           totalTickets: 31,
         },
         page: 5,
@@ -110,14 +114,14 @@ describe('Export to PDF', () => {
     });
 
     it('должен экспортировать с данными пользователя', async () => {
-      const questions = createMockQuestions(10);
+      const questions = createMockQuestions(10, SECTION_1258_20);
       const exportData = {
-        section: '1258-20' as const,
+        section: SECTION_1258_20,
         sectionInfo: {
-          id: '1258-20',
+          id: SECTION_1258_20,
           name: 'ЭБ 1258.20',
           description: 'IV группа до 1000 В',
-          totalQuestions: questions.length,
+          totalQuestions,
           totalTickets: 31,
         },
         page: 1,
@@ -143,14 +147,14 @@ describe('Export to PDF', () => {
 
   describe('Trainer Export', () => {
     it('должен экспортировать результаты тренажёра без ошибок', async () => {
-      const questions = createMockQuestions(20);
+      const questions = createMockQuestions(20, SECTION_1258_20);
       const exportData = {
-        section: '1258-20' as const,
+        section: SECTION_1258_20,
         sectionInfo: {
-          id: '1258-20',
+          id: SECTION_1258_20,
           name: 'ЭБ 1258.20',
           description: 'IV группа до 1000 В',
-          totalQuestions: questions.length,
+          totalQuestions,
           totalTickets: 31,
         },
         questions,
@@ -168,14 +172,14 @@ describe('Export to PDF', () => {
     });
 
     it('должен использовать правильный формат имени файла', async () => {
-      const questions = createMockQuestions(20);
+      const questions = createMockQuestions(20, SECTION_1258_20);
       const exportData = {
-        section: '1258-20' as const,
+        section: SECTION_1258_20,
         sectionInfo: {
-          id: '1258-20',
+          id: SECTION_1258_20,
           name: 'ЭБ 1258.20',
           description: 'IV группа до 1000 В',
-          totalQuestions: questions.length,
+          totalQuestions,
           totalTickets: 31,
         },
         questions,
@@ -199,14 +203,14 @@ describe('Export to PDF', () => {
 
   describe('Exam Export', () => {
     it('должен экспортировать результаты экзамена без ошибок', async () => {
-      const questions = createMockQuestions(10);
+      const questions = createMockQuestions(10, SECTION_1258_20);
       const exportData = {
-        section: '1258-20' as const,
+        section: SECTION_1258_20,
         sectionInfo: {
-          id: '1258-20',
+          id: SECTION_1258_20,
           name: 'ЭБ 1258.20',
           description: 'IV группа до 1000 В',
-          totalQuestions: questions.length,
+          totalQuestions,
           totalTickets: 31,
         },
         ticketId: 5,
@@ -226,14 +230,14 @@ describe('Export to PDF', () => {
     });
 
     it('должен использовать правильный формат имени файла для сданного экзамена', async () => {
-      const questions = createMockQuestions(10);
+      const questions = createMockQuestions(10, SECTION_1258_20);
       const exportData = {
-        section: '1258-20' as const,
+        section: SECTION_1258_20,
         sectionInfo: {
-          id: '1258-20',
+          id: SECTION_1258_20,
           name: 'ЭБ 1258.20',
           description: 'IV группа до 1000 В',
-          totalQuestions: questions.length,
+          totalQuestions,
           totalTickets: 31,
         },
         ticketId: 10,
@@ -257,14 +261,14 @@ describe('Export to PDF', () => {
     });
 
     it('должен использовать правильный формат имени файла для несданного экзамена', async () => {
-      const questions = createMockQuestions(10);
+      const questions = createMockQuestions(10, SECTION_1258_20);
       const exportData = {
-        section: '1258-20' as const,
+        section: SECTION_1258_20,
         sectionInfo: {
-          id: '1258-20',
+          id: SECTION_1258_20,
           name: 'ЭБ 1258.20',
           description: 'IV группа до 1000 В',
-          totalQuestions: questions.length,
+          totalQuestions,
           totalTickets: 31,
         },
         ticketId: 15,
@@ -288,14 +292,14 @@ describe('Export to PDF', () => {
     });
 
     it('должен экспортировать с данными пользователя', async () => {
-      const questions = createMockQuestions(10);
+      const questions = createMockQuestions(10, SECTION_1258_20);
       const exportData = {
-        section: '1258-20' as const,
+        section: SECTION_1258_20,
         sectionInfo: {
-          id: '1258-20',
+          id: SECTION_1258_20,
           name: 'ЭБ 1258.20',
           description: 'IV группа до 1000 В',
-          totalQuestions: questions.length,
+          totalQuestions,
           totalTickets: 31,
         },
         ticketId: 1,
@@ -321,14 +325,14 @@ describe('Export to PDF', () => {
 
   describe('Общие проверки', () => {
     it('должен загружать кириллический шрифт перед генерацией', async () => {
-      const questions = createMockQuestions(10);
+      const questions = createMockQuestions(10, SECTION_1258_20);
       const exportData = {
-        section: '1258-20' as const,
+        section: SECTION_1258_20,
         sectionInfo: {
-          id: '1258-20',
+          id: SECTION_1258_20,
           name: 'ЭБ 1258.20',
           description: 'IV группа до 1000 В',
-          totalQuestions: questions.length,
+          totalQuestions,
           totalTickets: 31,
         },
         page: 1,

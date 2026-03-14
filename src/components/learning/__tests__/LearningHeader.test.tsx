@@ -11,25 +11,22 @@ import { render, screen } from '@testing-library/react';
 import { LearningHeader } from '@/components/learning/LearningHeader';
 import '@testing-library/jest-dom';
 import React from 'react';
+import { getSectionTotalQuestions } from '@/tests/utils/testHelpers';
+import type { SectionType } from '@/types';
 
 describe('LearningHeader', () => {
-  const mockQuestions = Array.from({ length: 310 }, (_, i) => ({
-    id: i + 1,
-    ticket: Math.floor(i / 10) + 1,
-    text: `Вопрос ${i + 1}`,
-    options: ['Вариант 1', 'Вариант 2', 'Вариант 3', 'Вариант 4'],
-    correct_index: 0,
-  }));
+  const SECTION_1258_20: SectionType = '1258-20';
+  const totalQuestions = getSectionTotalQuestions(SECTION_1258_20);
 
   const defaultProps = {
     sectionInfo: {
-      id: '1258-20' as const,
+      id: SECTION_1258_20,
       name: 'ЭБ 1258.20',
       description: 'IV группа до 1000 В',
-      totalQuestions: mockQuestions.length,
+      totalQuestions,
       totalTickets: 31,
     },
-    totalQuestions: mockQuestions.length,
+    totalQuestions,
     totalPages: 31,
   };
 
