@@ -147,6 +147,24 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [filterExcludeKnown, setFilterExcludeKnown] = useState(false);
   const [filterExcludeWeak, setFilterExcludeWeak] = useState(false);
 
+  // Загрузка настроек фильтра при первой инициализации
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    
+    const filterKey = `elbez_question_filter_${currentSection}`;
+    const stored = localStorage.getItem(filterKey);
+    if (stored) {
+      try {
+        const settings = JSON.parse(stored);
+        setFilterHiddenQuestionIdsState(settings.hiddenQuestionIds || []);
+        setFilterExcludeKnown(settings.excludeKnown || false);
+        setFilterExcludeWeak(settings.excludeWeak || false);
+      } catch (error) {
+        console.error('❌ [AppContext] Error loading filter settings:', error);
+      }
+    }
+  }, []); // Пустой массив - загружаем только один раз при инициализации
+
   // Вычисляем активность фильтра
   const isFilterActive = filterHiddenQuestionIds.length > 0 || filterExcludeKnown || filterExcludeWeak;
 
@@ -199,24 +217,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [examAnswers, setExamAnswers] = useState<Record<number, number>>({});
   const [examResults, setExamResults] = useState<Record<number, boolean>>({});
   const [isExamFinished, setIsExamFinished] = useState(false);
-
-  // Загрузка настроек фильтра при изменении раздела
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    
-    const filterKey = `elbez_question_filter_${currentSection}`;
-    const stored = localStorage.getItem(filterKey);
-    if (stored) {
-      try {
-        const settings = JSON.parse(stored);
-        setFilterHiddenQuestionIdsState(settings.hiddenQuestionIds || []);
-        setFilterExcludeKnown(settings.excludeKnown || false);
-        setFilterExcludeWeak(settings.excludeWeak || false);
-      } catch (error) {
-        console.error('❌ [AppContext] Error loading filter settings:', error);
-      }
-    }
-  }, [currentSection]);
 
   // Загрузка вопросов при изменении раздела
   useEffect(() => {
