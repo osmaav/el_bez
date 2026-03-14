@@ -80,23 +80,42 @@ export function LearningSection() {
 
   // Применяем фильтр к вопросам
   const filteredQuestions = useMemo(() => {
+    console.log('🔍 [LearningSection] Применение фильтра:', {
+      isFilterActive,
+      filterExcludeKnown,
+      filterExcludeWeak,
+      hiddenQuestionIds,
+      questionsCount: questions.length
+    });
+
     if (!isFilterActive) return questions;
 
     // Получаем статистику один раз
     const questionStats = statisticsService.getQuestionStats(currentSection);
-    
+    console.log('📊 [LearningSection] Статистика вопросов:', {
+      total: questionStats.length,
+      known: questionStats.filter(s => s.isKnown).length,
+      weak: questionStats.filter(s => s.isWeak).length
+    });
+
     return questions.filter(q => {
       // Скрытые вопросы
       if (hiddenQuestionIds.includes(q.id)) return false;
       // Известные вопросы (100% точность)
       if (filterExcludeKnown) {
         const stats = questionStats.find(s => s.questionId === q.id);
-        if (stats?.isKnown) return false;
+        if (stats?.isKnown) {
+          console.log('❌ [LearningSection] Исключён известный вопрос:', q.id);
+          return false;
+        }
       }
       // Слабые вопросы (< 70% точность)
       if (filterExcludeWeak) {
         const stats = questionStats.find(s => s.questionId === q.id);
-        if (stats?.isWeak) return false;
+        if (stats?.isWeak) {
+          console.log('❌ [LearningSection] Исключён слабый вопрос:', q.id);
+          return false;
+        }
       }
       return true;
     });
@@ -288,10 +307,18 @@ export function LearningSection() {
 
   // Обработка применения фильтра
   const handleApplyFilter = useCallback((_filteredIds: number[], settings: { excludeKnown: boolean; excludeWeak: boolean; hiddenQuestionIds: number[] }) => {
+    console.log('🔍 [LearningSection] Применение фильтра из модального окна:', settings);
+    
     // Обновляем все параметры фильтра напрямую
     setHiddenQuestionIds(settings.hiddenQuestionIds);
     setExcludeKnown(settings.excludeKnown);
     setExcludeWeak(settings.excludeWeak);
+
+    console.log('✅ [LearningSection] Настройки фильтра обновлены:', {
+      hiddenQuestionIds: settings.hiddenQuestionIds,
+      excludeKnown: settings.excludeKnown,
+      excludeWeak: settings.excludeWeak
+    });
 
     // Сбрасываем на первую страницу
     resetPage();
