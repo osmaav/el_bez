@@ -1,13 +1,20 @@
 /**
  * Тесты вычисляемых значений (Math) для StatisticsSection
- * 
+ *
  * @group Math
  * @section Statistics
  */
 
 import { describe, it, expect } from 'vitest';
+import { getSectionTotalQuestions } from '@/tests/utils/testHelpers';
+import type { SectionType } from '@/types';
 
 describe('StatisticsSection', () => {
+  const SECTION_1256_19: SectionType = '1256-19';
+  const SECTION_1258_20: SectionType = '1258-20';
+  const totalQuestions1256 = getSectionTotalQuestions(SECTION_1256_19);
+  const totalQuestions1258 = getSectionTotalQuestions(SECTION_1258_20);
+
   describe('Math', () => {
     describe('Расчёт общей статистики', () => {
       const calculateTotalStats = (sessions: any[]) => {
@@ -167,11 +174,11 @@ describe('StatisticsSection', () => {
       });
 
       it('должен работать с разделом 1256-19 (250 вопросов)', () => {
-        expect(calculateSectionProgress(125, 250)).toBe(50);
+        expect(calculateSectionProgress(125, totalQuestions1256)).toBe(50);
       });
 
-      it('должен работать с разделом 1258-20 (304 вопроса)', () => {
-        expect(calculateSectionProgress(152, 304)).toBe(50);
+      it('должен работать с разделом 1258-20 (310 вопросов)', () => {
+        expect(calculateSectionProgress(155, totalQuestions1258)).toBe(50);
       });
     });
 

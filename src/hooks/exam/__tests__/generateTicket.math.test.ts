@@ -98,8 +98,8 @@ describe('ExamSection', () => {
           expect(calculateTotalTickets(255)).toBe(25);
         });
 
-        it('должен округлять 304 вопроса до 30 билетов', () => {
-          expect(calculateTotalTickets(304)).toBe(30);
+        it('должен округлять 310 вопросов до 31 билетов', () => {
+          expect(calculateTotalTickets(310)).toBe(31);
         });
       });
 

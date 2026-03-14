@@ -1,12 +1,14 @@
 /**
  * Тесты расчёта процента сдачи экзамена
- * 
+ *
  * @group Math
  * @section Exam
  * @function calculatePercentage
  */
 
 import { describe, it, expect } from 'vitest';
+import { getSectionTotalQuestions } from '@/tests/utils/testHelpers';
+import type { SectionType } from '@/types';
 
 const calculatePercentage = (correct: number, total: number): number => {
   if (total === 0) return 0;
@@ -14,6 +16,9 @@ const calculatePercentage = (correct: number, total: number): number => {
 };
 
 describe('ExamSection', () => {
+  const SECTION_1258_20: SectionType = '1258-20';
+  const totalQuestions = getSectionTotalQuestions(SECTION_1258_20);
+
   describe('Math', () => {
     describe('calculatePercentage', () => {
       describe('Базовые случаи', () => {
@@ -64,7 +69,7 @@ describe('ExamSection', () => {
         });
 
         it('должен работать с большими числами', () => {
-          expect(calculatePercentage(152, 304)).toBe(50);
+          expect(calculatePercentage(155, totalQuestions)).toBe(50);
         });
       });
     });

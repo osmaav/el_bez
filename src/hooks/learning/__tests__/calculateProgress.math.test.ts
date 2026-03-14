@@ -1,12 +1,14 @@
 /**
  * Тесты расчёта прогресса (calculateProgress)
- * 
+ *
  * @group Math
  * @section Learning
  * @function calculateProgress
  */
 
 import { describe, it, expect } from 'vitest';
+import { getSectionTotalQuestions } from '@/tests/utils/testHelpers';
+import type { SectionType } from '@/types';
 
 const calculateProgress = (answered: number, total: number): number => {
   if (total === 0) return 0;
@@ -14,6 +16,9 @@ const calculateProgress = (answered: number, total: number): number => {
 };
 
 describe('LearningSection', () => {
+  const SECTION_1258_20: SectionType = '1258-20';
+  const totalQuestions = getSectionTotalQuestions(SECTION_1258_20);
+
   describe('Math', () => {
     describe('calculateProgress', () => {
       describe('Базовые случаи', () => {
@@ -51,7 +56,7 @@ describe('LearningSection', () => {
         });
 
         it('должен работать с большими числами', () => {
-          expect(calculateProgress(152, 304)).toBe(50);
+          expect(calculateProgress(155, totalQuestions)).toBe(50);
         });
 
         it('должен работать с нечётными числами', () => {
@@ -70,8 +75,8 @@ describe('LearningSection', () => {
           expect(calculateProgress(7, 10)).toBe(70);
         });
 
-        it('должен считать прогресс для 250 вопросов из 304', () => {
-          expect(calculateProgress(250, 304)).toBe(82);
+        it('должен считать прогресс для 250 вопросов из 310', () => {
+          expect(calculateProgress(250, totalQuestions)).toBe(81);
         });
       });
     });
