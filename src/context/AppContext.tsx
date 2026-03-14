@@ -200,23 +200,38 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [examResults, setExamResults] = useState<Record<number, boolean>>({});
   const [isExamFinished, setIsExamFinished] = useState(false);
 
+  // Загрузка настроек фильтра при изменении раздела
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    
+    const filterKey = `elbez_question_filter_${currentSection}`;
+    const stored = localStorage.getItem(filterKey);
+    if (stored) {
+      try {
+        const settings = JSON.parse(stored);
+        // Загружаем настройки только если они отличаются от текущих
+        const currentHiddenIds = JSON.stringify(filterHiddenQuestionIds);
+        const storedHiddenIds = JSON.stringify(settings.hiddenQuestionIds || []);
+        
+        if (currentHiddenIds !== storedHiddenIds ||
+            filterExcludeKnown !== (settings.excludeKnown || false) ||
+            filterExcludeWeak !== (settings.excludeWeak || false)) {
+          setFilterHiddenQuestionIdsState(settings.hiddenQuestionIds || []);
+          setFilterExcludeKnown(settings.excludeKnown || false);
+          setFilterExcludeWeak(settings.excludeWeak || false);
+        }
+      } catch (error) {
+        console.error('❌ [AppContext] Error loading filter settings:', error);
+      }
+    }
+  }, [currentSection, filterHiddenQuestionIds, filterExcludeKnown, filterExcludeWeak]);
+
   // Загрузка вопросов при изменении раздела
   useEffect(() => {
     const loadQuestions = async () => {
       try {
         // console.log('🔵 [AppContext] Загрузка вопросов для раздела:', currentSection);
         setIsLoading(true);
-
-        // Загружаем настройки фильтра из localStorage
-        const filterKey = `elbez_question_filter_${currentSection}`;
-        const stored = localStorage.getItem(filterKey);
-        if (stored) {
-          const settings = JSON.parse(stored);
-          // Используем state setters напрямую для загрузки настроек
-          setFilterHiddenQuestionIdsState(settings.hiddenQuestionIds || []);
-          setFilterExcludeKnown(settings.excludeKnown || false);
-          setFilterExcludeWeak(settings.excludeWeak || false);
-        }
 
         // Проверяем кэш сначала
         const cachedQuestions = questionsCache.get(currentSection);
