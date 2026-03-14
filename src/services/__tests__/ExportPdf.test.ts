@@ -364,12 +364,12 @@ describe('Export to PDF', () => {
     it('должен использовать 4 столбца: №, Вопрос, Ваш ответ, Верный ответ', async () => {
       const questions = createMockQuestions(10);
       const exportData = {
-        section: '1258-20' as const,
+        section: SECTION_1258_20,
         sectionInfo: {
-          id: '1258-20',
+          id: SECTION_1258_20,
           name: 'ЭБ 1258.20',
           description: 'IV группа до 1000 В',
-          totalQuestions: 304,
+          totalQuestions,
           totalTickets: 31,
         },
         page: 1,
@@ -396,12 +396,12 @@ describe('Export to PDF', () => {
     it('должен использовать ширину столбцов 10, 60, 60, 60', async () => {
       const questions = createMockQuestions(10);
       const exportData = {
-        section: '1258-20' as const,
+        section: SECTION_1258_20,
         sectionInfo: {
-          id: '1258-20',
+          id: SECTION_1258_20,
           name: 'ЭБ 1258.20',
           description: 'IV группа до 1000 В',
-          totalQuestions: 304,
+          totalQuestions,
           totalTickets: 31,
         },
         page: 1,
@@ -432,12 +432,12 @@ describe('Export to PDF', () => {
       const questions = createMockQuestions(10);
       // Первый вопрос с неверным ответом (правильный индекс 0, пользователь выбрал 1)
       const exportData = {
-        section: '1258-20' as const,
+        section: SECTION_1258_20,
         sectionInfo: {
-          id: '1258-20',
+          id: SECTION_1258_20,
           name: 'ЭБ 1258.20',
           description: 'IV группа до 1000 В',
-          totalQuestions: 304,
+          totalQuestions,
           totalTickets: 31,
         },
         page: 1,
@@ -473,12 +473,12 @@ describe('Export to PDF', () => {
     it('должен показывать "Не отвечено" для неотвеченных вопросов', async () => {
       const questions = createMockQuestions(10);
       const exportData = {
-        section: '1258-20' as const,
+        section: SECTION_1258_20,
         sectionInfo: {
-          id: '1258-20',
+          id: SECTION_1258_20,
           name: 'ЭБ 1258.20',
           description: 'IV группа до 1000 В',
-          totalQuestions: 304,
+          totalQuestions,
           totalTickets: 31,
         },
         page: 1,
@@ -506,12 +506,12 @@ describe('Export to PDF', () => {
     it('должен иметь функцию didParseCell для окрашивания неверных ответов', async () => {
       const questions = createMockQuestions(10);
       const exportData = {
-        section: '1258-20' as const,
+        section: SECTION_1258_20,
         sectionInfo: {
-          id: '1258-20',
+          id: SECTION_1258_20,
           name: 'ЭБ 1258.20',
           description: 'IV группа до 1000 В',
-          totalQuestions: 304,
+          totalQuestions,
           totalTickets: 31,
         },
         questions,

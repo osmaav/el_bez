@@ -202,18 +202,18 @@ describe('LearningProgressBar', () => {
       render(
         <LearningProgressBar
           {...defaultProps}
-          globalProgress={{ answered: 100, total: 304, percentage: 33 }}
+          globalProgress={{ answered: 100, total: totalQuestions, percentage: 33 }}
         />
       );
 
-      expect(screen.getByText(/100\/304/)).toBeInTheDocument();
+      expect(screen.getByText(/100\/310/)).toBeInTheDocument();
     });
 
     it('должен отображать процент прогресса', () => {
       render(
         <LearningProgressBar
           {...defaultProps}
-          globalProgress={{ answered: 100, total: 304, percentage: 33 }}
+          globalProgress={{ answered: 100, total: totalQuestions, percentage: 33 }}
         />
       );
 
