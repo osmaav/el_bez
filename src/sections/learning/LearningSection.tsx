@@ -333,7 +333,12 @@ export function LearningSection() {
 
     // Сбрасываем на первую страницу
     resetPage();
-  }, [setHiddenQuestionIds, setExcludeKnown, setExcludeWeak, resetPage]);
+    
+    // Сбрасываем состояние викторины чтобы не восстанавливались старые ответы
+    resetQuiz();
+    
+    console.log('🔄 [LearningSection] Состояние викторины сброшено');
+  }, [setHiddenQuestionIds, setExcludeKnown, setExcludeWeak, resetPage, resetQuiz]);
 
   // Обработка сброса фильтра (прямой вызов для корректного сброса isFilterActive)
   const handleResetFilter = useCallback(() => {
