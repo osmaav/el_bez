@@ -157,8 +157,32 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     if (typeof window !== 'undefined') {
       const key = `elbez_question_filter_${currentSection}`;
       const stored = localStorage.getItem(key);
-      const settings = stored ? JSON.parse(stored) : { excludeKnown: false, excludeWeak: false };
+      const settings = stored ? JSON.parse(stored) : { excludeKnown: false, excludeWeak: false, hiddenQuestionIds: [] };
       settings.hiddenQuestionIds = ids;
+      localStorage.setItem(key, JSON.stringify(settings));
+    }
+  }, [currentSection]);
+
+  // Сеттер excludeKnown с сохранением в localStorage
+  const setFilterExcludeKnownState = useCallback((exclude: boolean) => {
+    setFilterExcludeKnown(exclude);
+    if (typeof window !== 'undefined') {
+      const key = `elbez_question_filter_${currentSection}`;
+      const stored = localStorage.getItem(key);
+      const settings = stored ? JSON.parse(stored) : { excludeKnown: false, excludeWeak: false, hiddenQuestionIds: [] };
+      settings.excludeKnown = exclude;
+      localStorage.setItem(key, JSON.stringify(settings));
+    }
+  }, [currentSection]);
+
+  // Сеттер excludeWeak с сохранением в localStorage
+  const setFilterExcludeWeakState = useCallback((exclude: boolean) => {
+    setFilterExcludeWeak(exclude);
+    if (typeof window !== 'undefined') {
+      const key = `elbez_question_filter_${currentSection}`;
+      const stored = localStorage.getItem(key);
+      const settings = stored ? JSON.parse(stored) : { excludeKnown: false, excludeWeak: false, hiddenQuestionIds: [] };
+      settings.excludeWeak = exclude;
       localStorage.setItem(key, JSON.stringify(settings));
     }
   }, [currentSection]);
@@ -454,9 +478,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       filterHiddenQuestionIds,
       setFilterHiddenQuestionIds,
       filterExcludeKnown,
-      setFilterExcludeKnown,
+      setFilterExcludeKnownState: setFilterExcludeKnown,
       filterExcludeWeak,
-      setFilterExcludeWeak,
+      setFilterExcludeWeakState: setFilterExcludeWeak,
       isFilterActive,
       // Тренажер
       trainerQuestions,
