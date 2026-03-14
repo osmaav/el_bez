@@ -20,20 +20,43 @@ vi.mock('@/services/questionFilterService', () => ({
       excludeKnown: false,
       excludeWeak: false,
       hiddenQuestionIds: [],
+      section: '1258-20',
     })),
     saveSettings: vi.fn(),
     filterQuestions: vi.fn((ids, _stats, settings) => {
-      if (settings.hiddenQuestionIds.length > 0) {
+      // Если фильтр не активен, возвращаем все ID
+      if (!settings.excludeKnown && !settings.excludeWeak && (!settings.hiddenQuestionIds || settings.hiddenQuestionIds.length === 0)) {
+        return ids;
+      }
+      // Эмулируем фильтрацию по hiddenQuestionIds
+      if (settings.hiddenQuestionIds && settings.hiddenQuestionIds.length > 0) {
         return ids.filter(id => !settings.hiddenQuestionIds.includes(id));
       }
-      return ids;
+      // Эмулируем фильтрацию по статистике
+      const statsMap = new Map(_stats.map(s => [s.questionId, s]));
+      return ids.filter(id => {
+        const stat = statsMap.get(id);
+        if (!stat) return true;
+        if (settings.excludeKnown && stat.isKnown) return false;
+        if (settings.excludeWeak && stat.isWeak) return false;
+        return true;
+      });
     }),
+    toggleExcludeKnown: vi.fn(),
+    toggleExcludeWeak: vi.fn(),
+    hideQuestion: vi.fn(),
+    showQuestion: vi.fn(),
+    resetSettings: vi.fn(),
+    getFilterStats: vi.fn(() => ({ total: 0, known: 0, weak: 0, normal: 0 })),
   },
 }));
 
 vi.mock('@/services/statisticsService', () => ({
   statisticsService: {
     getQuestionStats: vi.fn(() => []),
+    getDailyActivity: vi.fn(() => []),
+    getProgressData: vi.fn(() => []),
+    getWeakTopicsStats: vi.fn(() => []),
   },
 }));
 
@@ -49,19 +72,19 @@ describe('LearningSection', () => {
     describe('Фильтрация вопросов', () => {
       it('должен отображать все вопросы без фильтра', () => {
         const questions = createMockQuestions(100);
-        
+
         const { result } = renderHook(() =>
           useLearningFilter(questions, '1258-20')
         );
 
-        // Без фильтра filteredQuestions пуст (используются основные вопросы)
-        expect(result.current.filteredQuestions.length).toBe(0);
-        expect(result.current.filteredTotalPages).toBe(0);
+        // Без фильтра filteredQuestions содержит все вопросы
+        expect(result.current.filteredQuestions.length).toBe(100);
+        expect(result.current.filteredTotalPages).toBe(10);
       });
 
       it('должен скрывать вопросы при установке hiddenQuestionIds', () => {
         const questions = createMockQuestions(100);
-        
+
         const { result } = renderHook(() =>
           useLearningFilter(questions, '1258-20')
         );
@@ -72,13 +95,13 @@ describe('LearningSection', () => {
         });
 
         // Вопрос 1 должен быть скрыт
-        expect(result.current.filteredQuestions.length).toBeLessThan(100);
+        expect(result.current.filteredQuestions.length).toBe(99);
         expect(result.current.filteredQuestions.find(q => q.id === 1)).toBeUndefined();
       });
 
       it('должен пересчитывать количество страниц при фильтрации', () => {
         const questions = createMockQuestions(100);
-        
+
         const { result } = renderHook(() =>
           useLearningFilter(questions, '1258-20')
         );
@@ -90,6 +113,7 @@ describe('LearningSection', () => {
 
         // Должно остаться 90 вопросов = 9 страниц
         expect(result.current.filteredTotalPages).toBe(9);
+        expect(result.current.filteredQuestions.length).toBe(90);
       });
     });
 
@@ -172,7 +196,7 @@ describe('LearningSection', () => {
     describe('Сброс фильтра', () => {
       it('должен восстанавливать все вопросы при сбросе hiddenQuestionIds', () => {
         const questions = createMockQuestions(100);
-        
+
         const { result } = renderHook(() =>
           useLearningFilter(questions, '1258-20')
         );
@@ -189,8 +213,8 @@ describe('LearningSection', () => {
           result.current.setHiddenQuestionIds([]);
         });
 
-        // filteredQuestions должен стать пустым (используются все вопросы)
-        expect(result.current.filteredQuestions.length).toBe(0);
+        // filteredQuestions должен содержать все вопросы
+        expect(result.current.filteredQuestions.length).toBe(100);
       });
     });
   });

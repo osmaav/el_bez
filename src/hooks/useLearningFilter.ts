@@ -99,6 +99,9 @@ export function useLearningFilter(
     const questionStats = statisticsService.getQuestionStats(currentSection);
     const filterSettings = questionFilterService.getSettings(currentSection);
 
+    // Обновляем настройки фильтра актуальными hiddenQuestionIds
+    filterSettings.hiddenQuestionIds = hiddenQuestionIds;
+
     // Получаем отфильтрованные ID с учётом всех настроек (включая excludeKnown/excludeWeak)
     const filteredIds = questionFilterService.filterQuestions(allQuestionIds, questionStats, filterSettings);
     const filtered = questions.filter(q => filteredIds.includes(q.id));
@@ -106,7 +109,7 @@ export function useLearningFilter(
     setFilteredTotalPages(Math.ceil(filtered.length / QUESTIONS_PER_SESSION));
 
     // Обновляем флаг активности фильтра на основе настроек
-    const isFilterEnabled = filterSettings.excludeKnown || filterSettings.excludeWeak || filterSettings.hiddenQuestionIds.length > 0;
+    const isFilterEnabled = filterSettings.excludeKnown || filterSettings.excludeWeak || hiddenQuestionIds.length > 0;
     setIsFilterActive(isFilterEnabled);
 
     console.log('🔍 [useLearningFilter] Скрытые вопросы обновлены:', {
