@@ -80,7 +80,7 @@ const SECTIONS: SectionInfo[] = [
     id: '1258-20',
     name: 'ЭБ 1258.20',
     description: 'IV группа до 1000 В',
-    totalQuestions: 304,
+    totalQuestions: 310,  // Исправлено с 304 на 310
     totalTickets: 31
   }
 ];
