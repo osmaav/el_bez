@@ -212,6 +212,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         const stored = localStorage.getItem(filterKey);
         if (stored) {
           const settings = JSON.parse(stored);
+          // Используем state setters напрямую для загрузки настроек
           setFilterHiddenQuestionIdsState(settings.hiddenQuestionIds || []);
           setFilterExcludeKnown(settings.excludeKnown || false);
           setFilterExcludeWeak(settings.excludeWeak || false);
