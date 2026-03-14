@@ -43,13 +43,11 @@ export function useQuestionFilter({
   const [excludeWeak, setExcludeWeak] = useState(false);
   const [isFilterActive, setIsFilterActive] = useState(false);
 
-  // Загрузка настроек фильтра при инициализации
+  // Настройки загружаются из AppContext, здесь только применяем фильтр к вопросам
   useEffect(() => {
     if (questions.length > 0) {
+      // Получаем настройки из localStorage (для обратной совместимости)
       const filterSettings = questionFilterService.getSettings(currentSection);
-      setHiddenQuestionIdsState(filterSettings.hiddenQuestionIds);
-      setExcludeKnown(filterSettings.excludeKnown);
-      setExcludeWeak(filterSettings.excludeWeak);
 
       // Применяем фильтр для получения отфильтрованных вопросов
       const allQuestionIds = questions.map(q => q.id);
@@ -72,7 +70,6 @@ export function useQuestionFilter({
         pages: Math.ceil(filtered.length / questionsPerPage)
       });
     }
-    // НЕ сохраняем настройки при инициализации - только загружаем
   }, [currentSection, questions.length, questionsPerPage]);
 
   // Применение фильтра

@@ -153,6 +153,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     
     const filterKey = `elbez_question_filter_${currentSection}`;
     const stored = localStorage.getItem(filterKey);
+    
     if (stored) {
       try {
         const settings = JSON.parse(stored);
