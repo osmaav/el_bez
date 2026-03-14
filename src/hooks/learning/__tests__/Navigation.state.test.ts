@@ -78,7 +78,7 @@ describe('LearningSection', () => {
       });
 
       it('должен вычислять общее количество страниц', () => {
-        const totalQuestions = 304;
+        const totalQuestions = 310; // Актуальное количество вопросов для 1258-20
         const QUESTIONS_PER_SESSION = 10;
         const totalPages = Math.ceil(totalQuestions / QUESTIONS_PER_SESSION);
         expect(totalPages).toBe(31);

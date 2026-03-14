@@ -82,16 +82,16 @@ describe('LearningSection', () => {
 
       it('должен игнорировать некорректный номер страницы', () => {
         const section = '1258-20';
-        const totalQuestions = 304;
+        const totalQuestions = 310; // Актуальное количество вопросов для 1258-20
         const QUESTIONS_PER_SESSION = 10;
         const maxPage = Math.ceil(totalQuestions / QUESTIONS_PER_SESSION);
-        
+
         localStorage.setItem(`elbez_learning_page_${section}`, '999');
-        
+
         const saved = localStorage.getItem(`elbez_learning_page_${section}`);
         const page = parseInt(saved!, 10);
         const isValidPage = page > 0 && page <= maxPage;
-        
+
         expect(isValidPage).toBe(false);
       });
 

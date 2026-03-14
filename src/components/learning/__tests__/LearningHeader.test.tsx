@@ -13,15 +13,23 @@ import '@testing-library/jest-dom';
 import React from 'react';
 
 describe('LearningHeader', () => {
+  const mockQuestions = Array.from({ length: 310 }, (_, i) => ({
+    id: i + 1,
+    ticket: Math.floor(i / 10) + 1,
+    text: `Вопрос ${i + 1}`,
+    options: ['Вариант 1', 'Вариант 2', 'Вариант 3', 'Вариант 4'],
+    correct_index: 0,
+  }));
+
   const defaultProps = {
     sectionInfo: {
       id: '1258-20' as const,
       name: 'ЭБ 1258.20',
       description: 'IV группа до 1000 В',
-      totalQuestions: 304,
+      totalQuestions: mockQuestions.length,
       totalTickets: 31,
     },
-    totalQuestions: 304,
+    totalQuestions: mockQuestions.length,
     totalPages: 31,
   };
 
@@ -43,7 +51,7 @@ describe('LearningHeader', () => {
     it('должен отображать количество вопросов', () => {
       render(<LearningHeader {...defaultProps} />);
 
-      expect(screen.getByText(/вопросов: 304/)).toBeInTheDocument();
+      expect(screen.getByText(/вопросов: 310/)).toBeInTheDocument();
     });
 
     it('должен отображать количество страниц', () => {
