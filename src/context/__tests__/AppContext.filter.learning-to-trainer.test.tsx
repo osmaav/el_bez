@@ -14,7 +14,7 @@
 
 import React, { useEffect } from 'react';
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { renderHook, act, waitFor, render, screen } from '@testing-library/react';
+import { render, screen, act, waitFor } from '@testing-library/react';
 import { AppProvider, useApp } from '@/context/AppContext';
 import { AuthProvider } from '@/context/AuthContext';
 
@@ -28,18 +28,13 @@ const wrapper = ({ children }: { children: React.ReactNode }) => (
 );
 
 // Компонент который симулирует LearningSection
-const LearningSectionMock = ({ onFilterChange }: { onFilterChange?: (ids: number[]) => void }) => {
+const LearningSectionMock = () => {
   const { filterHiddenQuestionIds, setFilterHiddenQuestionIds, isFilterActive } = useApp();
-  
-  useEffect(() => {
-    if (onFilterChange) {
-      onFilterChange(filterHiddenQuestionIds);
-    }
-  }, [filterHiddenQuestionIds, onFilterChange]);
   
   return (
     <div data-testid="learning-section">
       <span data-testid="is-filter-active">{isFilterActive ? 'true' : 'false'}</span>
+      <span data-testid="hidden-count">{filterHiddenQuestionIds.length}</span>
       <button
         data-testid="hide-question"
         onClick={() => setFilterHiddenQuestionIds([5])}
@@ -101,7 +96,6 @@ describe('BUG: Фильтр не синхронизируется Обучени
     rerender(<TrainerSectionMock />, { wrapper });
 
     // 5. КРИТИЧЕСКАЯ ПРОВЕРКА: фильтр должен быть активен в Тренажёре
-    // Это ключевая проверка которая сейчас падает
     await waitFor(() => {
       expect(screen.getByTestId('is-filter-active').textContent).toBe('true');
       expect(screen.getByTestId('hidden-ids').textContent).toBe('[5]');

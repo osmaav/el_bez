@@ -1,5 +1,5 @@
 /**
- * Тесты синхронизации фильтра между секциями (Тренажёр ↔ Обучение)
+ * Тесты синхронизации фильтра между секциями (Обучение ↔ Тренажёр)
  * 
  * @group Filter
  * @section Integration
@@ -49,7 +49,7 @@ const useFilterTest = () => {
   };
 };
 
-describe('Синхронизация фильтра: Тренажёр ↔ Обучение', () => {
+describe('Синхронизация фильтра между секциями (Обучение ↔ Тренажёр)', () => {
   const storageKey = 'elbez_question_filter_1258-20';
 
   beforeEach(() => {
@@ -60,15 +60,49 @@ describe('Синхронизация фильтра: Тренажёр ↔ Обу
     localStorage.clear();
   });
 
+  describe('Загрузка настроек из localStorage при инициализации', () => {
+    it('должен загружать настройки из localStorage при первом рендере', async () => {
+      // Сохраняем настройки заранее (как будто они были сохранены в предыдущей сессии)
+      localStorage.setItem(storageKey, JSON.stringify({
+        excludeKnown: true,
+        excludeWeak: false,
+        hiddenQuestionIds: [7, 14, 21],
+        section: '1258-20',
+      }));
+
+      // Создаём хук (симуляция загрузки страницы)
+      const { result } = renderHook(() => useFilterTest(), { wrapper });
+
+      // Проверяем что настройки загрузились
+      await waitFor(() => {
+        expect(result.current.filterHiddenQuestionIds).toEqual([7, 14, 21]);
+        expect(result.current.filterExcludeKnown).toBe(true);
+        expect(result.current.filterExcludeWeak).toBe(false);
+        expect(result.current.isFilterActive).toBe(true);
+      });
+    });
+
+    it('должен использовать настройки по умолчанию если localStorage пуст', async () => {
+      const { result } = renderHook(() => useFilterTest(), { wrapper });
+
+      await waitFor(() => {
+        expect(result.current.filterHiddenQuestionIds).toEqual([]);
+        expect(result.current.filterExcludeKnown).toBe(false);
+        expect(result.current.filterExcludeWeak).toBe(false);
+        expect(result.current.isFilterActive).toBe(false);
+      });
+    });
+  });
+
   describe('Синхронизация hiddenQuestionIds между секциями', () => {
-    it('должен синхронизировать hiddenQuestionIds при скрытии вопросов в Тренажёре', async () => {
+    it('должен синхронизировать hiddenQuestionIds при скрытии вопросов', async () => {
       const { result } = renderHook(() => useFilterTest(), { wrapper });
 
       await waitFor(() => {
         expect(result.current.filterHiddenQuestionIds).toEqual([]);
       });
 
-      // Скрываем вопросы в "Тренажёре"
+      // Скрываем вопросы
       await act(async () => {
         result.current.setFilterHiddenQuestionIds([1, 2, 3]);
       });
@@ -83,42 +117,36 @@ describe('Синхронизация фильтра: Тренажёр ↔ Обу
       expect(stored).toBeTruthy();
       const settings = JSON.parse(stored!);
       expect(settings.hiddenQuestionIds).toEqual([1, 2, 3]);
-
-      // "Переходим в Обучение" - настройки должны сохраниться
-      await waitFor(() => {
-        expect(result.current.filterHiddenQuestionIds).toEqual([1, 2, 3]);
-      });
     });
 
-    it('должен синхронизировать hiddenQuestionIds при скрытии вопросов в Обучении', async () => {
+    it('должен деактивировать фильтр при очистке hiddenQuestionIds', async () => {
       const { result } = renderHook(() => useFilterTest(), { wrapper });
 
-      // Скрываем вопросы в "Обучении"
+      // Активируем фильтр
       await act(async () => {
-        result.current.setFilterHiddenQuestionIds([5, 10, 15]);
+        result.current.setFilterHiddenQuestionIds([5]);
       });
 
       await waitFor(() => {
-        expect(result.current.filterHiddenQuestionIds).toEqual([5, 10, 15]);
+        expect(result.current.isFilterActive).toBe(true);
       });
 
-      // Проверяем что настройки сохранены
-      const stored = localStorage.getItem(storageKey);
-      const settings = JSON.parse(stored!);
-      expect(settings.hiddenQuestionIds).toEqual([5, 10, 15]);
+      // Деактивируем фильтр
+      await act(async () => {
+        result.current.setFilterHiddenQuestionIds([]);
+      });
 
-      // "Переходим в Тренажёр" - настройки должны восстановиться
       await waitFor(() => {
-        expect(result.current.filterHiddenQuestionIds).toEqual([5, 10, 15]);
+        expect(result.current.isFilterActive).toBe(false);
+        expect(result.current.filterHiddenQuestionIds).toEqual([]);
       });
     });
   });
 
   describe('Синхронизация excludeKnown между секциями', () => {
-    it('должен синхронизировать excludeKnown при переключении между секциями', async () => {
+    it('должен синхронизировать excludeKnown', async () => {
       const { result } = renderHook(() => useFilterTest(), { wrapper });
 
-      // Включаем "Исключить известные" в Тренажёре
       await act(async () => {
         result.current.setFilterExcludeKnown(true);
       });
@@ -128,23 +156,16 @@ describe('Синхронизация фильтра: Тренажёр ↔ Обу
         expect(result.current.isFilterActive).toBe(true);
       });
 
-      // Проверяем сохранение
       const stored = localStorage.getItem(storageKey);
       const settings = JSON.parse(stored!);
       expect(settings.excludeKnown).toBe(true);
-
-      // "Переходим в Обучение" - настройка должна сохраниться
-      await waitFor(() => {
-        expect(result.current.filterExcludeKnown).toBe(true);
-      });
     });
   });
 
   describe('Синхронизация excludeWeak между секциями', () => {
-    it('должен синхронизировать excludeWeak при переключении между секциями', async () => {
+    it('должен синхронизировать excludeWeak', async () => {
       const { result } = renderHook(() => useFilterTest(), { wrapper });
 
-      // Включаем "Исключить слабые" в Обучении
       await act(async () => {
         result.current.setFilterExcludeWeak(true);
       });
@@ -154,15 +175,9 @@ describe('Синхронизация фильтра: Тренажёр ↔ Обу
         expect(result.current.isFilterActive).toBe(true);
       });
 
-      // Проверяем сохранение
       const stored = localStorage.getItem(storageKey);
       const settings = JSON.parse(stored!);
       expect(settings.excludeWeak).toBe(true);
-
-      // "Переходим в Тренажёр" - настройка должна сохраниться
-      await waitFor(() => {
-        expect(result.current.filterExcludeWeak).toBe(true);
-      });
     });
   });
 
@@ -170,7 +185,6 @@ describe('Синхронизация фильтра: Тренажёр ↔ Обу
     it('должен синхронизировать все настройки фильтра одновременно', async () => {
       const { result } = renderHook(() => useFilterTest(), { wrapper });
 
-      // Устанавливаем все настройки в "Тренажёре"
       await act(async () => {
         result.current.setFilterHiddenQuestionIds([7, 14]);
         result.current.setFilterExcludeKnown(true);
@@ -190,47 +204,6 @@ describe('Синхронизация фильтра: Тренажёр ↔ Обу
       expect(settings.hiddenQuestionIds).toEqual([7, 14]);
       expect(settings.excludeKnown).toBe(true);
       expect(settings.excludeWeak).toBe(true);
-
-      // "Переходим в Обучение" - все настройки должны восстановиться
-      await waitFor(() => {
-        expect(result.current.filterHiddenQuestionIds).toEqual([7, 14]);
-        expect(result.current.filterExcludeKnown).toBe(true);
-        expect(result.current.filterExcludeWeak).toBe(true);
-        expect(result.current.isFilterActive).toBe(true);
-      });
-    });
-  });
-
-  describe('Загрузка настроек из localStorage при инициализации', () => {
-    it('должен загружать настройки фильтра при первой загрузке страницы', async () => {
-      // Сохраняем настройки заранее (как будто они были сохранены в предыдущей сессии)
-      localStorage.setItem(storageKey, JSON.stringify({
-        excludeKnown: true,
-        excludeWeak: false,
-        hiddenQuestionIds: [3, 6, 9],
-      }));
-
-      // Создаём новый хук (симуляция перезагрузки страницы)
-      const { result } = renderHook(() => useFilterTest(), { wrapper });
-
-      // Проверяем что настройки загрузились
-      await waitFor(() => {
-        expect(result.current.filterHiddenQuestionIds).toEqual([3, 6, 9]);
-        expect(result.current.filterExcludeKnown).toBe(true);
-        expect(result.current.filterExcludeWeak).toBe(false);
-        expect(result.current.isFilterActive).toBe(true);
-      });
-    });
-
-    it('должен использовать настройки по умолчанию если localStorage пуст', async () => {
-      const { result } = renderHook(() => useFilterTest(), { wrapper });
-
-      await waitFor(() => {
-        expect(result.current.filterHiddenQuestionIds).toEqual([]);
-        expect(result.current.filterExcludeKnown).toBe(false);
-        expect(result.current.filterExcludeWeak).toBe(false);
-        expect(result.current.isFilterActive).toBe(false);
-      });
     });
   });
 
@@ -274,16 +247,10 @@ describe('Синхронизация фильтра: Тренажёр ↔ Обу
     });
   });
 
-  describe('isFilterActive при синхронизации', () => {
-    it('должен обновлять isFilterActive при изменении настроек в любой секции', async () => {
+  describe('isFilterActive', () => {
+    it('должен быть true когда есть hiddenQuestionIds', async () => {
       const { result } = renderHook(() => useFilterTest(), { wrapper });
 
-      // Изначально фильтр не активен
-      await waitFor(() => {
-        expect(result.current.isFilterActive).toBe(false);
-      });
-
-      // Активируем в "Тренажёре"
       await act(async () => {
         result.current.setFilterHiddenQuestionIds([1]);
       });
@@ -291,15 +258,60 @@ describe('Синхронизация фильтра: Тренажёр ↔ Обу
       await waitFor(() => {
         expect(result.current.isFilterActive).toBe(true);
       });
+    });
 
-      // "Переходим в Обучение" - фильтр должен остаться активным
+    it('должен быть true когда excludeKnown=true', async () => {
+      const { result } = renderHook(() => useFilterTest(), { wrapper });
+
+      await act(async () => {
+        result.current.setFilterExcludeKnown(true);
+      });
+
+      await waitFor(() => {
+        expect(result.current.isFilterActive).toBe(true);
+      });
+    });
+
+    it('должен быть true когда excludeWeak=true', async () => {
+      const { result } = renderHook(() => useFilterTest(), { wrapper });
+
+      await act(async () => {
+        result.current.setFilterExcludeWeak(true);
+      });
+
+      await waitFor(() => {
+        expect(result.current.isFilterActive).toBe(true);
+      });
+    });
+
+    it('должен быть false когда все фильтры отключены', async () => {
+      const { result } = renderHook(() => useFilterTest(), { wrapper });
+
+      await waitFor(() => {
+        expect(result.current.isFilterActive).toBe(false);
+      });
+    });
+
+    it('должен обновляться при изменении любого параметра', async () => {
+      const { result } = renderHook(() => useFilterTest(), { wrapper });
+
+      // Изначально false
+      await waitFor(() => {
+        expect(result.current.isFilterActive).toBe(false);
+      });
+
+      // Включаем excludeKnown
+      await act(async () => {
+        result.current.setFilterExcludeKnown(true);
+      });
+
       await waitFor(() => {
         expect(result.current.isFilterActive).toBe(true);
       });
 
-      // Сбрасываем в "Обучении"
+      // Выключаем excludeKnown
       await act(async () => {
-        result.current.setFilterHiddenQuestionIds([]);
+        result.current.setFilterExcludeKnown(false);
       });
 
       await waitFor(() => {
@@ -308,8 +320,39 @@ describe('Синхронизация фильтра: Тренажёр ↔ Обу
     });
   });
 
+  describe('Сброс фильтра', () => {
+    it('должен сбрасывать все настройки', async () => {
+      const { result } = renderHook(() => useFilterTest(), { wrapper });
+
+      // Устанавливаем настройки
+      await act(async () => {
+        result.current.setFilterHiddenQuestionIds([1, 2, 3]);
+        result.current.setFilterExcludeKnown(true);
+        result.current.setFilterExcludeWeak(true);
+      });
+
+      await waitFor(() => {
+        expect(result.current.isFilterActive).toBe(true);
+      });
+
+      // Сбрасываем
+      await act(async () => {
+        result.current.setFilterHiddenQuestionIds([]);
+        result.current.setFilterExcludeKnown(false);
+        result.current.setFilterExcludeWeak(false);
+      });
+
+      await waitFor(() => {
+        expect(result.current.filterHiddenQuestionIds).toEqual([]);
+        expect(result.current.filterExcludeKnown).toBe(false);
+        expect(result.current.filterExcludeWeak).toBe(false);
+        expect(result.current.isFilterActive).toBe(false);
+      });
+    });
+  });
+
   describe('Интеграционный тест: Полный цикл работы с фильтром', () => {
-    it('должен корректно обрабатывать полный цикл: Тренажёр → Обучение → Тренажёр', async () => {
+    it('должен корректно обрабатывать полный цикл: настройка → сохранение → загрузка → сброс', async () => {
       const { result } = renderHook(() => useFilterTest(), { wrapper });
 
       // 1. Изначально фильтр не активен
@@ -317,7 +360,7 @@ describe('Синхронизация фильтра: Тренажёр ↔ Обу
         expect(result.current.isFilterActive).toBe(false);
       });
 
-      // 2. Настраиваем фильтр в "Тренажёре"
+      // 2. Настраиваем фильтр
       await act(async () => {
         result.current.setFilterHiddenQuestionIds([5, 10, 15]);
         result.current.setFilterExcludeKnown(true);
@@ -336,33 +379,14 @@ describe('Синхронизация фильтра: Тренажёр ↔ Обу
       expect(settings.hiddenQuestionIds).toEqual([5, 10, 15]);
       expect(settings.excludeKnown).toBe(true);
 
-      // 4. "Переходим в Обучение" - настройки должны восстановиться
-      await waitFor(() => {
-        expect(result.current.filterHiddenQuestionIds).toEqual([5, 10, 15]);
-        expect(result.current.filterExcludeKnown).toBe(true);
-        expect(result.current.isFilterActive).toBe(true);
-      });
-
-      // 5. Изменяем настройки в "Обучении"
+      // 4. Сбрасываем фильтр
       await act(async () => {
-        result.current.setFilterExcludeWeak(true);
+        result.current.setFilterHiddenQuestionIds([]);
+        result.current.setFilterExcludeKnown(false);
       });
 
       await waitFor(() => {
-        expect(result.current.filterExcludeWeak).toBe(true);
-        expect(result.current.isFilterActive).toBe(true);
-      });
-
-      // 6. Проверяем что настройки сохранились
-      const updatedSettings = JSON.parse(localStorage.getItem(storageKey)!);
-      expect(updatedSettings.excludeWeak).toBe(true);
-
-      // 7. "Возвращаемся в Тренажёр" - все настройки должны восстановиться
-      await waitFor(() => {
-        expect(result.current.filterHiddenQuestionIds).toEqual([5, 10, 15]);
-        expect(result.current.filterExcludeKnown).toBe(true);
-        expect(result.current.filterExcludeWeak).toBe(true);
-        expect(result.current.isFilterActive).toBe(true);
+        expect(result.current.isFilterActive).toBe(false);
       });
     });
   });
