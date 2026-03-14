@@ -164,7 +164,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   }, [currentSection]);
 
   // Сеттер excludeKnown с сохранением в localStorage
-  const setFilterExcludeKnownState = useCallback((exclude: boolean) => {
+  const setFilterExcludeKnownWithStorage = useCallback((exclude: boolean) => {
     setFilterExcludeKnown(exclude);
     if (typeof window !== 'undefined') {
       const key = `elbez_question_filter_${currentSection}`;
@@ -176,7 +176,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   }, [currentSection]);
 
   // Сеттер excludeWeak с сохранением в localStorage
-  const setFilterExcludeWeakState = useCallback((exclude: boolean) => {
+  const setFilterExcludeWeakWithStorage = useCallback((exclude: boolean) => {
     setFilterExcludeWeak(exclude);
     if (typeof window !== 'undefined') {
       const key = `elbez_question_filter_${currentSection}`;
@@ -478,9 +478,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       filterHiddenQuestionIds,
       setFilterHiddenQuestionIds,
       filterExcludeKnown,
-      setFilterExcludeKnownState: setFilterExcludeKnown,
+      setFilterExcludeKnown: setFilterExcludeKnownWithStorage,
       filterExcludeWeak,
-      setFilterExcludeWeakState: setFilterExcludeWeak,
+      setFilterExcludeWeak: setFilterExcludeWeakWithStorage,
       isFilterActive,
       // Тренажер
       trainerQuestions,
