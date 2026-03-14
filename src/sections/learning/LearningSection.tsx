@@ -23,7 +23,6 @@ import autoTable from 'jspdf-autotable';
 // Импорт хуков
 import {
   useLearningProgress,
-  useQuestionFilter,
   useQuizNavigation,
   useQuizState,
 } from './hooks';
@@ -68,26 +67,39 @@ export function LearningSection() {
     currentSection,
   });
 
-  // Хук фильтрации вопросов
+  // Хук фильтрации вопросов - используем фильтр из AppContext
   const {
-    filteredQuestions,
-    totalPages,
+    filterHiddenQuestionIds: hiddenQuestionIds,
+    filterExcludeKnown,
+    filterExcludeWeak,
+    setFilterHiddenQuestionIds: setHiddenQuestionIds,
+    setFilterExcludeKnown: setExcludeKnown,
+    setFilterExcludeWeak: setExcludeWeak,
     isFilterActive,
-    hiddenQuestionIds,
-    setHiddenQuestionIds,
-    setExcludeKnown,
-    setExcludeWeak,
-    setFilteredQuestions,
-    setFilteredTotalPages,
-  } = useQuestionFilter({
-    currentSection,
-    questions,
-    questionsPerPage: QUESTIONS_PER_SESSION,
-  });
+  } = useApp();
 
-  // Используем отфильтрованные вопросы или все
-  const activeQuestions = filteredQuestions.length > 0 ? filteredQuestions : questions;
-  const activeTotalPages = totalPages > 0 ? totalPages : Math.ceil(questions.length / QUESTIONS_PER_SESSION);
+  // Применяем фильтр к вопросам
+  const filteredQuestions = useMemo(() => {
+    if (!isFilterActive) return questions;
+    
+    return questions.filter(q => {
+      // Скрытые вопросы
+      if (hiddenQuestionIds.includes(q.id)) return false;
+      // Известные вопросы (100% точность)
+      if (filterExcludeKnown) {
+        const stats = statisticsService.getQuestionStats(currentSection).find(s => s.questionId === q.id);
+        if (stats?.isKnown) return false;
+      }
+      // Слабые вопросы (< 70% точность)
+      if (filterExcludeWeak) {
+        const stats = statisticsService.getQuestionStats(currentSection).find(s => s.questionId === q.id);
+        if (stats?.isWeak) return false;
+      }
+      return true;
+    });
+  }, [questions, hiddenQuestionIds, filterExcludeKnown, filterExcludeWeak, isFilterActive, currentSection]);
+
+  const filterTotalPages = Math.ceil(filteredQuestions.length / QUESTIONS_PER_SESSION);
 
   // Хук навигации
   const {
@@ -99,7 +111,7 @@ export function LearningSection() {
     prevPage,
     resetPage,
   } = useQuizNavigation({
-    totalPages: activeTotalPages,
+    totalPages: filterTotalPages,
     storageKey: `elbez_learning_page_${currentSection}`,
   });
 
@@ -112,7 +124,7 @@ export function LearningSection() {
     showSources,
     toggleSource,
   } = useQuizState({
-    questions: activeQuestions, // Используем отфильтрованные вопросы
+    questions: filteredQuestions,
     savedStates,
     questionsPerPage: QUESTIONS_PER_SESSION,
     currentPage,
@@ -169,13 +181,13 @@ export function LearningSection() {
       });
     });
 
-    const totalQuestions = activeQuestions.length;
+    const totalQuestions = filteredQuestions.length;
     return {
       answered: totalAnswered,
       total: totalQuestions,
       percentage: totalQuestions > 0 ? Math.round((totalAnswered / totalQuestions) * 100) : 0,
     };
-  }, [savedStates, activeQuestions.length]);
+  }, [savedStates, filteredQuestions.length]);
 
   // Сброс прогресса
   const handleReset = useCallback(() => {
@@ -272,14 +284,7 @@ export function LearningSection() {
   }, []);
 
   // Обработка применения фильтра
-  const handleApplyFilter = useCallback((filteredIds: number[], settings: { excludeKnown: boolean; excludeWeak: boolean; hiddenQuestionIds: number[] }) => {
-    // Фильтруем вопросы
-    const filtered = questions.filter(q => filteredIds.includes(q.id));
-
-    // Сначала обновляем filteredQuestions
-    setFilteredQuestions(filtered);
-    setFilteredTotalPages(Math.ceil(filtered.length / QUESTIONS_PER_SESSION));
-
+  const handleApplyFilter = useCallback((_filteredIds: number[], settings: { excludeKnown: boolean; excludeWeak: boolean; hiddenQuestionIds: number[] }) => {
     // Обновляем все параметры фильтра напрямую
     setHiddenQuestionIds(settings.hiddenQuestionIds);
     setExcludeKnown(settings.excludeKnown);
@@ -287,17 +292,15 @@ export function LearningSection() {
 
     // Сбрасываем на первую страницу
     resetPage();
-  }, [questions, setFilteredQuestions, setFilteredTotalPages, setHiddenQuestionIds, setExcludeKnown, setExcludeWeak, resetPage]);
+  }, [setHiddenQuestionIds, setExcludeKnown, setExcludeWeak, resetPage]);
 
   // Обработка сброса фильтра (прямой вызов для корректного сброса isFilterActive)
   const handleResetFilter = useCallback(() => {
     setHiddenQuestionIds([]);
     setExcludeKnown(false);
     setExcludeWeak(false);
-    setFilteredQuestions(questions);
-    setFilteredTotalPages(Math.ceil(questions.length / QUESTIONS_PER_SESSION));
     resetPage();
-  }, [questions, setHiddenQuestionIds, setExcludeKnown, setExcludeWeak, setFilteredQuestions, setFilteredTotalPages, resetPage]);
+  }, [setHiddenQuestionIds, setExcludeKnown, setExcludeWeak, resetPage]);
 
   // Рендер
   const currentSectionInfo = sections.find(s => s.id === currentSection);
@@ -325,7 +328,7 @@ export function LearningSection() {
               Обучение
             </h1>
             <p className="text-xs sm:text-sm text-slate-600">
-              {currentSectionInfo?.description} • {activeQuestions.length} вопросов • {displayTotalPages} страниц
+              {currentSectionInfo?.description} • {filteredQuestions.length} вопросов • {displayTotalPages} страниц
             </p>
           </div>
 

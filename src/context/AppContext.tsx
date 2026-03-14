@@ -19,6 +19,15 @@ interface AppContextType {
   isLoading: boolean;
   error: string | null;
 
+  // Фильтр вопросов (единый для Обучения и Тренажёра)
+  filterHiddenQuestionIds: number[];
+  setFilterHiddenQuestionIds: (ids: number[]) => void;
+  filterExcludeKnown: boolean;
+  setFilterExcludeKnown: (exclude: boolean) => void;
+  filterExcludeWeak: boolean;
+  setFilterExcludeWeak: (exclude: boolean) => void;
+  isFilterActive: boolean;
+
   // Тренажер
   trainerQuestions: Question[];
   trainerCurrentIndex: number;
@@ -133,6 +142,27 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // Фильтр вопросов (единый для Обучения и Тренажёра)
+  const [filterHiddenQuestionIds, setFilterHiddenQuestionIdsState] = useState<number[]>([]);
+  const [filterExcludeKnown, setFilterExcludeKnown] = useState(false);
+  const [filterExcludeWeak, setFilterExcludeWeak] = useState(false);
+
+  // Вычисляем активность фильтра
+  const isFilterActive = filterHiddenQuestionIds.length > 0 || filterExcludeKnown || filterExcludeWeak;
+
+  // Сеттер с сохранением в localStorage
+  const setFilterHiddenQuestionIds = useCallback((ids: number[]) => {
+    setFilterHiddenQuestionIdsState(ids);
+    // Сохраняем в localStorage для синхронизации между секциями
+    if (typeof window !== 'undefined') {
+      const key = `elbez_question_filter_${currentSection}`;
+      const stored = localStorage.getItem(key);
+      const settings = stored ? JSON.parse(stored) : { excludeKnown: false, excludeWeak: false };
+      settings.hiddenQuestionIds = ids;
+      localStorage.setItem(key, JSON.stringify(settings));
+    }
+  }, [currentSection]);
+
   // Тренажер состояние
   const [trainerQuestions, setTrainerQuestions] = useState<Question[]>([]);
   const [trainerCurrentIndex, setTrainerCurrentIndex] = useState(0);
@@ -152,6 +182,16 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       try {
         // console.log('🔵 [AppContext] Загрузка вопросов для раздела:', currentSection);
         setIsLoading(true);
+
+        // Загружаем настройки фильтра из localStorage
+        const filterKey = `elbez_question_filter_${currentSection}`;
+        const stored = localStorage.getItem(filterKey);
+        if (stored) {
+          const settings = JSON.parse(stored);
+          setFilterHiddenQuestionIdsState(settings.hiddenQuestionIds || []);
+          setFilterExcludeKnown(settings.excludeKnown || false);
+          setFilterExcludeWeak(settings.excludeWeak || false);
+        }
 
         // Проверяем кэш сначала
         const cachedQuestions = questionsCache.get(currentSection);
@@ -410,6 +450,15 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       questions,
       isLoading,
       error,
+      // Фильтр вопросов (единый для Обучения и Тренажёра)
+      filterHiddenQuestionIds,
+      setFilterHiddenQuestionIds,
+      filterExcludeKnown,
+      setFilterExcludeKnown,
+      filterExcludeWeak,
+      setFilterExcludeWeak,
+      isFilterActive,
+      // Тренажер
       trainerQuestions,
       trainerCurrentIndex,
       trainerAnswers,
@@ -421,6 +470,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       prevTrainerQuestion,
       finishTrainer,
       resetTrainer,
+      // Экзамен
       tickets,
       currentTicketId,
       examAnswers,
