@@ -253,6 +253,69 @@ describe('Синхронизация фильтра: Тренажёр ↔ Обу
       expect(settings1258.hiddenQuestionIds).toEqual([1, 2]);
       expect(settings1258.excludeKnown).toBe(true);
     });
+
+    it('должен загружать настройки из localStorage при переключении раздела', async () => {
+      // Сохраняем настройки для обоих разделов заранее
+      localStorage.setItem('elbez_question_filter_1258-20', JSON.stringify({
+        excludeKnown: true,
+        excludeWeak: false,
+        hiddenQuestionIds: [1, 2, 3],
+      }));
+
+      localStorage.setItem('elbez_question_filter_1256-19', JSON.stringify({
+        excludeKnown: false,
+        excludeWeak: true,
+        hiddenQuestionIds: [10, 20],
+      }));
+
+      // Инициализируем хук с разделом 1258-20
+      const { result } = renderHook(() => useFilterTest(), { wrapper });
+
+      // Проверяем что настройки для 1258-20 загрузились
+      await waitFor(() => {
+        expect(result.current.filterHiddenQuestionIds).toEqual([1, 2, 3]);
+        expect(result.current.filterExcludeKnown).toBe(true);
+        expect(result.current.filterExcludeWeak).toBe(false);
+      });
+
+      // Переключаемся на 1256-19
+      await act(async () => {
+        result.current.setCurrentSection('1256-19' as SectionType);
+      });
+
+      // Проверяем что настройки для 1256-19 загрузились
+      await waitFor(() => {
+        expect(result.current.filterHiddenQuestionIds).toEqual([10, 20]);
+        expect(result.current.filterExcludeKnown).toBe(false);
+        expect(result.current.filterExcludeWeak).toBe(true);
+      });
+    });
+
+    it('должен загружать пустые настройки если localStorage пуст для раздела', async () => {
+      // Очищаем localStorage
+      localStorage.clear();
+
+      const { result } = renderHook(() => useFilterTest(), { wrapper });
+
+      // Проверяем что настройки пустые
+      await waitFor(() => {
+        expect(result.current.filterHiddenQuestionIds).toEqual([]);
+        expect(result.current.filterExcludeKnown).toBe(false);
+        expect(result.current.filterExcludeWeak).toBe(false);
+      });
+
+      // Переключаемся на 1256-19 (тоже пустой)
+      await act(async () => {
+        result.current.setCurrentSection('1256-19' as SectionType);
+      });
+
+      // Проверяем что настройки всё ещё пустые
+      await waitFor(() => {
+        expect(result.current.filterHiddenQuestionIds).toEqual([]);
+        expect(result.current.filterExcludeKnown).toBe(false);
+        expect(result.current.filterExcludeWeak).toBe(false);
+      });
+    });
   });
 
   describe('isFilterActive при синхронизации', () => {
