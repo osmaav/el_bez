@@ -14,7 +14,7 @@
  * - LearningResults — блок результатов
  */
 
-import { useState, useCallback, useRef, useEffect } from 'react';
+import { useState, useCallback, useRef, useEffect, useMemo } from 'react';
 import { useApp } from '@/context/AppContext';
 import { useAuth } from '@/context/AuthContext';
 import { useToast } from '@/context/ToastContext';
@@ -26,7 +26,6 @@ import { ConfirmModal } from '@/components/ui/confirm-modal';
 import { LearningHeader, LearningProgressBar, LearningQuestionCard, LearningResults } from '@/components/learning';
 import { useLearningProgress } from '@/hooks/useLearningProgress';
 import { useLearningNavigation } from '@/hooks/useLearningNavigation';
-import { useQuestionFilter } from '@/sections/learning/hooks';
 import type { SectionType } from '@/types';
 
 const QUESTIONS_PER_SESSION = 10;
@@ -112,22 +111,38 @@ export function LearningSection() {
   const sessionTrackerRef = useRef<SessionTracker | null>(null);
   const lastSectionRef = useRef<SectionType | null>(null);
 
-  // Filter hook
+  // Фильтр из AppContext
   const {
-    filteredQuestions,
-    totalPages: filterTotalPages,
+    filterHiddenQuestionIds: hiddenQuestionIds,
+    filterExcludeKnown,
+    filterExcludeWeak,
+    setFilterHiddenQuestionIds: setHiddenQuestionIds,
+    setFilterExcludeKnown: setExcludeKnown,
+    setFilterExcludeWeak: setExcludeWeak,
     isFilterActive,
-    hiddenQuestionIds,
-    setHiddenQuestionIds,
-    setExcludeKnown,
-    setExcludeWeak,
-    setFilteredQuestions,
-    setFilteredTotalPages,
-  } = useQuestionFilter({
-    currentSection,
-    questions,
-    questionsPerPage: QUESTIONS_PER_SESSION,
-  });
+  } = useApp();
+
+  // Применяем фильтр к вопросам
+  const filteredQuestions = useMemo(() => {
+    if (!isFilterActive) return questions;
+
+    const questionStats = statisticsService.getQuestionStats(currentSection);
+    
+    return questions.filter(q => {
+      if (hiddenQuestionIds.includes(q.id)) return false;
+      if (filterExcludeKnown) {
+        const stats = questionStats.find(s => s.questionId === q.id);
+        if (stats?.isKnown) return false;
+      }
+      if (filterExcludeWeak) {
+        const stats = questionStats.find(s => s.questionId === q.id);
+        if (stats?.isWeak) return false;
+      }
+      return true;
+    });
+  }, [questions, hiddenQuestionIds, filterExcludeKnown, filterExcludeWeak, isFilterActive, currentSection]);
+
+  const filterTotalPages = Math.ceil(filteredQuestions.length / QUESTIONS_PER_SESSION);
 
   // Calculate total pages
   const TOTAL_PAGES = filterTotalPages > 0 ? filterTotalPages : Math.ceil(questions.length / QUESTIONS_PER_SESSION);
@@ -243,26 +258,22 @@ export function LearningSection() {
   }, [progress, success]);
 
   const handleFilterApply = useCallback((
-    filteredIds: number[],
+    _filteredIds: number[],
     settings: { excludeKnown: boolean; excludeWeak: boolean; hiddenQuestionIds: number[] }
   ) => {
     // Обновляем все параметры фильтра
     setHiddenQuestionIds(settings.hiddenQuestionIds);
     setExcludeKnown(settings.excludeKnown);
     setExcludeWeak(settings.excludeWeak);
-    setFilteredQuestions(questions.filter(q => filteredIds.includes(q.id)));
-    setFilteredTotalPages(Math.ceil(filteredIds.length / QUESTIONS_PER_SESSION));
     navigation.goToPage(1);
-  }, [questions, setHiddenQuestionIds, setExcludeKnown, setExcludeWeak, setFilteredQuestions, setFilteredTotalPages, navigation]);
+  }, [setHiddenQuestionIds, setExcludeKnown, setExcludeWeak, navigation]);
 
   const handleResetFilter = useCallback(() => {
     setHiddenQuestionIds([]);
     setExcludeKnown(false);
     setExcludeWeak(false);
-    setFilteredQuestions(questions);
-    setFilteredTotalPages(Math.ceil(questions.length / QUESTIONS_PER_SESSION));
     navigation.goToPage(1);
-  }, [questions, setHiddenQuestionIds, setExcludeKnown, setExcludeWeak, setFilteredQuestions, setFilteredTotalPages, navigation]);
+  }, [setHiddenQuestionIds, setExcludeKnown, setExcludeWeak, navigation]);
 
   const getQuestionStats = useCallback(() => {
     const allStats = statisticsService.getQuestionStats(currentSection);
