@@ -36,9 +36,24 @@ export function useQuestionFilter({
   questions,
   questionsPerPage,
 }: UseQuestionFilterOptions): UseQuestionFilterReturn {
-  const [hiddenQuestionIds, setHiddenQuestionIdsState] = useState<number[]>([]);
-  const [excludeKnown, setExcludeKnown] = useState(false);
-  const [excludeWeak, setExcludeWeak] = useState(false);
+  // Filter state — ленивая инициализация из настроек
+  const [hiddenQuestionIds, setHiddenQuestionIdsState] = useState<number[]>(() => {
+    if (typeof window === 'undefined') return [];
+    const settings = questionFilterService.getSettings(currentSection);
+    return settings.hiddenQuestionIds;
+  });
+  
+  const [excludeKnown, setExcludeKnown] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    const settings = questionFilterService.getSettings(currentSection);
+    return settings.excludeKnown;
+  });
+  
+  const [excludeWeak, setExcludeWeak] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    const settings = questionFilterService.getSettings(currentSection);
+    return settings.excludeWeak;
+  });
 
   // ============================================================================
   // Compute filtered questions using useMemo (вместо setState в useEffect)
@@ -66,19 +81,6 @@ export function useQuestionFilter({
       isFilterActive: filterSettings.excludeKnown || filterSettings.excludeWeak || filterSettings.hiddenQuestionIds.length > 0
     };
   }, [questions, currentSection, questionsPerPage, filterSettings]);
-
-  // ============================================================================
-  // Load Filter Settings on Init
-  // ============================================================================
-
-  useEffect(() => {
-    if (questions.length > 0) {
-      const filterSettings = questionFilterService.getSettings(currentSection);
-      setHiddenQuestionIdsState(filterSettings.hiddenQuestionIds);
-      setExcludeKnown(filterSettings.excludeKnown);
-      setExcludeWeak(filterSettings.excludeWeak);
-    }
-  }, [currentSection, questions.length]);
 
   // Применение фильтра
   const applyFilter = useCallback(() => {

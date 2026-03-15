@@ -6,7 +6,7 @@
  * @version 1.0.0
  */
 
-import { useState, useCallback, useEffect, useMemo } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import { questionFilterService } from '@/services/questionFilterService';
 import { statisticsService } from '@/services/statisticsService';
 import type { Question, SectionType } from '@/types';
@@ -28,9 +28,24 @@ export function useTrainerFilter({
   currentSection,
   questions,
 }: UseTrainerFilterOptions): UseTrainerFilterReturn {
-  const [hiddenQuestionIds, setHiddenQuestionIdsState] = useState<number[]>([]);
-  const [excludeKnown, setExcludeKnown] = useState(false);
-  const [excludeWeak, setExcludeWeak] = useState(false);
+  // Filter state — ленивая инициализация из настроек
+  const [hiddenQuestionIds, setHiddenQuestionIdsState] = useState<number[]>(() => {
+    if (typeof window === 'undefined') return [];
+    const settings = questionFilterService.getSettings(currentSection);
+    return settings.hiddenQuestionIds;
+  });
+  
+  const [excludeKnown, setExcludeKnown] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    const settings = questionFilterService.getSettings(currentSection);
+    return settings.excludeKnown;
+  });
+  
+  const [excludeWeak, setExcludeWeak] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    const settings = questionFilterService.getSettings(currentSection);
+    return settings.excludeWeak;
+  });
 
   // ============================================================================
   // Compute filtered questions using useMemo (вместо setState в useEffect)
@@ -57,19 +72,6 @@ export function useTrainerFilter({
       isFilterActive: filterSettings.excludeKnown || filterSettings.excludeWeak || filterSettings.hiddenQuestionIds.length > 0
     };
   }, [questions, currentSection, filterSettings]);
-
-  // ============================================================================
-  // Load Filter Settings on Init
-  // ============================================================================
-
-  useEffect(() => {
-    if (questions.length > 0) {
-      const filterSettings = questionFilterService.getSettings(currentSection);
-      setHiddenQuestionIdsState(filterSettings.hiddenQuestionIds);
-      setExcludeKnown(filterSettings.excludeKnown);
-      setExcludeWeak(filterSettings.excludeWeak);
-    }
-  }, [currentSection, questions.length]);
 
   // Установка скрытых вопросов
   const setHiddenQuestionIds = useCallback((ids: number[]) => {
