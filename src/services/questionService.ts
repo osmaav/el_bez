@@ -96,7 +96,7 @@ export const loadQuestionsForSection = async (sectionId: string): Promise<Questi
 
     // console.log('🔍 [QuestionService] Выполнение запроса к Firestore...');
     const querySnapshot = await getDocs(q);
-    
+
     const questions: Question[] = [];
     querySnapshot.forEach((doc) => {
       const data = doc.data() as QuestionDocument;
@@ -117,15 +117,15 @@ export const loadQuestionsForSection = async (sectionId: string): Promise<Questi
     return questions;
   } catch (error: unknown) {
     // Если требуется индекс, пробуем без сортировки (сортируем на клиенте)
-    const errorObj = error as { code?: string };
-    if (errorObj.code === 'failed-precondition') {
+    const errorObj_ = error as { code?: string };
+    if (errorObj_.code === 'failed-precondition') {
       // console.log('⚠️ [QuestionService] Индекс не найден, загрузка без сортировки...');
       try {
         const q = query(
           collection(db, QUESTIONS_COLLECTION),
           where('section', '==', sectionId)
         );
-        
+
         const querySnapshot = await getDocs(q);
         const questions: Question[] = [];
         querySnapshot.forEach((doc) => {
@@ -142,7 +142,7 @@ export const loadQuestionsForSection = async (sectionId: string): Promise<Questi
             link: data.link
           });
         });
-        
+
         // Сортируем на клиенте
         questions.sort((a, b) => a.id - b.id);
 
@@ -182,7 +182,7 @@ export const loadTicket = async (sectionId: string, ticketId: number): Promise<Q
     );
 
     const querySnapshot = await getDocs(q);
-    
+
     const questions: Question[] = [];
     querySnapshot.forEach((doc) => {
       const data = doc.data() as QuestionDocument;
@@ -360,7 +360,7 @@ export const loadLearningProgress = async (
     if (docSnap.exists()) {
       const data = docSnap.data() as UserState;
       const progress = data.learningProgress?.[section as keyof typeof data.learningProgress];
-      
+
       if (progress) {
         // Десериализуем shuffledAnswers из строки обратно в массив
         const deserializedProgress: LearningProgressState = {};
