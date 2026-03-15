@@ -1,4 +1,5 @@
 import '@testing-library/jest-dom'
+import { beforeEach as vitestBeforeEach } from 'vitest';
 
 // Глобальные переменные для тестов
 declare global {
@@ -49,6 +50,6 @@ const setGlobalLocalStorage = () => {
 setGlobalLocalStorage();
 
 // Очистка localStorage перед каждым тестом
-beforeEach(() => {
+vitestBeforeEach(() => {
   localStorage.clear();
 });

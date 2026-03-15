@@ -148,11 +148,12 @@ export const exportLearningToPDF = async (data: LearningExportData): Promise<voi
       2: { cellWidth: 60 },
       3: { cellWidth: 60 }
     },
-    didParseCell: (cellData: { row: { index: number }; column: { index: number }; cell: { styles: { textColor?: [number, number, number] } } }) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    didParseCell: (cellData: any) => {
       const row = tableData[cellData.row.index];
       // Окрашиваем неверные ответы красным
       if (cellData.column.index === 2 && !row.isCorrect) {
-        cellData.cell.styles.textColor = COLORS.error;
+        cellData.cell.styles.textColor = COLORS.error as unknown as [number, number, number];
       }
     },
     willDrawCell: () => {

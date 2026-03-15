@@ -111,7 +111,8 @@ export const exportTrainerToPDF = async (data: TrainerExportData): Promise<void>
       0: { cellWidth: 33 },
       1: { cellWidth: 15, halign: 'right' }
     },
-    didParseCell: (cellData: { row: { index: number }; column: { index: number }; cell: { styles: { textColor?: [number, number, number] } } }) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    didParseCell: (cellData: any) => {
       const row = statsData[cellData.row.index];
       if (cellData.column.index === 1 && row.color) {
         cellData.cell.styles.textColor = row.color;
@@ -159,7 +160,7 @@ export const exportTrainerToPDF = async (data: TrainerExportData): Promise<void>
     ]),
     theme: 'striped',
     headStyles: {
-      fillColor: COLORS.primary as [number, number, number],
+      fillColor: COLORS.primary as unknown as [number, number, number],
       font: 'Roboto',
       halign: 'center',
       fontSize: 10
@@ -171,11 +172,12 @@ export const exportTrainerToPDF = async (data: TrainerExportData): Promise<void>
       2: { cellWidth: 60 },
       3: { cellWidth: 60 }
     },
-    didParseCell: (cellData: { row: { index: number }; column: { index: number }; cell: { styles: { textColor?: [number, number, number] } } }) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    didParseCell: (cellData: any) => {
       const row = tableData[cellData.row.index];
       // Окрашиваем неверные ответы красным
       if (cellData.column.index === 2 && !row.isCorrect) {
-        cellData.cell.styles.textColor = COLORS.error;
+        cellData.cell.styles.textColor = COLORS.error as unknown as [number, number, number];
       }
     },
     willDrawCell: () => {

@@ -124,7 +124,8 @@ export const exportExamToPDF = async (data: ExamExportData): Promise<void> => {
       0: { fontStyle: 'bold', cellWidth: 70 },
       1: { cellWidth: 40, halign: 'right' }
     },
-    didParseCell: (cellData: { row: { index: number }; column: { index: number }; cell: { styles: { textColor?: [number, number, number] } } }) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    didParseCell: (cellData: any) => {
       const row = statsData[cellData.row.index];
       if (cellData.column.index === 1 && row.color) {
         cellData.cell.styles.textColor = row.color;
@@ -169,8 +170,8 @@ export const exportExamToPDF = async (data: ExamExportData): Promise<void> => {
       row.correctAnswer
     ]),
     theme: 'striped',
-    headStyles: { 
-      fillColor: COLORS.primary as [number, number, number],
+    headStyles: {
+      fillColor: COLORS.primary as unknown as [number, number, number],
       font: 'Roboto',
       halign: 'center'
     },

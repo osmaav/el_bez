@@ -15,13 +15,17 @@ interface UseLearningProgressOptions {
   currentSection: SectionType;
 }
 
-interface UseLearningProgressReturn {
-  savedStates: Record<number, {
+interface LearningProgressState {
+  [page: number]: {
     userAnswers: (number | null)[];
     shuffledAnswers: number[][];
     isComplete: boolean;
     questionIds?: number[];
-  }>;
+  };
+}
+
+interface UseLearningProgressReturn {
+  savedStates: LearningProgressState;
   isLoading: boolean;
   error: string | null;
   saveProgress: (page: number, state: {
@@ -39,19 +43,19 @@ const getStorageKeys = (section: string) => ({
   progress: `elbez_learning_progress_${section}`
 });
 
-const saveProgressToStorage = (state: Record<number, unknown>, section: string) => {
+const saveProgressToStorage = (state: LearningProgressState, section: string) => {
   if (typeof window === 'undefined') return;
   const keys = getStorageKeys(section);
   localStorage.setItem(keys.progress, JSON.stringify(state));
 };
 
-const loadProgressFromStorage = (section: string): Record<number, unknown> | null => {
+const loadProgressFromStorage = (section: string): LearningProgressState | null => {
   if (typeof window === 'undefined') return null;
   const keys = getStorageKeys(section);
   const stored = localStorage.getItem(keys.progress);
   if (!stored) return null;
   try {
-    return JSON.parse(stored);
+    return JSON.parse(stored) as LearningProgressState;
   } catch {
     return null;
   }
@@ -61,7 +65,7 @@ export function useLearningProgress({
   userId,
   currentSection,
 }: UseLearningProgressOptions): UseLearningProgressReturn {
-  const [savedStates, setSavedStates] = useState<Record<number, unknown>>({});
+  const [savedStates, setSavedStates] = useState<LearningProgressState>({});
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -79,7 +83,7 @@ export function useLearningProgress({
         // Пытаемся загрузить из Firestore
         if (userId) {
           console.log('☁️ [useLearningProgress] Загрузка из Firestore...');
-          progress = await loadLearningProgress(userId, currentSection);
+          progress = await loadLearningProgress(userId, currentSection) as LearningProgressState | null;
         }
 
         // Если не загрузили, пробуем localStorage
@@ -153,10 +157,10 @@ export function useLearningProgress({
   const loadProgress = useCallback(async () => {
     try {
       setIsLoading(true);
-      let progress: Record<number, unknown> | null = null;
+      let progress: LearningProgressState | null = null;
 
       if (userId) {
-        progress = await loadLearningProgress(userId, currentSection);
+        progress = await loadLearningProgress(userId, currentSection) as LearningProgressState | null;
       }
 
       if (!progress) {

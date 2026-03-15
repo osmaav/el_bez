@@ -68,7 +68,17 @@ function ToastWrapper() {
 
   return (
     <ToastContainer
-      toasts={toasts}
+      toasts={toasts.map(t => ({
+        id: t.id,
+        type: t.type!,
+        title: t.title,
+        description: t.description,
+        action: t.action,
+        duration: t.duration,
+        showProgress: t.showProgress,
+        position: t.position,
+        createdAt: t.createdAt
+      }))}
       onDismiss={removeToast}
       position="top-right"
     />

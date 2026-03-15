@@ -354,9 +354,11 @@ export const loadLearningProgress = async (
         // Десериализуем shuffledAnswers из строки обратно в массив
         const deserializedProgress: LearningProgressState = {};
         Object.entries(progress).forEach(([page, state]) => {
-          const stateObj = state as { shuffledAnswers?: string };
+          const stateObj = state as { shuffledAnswers?: string; userAnswers?: (number | null)[]; isComplete?: boolean };
           deserializedProgress[Number(page)] = {
             ...stateObj,
+            userAnswers: stateObj.userAnswers || [],
+            isComplete: stateObj.isComplete || false,
             shuffledAnswers: typeof stateObj.shuffledAnswers === 'string'
               ? JSON.parse(stateObj.shuffledAnswers)
               : stateObj.shuffledAnswers

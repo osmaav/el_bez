@@ -248,6 +248,7 @@ export interface ToastContainerProps {
     duration?: number;
     showProgress?: boolean;
     position?: 'top-right' | 'top-center' | 'bottom-right' | 'bottom-center';
+    createdAt?: number;
   }>;
   onDismiss: (id: string) => void;
   position?: ToastMessageProps['position'];

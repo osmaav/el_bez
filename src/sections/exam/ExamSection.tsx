@@ -40,9 +40,15 @@ export function ExamSection() {
   // Состояния для модальных окон
   const [showConfirmFinish, setShowConfirmFinish] = useState(false);
   const [showResetConfirm, setShowResetConfirm] = useState(false);
-  const [loadingModal, setLoadingModal] = useState({
+  const [loadingModal, setLoadingModal] = useState<{
+    isOpen: boolean;
+    status: 'loading' | 'success';
+    progress: number;
+    title: string;
+    description: string;
+  }>({
     isOpen: false,
-    status: 'loading' as const,
+    status: 'loading',
     progress: 0,
     title: '',
     description: ''

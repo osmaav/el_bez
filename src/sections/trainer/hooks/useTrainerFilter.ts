@@ -54,8 +54,9 @@ export function useTrainerFilter({
   const filterSettings = useMemo(() => ({
     hiddenQuestionIds,
     excludeKnown,
-    excludeWeak
-  }), [hiddenQuestionIds, excludeKnown, excludeWeak]);
+    excludeWeak,
+    section: currentSection
+  }), [hiddenQuestionIds, excludeKnown, excludeWeak, currentSection]);
 
   const { filteredQuestions, isFilterActive } = useMemo(() => {
     if (questions.length === 0) {

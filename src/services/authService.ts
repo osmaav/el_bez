@@ -168,11 +168,12 @@ export const loginUser = async (userData: LoginUserData): Promise<UserProfile> =
     // Полная обработка ошибок Firebase REST API
     const errorObj = error as { message?: string; response?: { data?: { error?: { message?: string }; message?: string } } };
     const errorMessage = errorObj?.message || '';
-    const errorData = errorObj?.response?.data || errorObj?.response || null;
+    const responseData = errorObj?.response as { data?: { error?: { message?: string }; message?: string } } | null;
+    const errorData = responseData?.data || responseData || null;
 
     // Парсинг ошибок из Firebase REST API (JSON формат)
     if (errorData) {
-      const restMessage = errorData?.error?.message || errorData?.message || '';
+      const restMessage = (errorData as { error?: { message?: string }; message?: string })?.error?.message || (errorData as { message?: string })?.message || '';
       if (restMessage.includes('EMAIL_NOT_FOUND')) {
         throw Object.assign(new Error('Пользователь не найден'), { code: 'EMAIL_NOT_FOUND' });
       }
@@ -399,7 +400,7 @@ const handleAuthError = (error: unknown): Error => {
   }
 
   // Стандартные ошибки Firebase Auth
-  const message = errorMessages[errorCode] || error.message || 'Произошла ошибка при входе';
+  const message = errorMessages[errorCode] || (error instanceof Error ? error.message : undefined) || 'Произошла ошибка при входе';
   return new Error(message);
 };
 
