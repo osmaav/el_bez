@@ -28,6 +28,9 @@ jobs:
           cache: 'npm'
           cache-dependency-path: package-lock.json
 
+      - name: Clear npm cache
+        run: npm cache clean --force || true
+
       - name: Setup Pages
         uses: actions/configure-pages@v5
 
