@@ -47,6 +47,17 @@ export function useExamState({
   const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
   const [timeSpent, setTimeSpent] = useState(0);
 
+  // Завершение экзамена — объявляем РАНЬШЕ чем используем в useEffect
+  const finishExam = useCallback(() => {
+    setExamState(prev => ({
+      ...prev,
+      isFinished: true,
+      endTime: Date.now(),
+    }));
+
+    console.log('✅ [useExamState] Экзамен завершён');
+  }, []);
+
   // Таймер времени
   useEffect(() => {
     if (!examState.startTime || examState.isFinished) return;
@@ -126,17 +137,6 @@ export function useExamState({
         currentQuestionIndex: newIndex,
       };
     });
-  }, []);
-
-  // Завершение экзамена
-  const finishExam = useCallback(() => {
-    setExamState(prev => ({
-      ...prev,
-      isFinished: true,
-      endTime: Date.now(),
-    }));
-
-    console.log('✅ [useExamState] Экзамен завершён');
   }, []);
 
   // Сброс экзамена

@@ -150,8 +150,8 @@ export const loadQuestionsForSection = async (sectionId: string): Promise<Questi
         return questions;
       } catch (fallbackError: unknown) {
         // console.error('❌ [QuestionService] Ошибка загрузки вопросов:', fallbackError);
-        const errorObj = fallbackError as { message?: string };
-        throw new Error(`Ошибка загрузки вопросов: ${errorObj.message || 'Неизвестная ошибка'}`);
+        const fallbackErrorObj = fallbackError as { message?: string };
+        throw new Error(`Ошибка загрузки вопросов: ${fallbackErrorObj.message || 'Неизвестная ошибка'}`);
       }
     }
 

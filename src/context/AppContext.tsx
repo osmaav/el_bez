@@ -85,7 +85,7 @@ const SECTIONS: SectionInfo[] = [
   }
 ];
 
-export function AppProvider({ children }: { children: React.ReactNode }) {
+const AppProvider = ({ children }: { children: React.ReactNode }) => {
   const { user } = useAuth();
 
   // Session tracker для отслеживания статистики
