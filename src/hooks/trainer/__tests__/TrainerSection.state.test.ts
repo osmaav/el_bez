@@ -154,23 +154,23 @@ describe('TrainerSection', () => {
 
     describe('Сброс тренировки', () => {
       it('должен очищать ответы', () => {
-        const answers: Record<number, number> = { 1: 0, 2: 1 };
+        const _answers: Record<number, number> = { 1: 0, 2: 1 };
         const newAnswers: Record<number, number> = {};
-        
+
         expect(Object.keys(newAnswers).length).toBe(0);
       });
 
       it('должен сбрасывать currentIndex', () => {
         let currentIndex = 10;
         currentIndex = 0;
-        
+
         expect(currentIndex).toBe(0);
       });
 
       it('должен сбрасывать статистику', () => {
-        const stats = { correct: 10, incorrect: 5, total: 15 };
+        const _stats = { correct: 10, incorrect: 5, total: 15 };
         const newStats = { correct: 0, incorrect: 0, total: 0 };
-        
+
         expect(newStats.correct).toBe(0);
         expect(newStats.incorrect).toBe(0);
       });

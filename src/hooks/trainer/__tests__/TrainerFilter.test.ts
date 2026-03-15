@@ -7,10 +7,7 @@
  */
 
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { renderHook, act } from '@testing-library/react';
-import { useApp } from '@/context/AppContext';
 import { questionFilterService } from '@/services/questionFilterService';
-import { statisticsService } from '@/services/statisticsService';
 import { createMockQuestions } from '@/tests/utils/testHelpers';
 
 // Моки для сервисов

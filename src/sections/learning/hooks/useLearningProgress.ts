@@ -74,7 +74,7 @@ export function useLearningProgress({
         setIsLoading(true);
         setError(null);
 
-        let progress: Record<number, unknown> | null = null;
+        let progress: LearningProgressState | null = null;
 
         // Пытаемся загрузить из Firestore
         if (userId) {

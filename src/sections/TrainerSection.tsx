@@ -494,9 +494,9 @@ export function TrainerSection() {
   }
 
   // Экран вопроса
-  const currentQuestion = trainerQuestions[trainerCurrentIndex];
+  const question = trainerQuestions[trainerCurrentIndex];
   const progress = ((trainerCurrentIndex + 1) / trainerQuestions.length) * 100;
-  const hasAnswered = trainerAnswers[currentQuestion?.id] !== undefined;
+  const hasAnswered = trainerAnswers[question?.id] !== undefined;
 
   return (
     <>

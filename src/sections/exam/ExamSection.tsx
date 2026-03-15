@@ -87,7 +87,8 @@ export function ExamSection() {
       setLoadingModal((prev) => ({
         ...prev,
         status: 'success',
-        progress: 100
+        progress: 100,
+        isOpen: false
       }));
       updateToast(loadingId, { type: 'success', title: 'Экзамен начат' });
 

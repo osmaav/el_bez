@@ -29,7 +29,7 @@ export interface AddToastOptions extends Omit<ToastOptions, 'id'> {
   id?: string;
 }
 
-interface ToastContextValue {
+export interface ToastContextType {
   toasts: Toast[];
   addToast: (options: AddToastOptions) => string;
   removeToast: (id: string) => void;
@@ -42,7 +42,7 @@ interface ToastContextValue {
   loading: (title: string, description?: string, options?: Partial<ToastOptions>) => string;
 }
 
-const ToastContext = createContext<ToastContextValue | undefined>(undefined);
+const ToastContext = createContext<ToastContextType | undefined>(undefined);
 
 /**
  * Генерация уникального ID

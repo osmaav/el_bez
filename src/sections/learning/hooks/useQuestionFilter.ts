@@ -59,7 +59,7 @@ export function useQuestionFilter({
   // Compute filtered questions using useMemo (вместо setState в useEffect)
   // ============================================================================
 
-  const filterSettings = useMemo(() => ({
+  const filterSettings = useMemo((): { hiddenQuestionIds: number[]; excludeKnown: boolean; excludeWeak: boolean } => ({
     hiddenQuestionIds,
     excludeKnown,
     excludeWeak
@@ -166,8 +166,6 @@ export function useQuestionFilter({
     setExcludeKnown: handleSetExcludeKnown,
     setExcludeWeak: handleSetExcludeWeak,
     resetFilter,
-    setFilteredQuestions,
-    setFilteredTotalPages: setTotalPages,
   };
 }
 

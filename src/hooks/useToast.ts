@@ -7,7 +7,7 @@
  */
 
 import { useContext } from 'react';
-import { ToastContext } from '@/context/ToastContext';
+import ToastContext from '@/context/ToastContext';
 import type { ToastContextType } from '@/context/ToastContext';
 
 /**

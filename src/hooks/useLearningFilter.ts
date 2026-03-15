@@ -80,11 +80,12 @@ export function useLearningFilter(
   // Compute filtered questions using useMemo (вместо setState в useEffect)
   // ============================================================================
 
-  const filterSettings = useMemo((): { hiddenQuestionIds: number[]; excludeKnown: boolean; excludeWeak: boolean } => ({
+  const filterSettings = useMemo((): { hiddenQuestionIds: number[]; excludeKnown: boolean; excludeWeak: boolean; section: SectionType } => ({
     hiddenQuestionIds,
     excludeKnown,
-    excludeWeak
-  }), [hiddenQuestionIds, excludeKnown, excludeWeak]);
+    excludeWeak,
+    section: currentSection
+  }), [hiddenQuestionIds, excludeKnown, excludeWeak, currentSection]);
 
   const { filteredQuestions, filteredTotalPages, isFilterActive } = useMemo(() => {
     if (questions.length === 0) {
