@@ -113,13 +113,11 @@ export const loadQuestionsForSection = async (sectionId: string): Promise<Questi
       });
     });
 
-    // console.log(`✅ [QuestionService] Загружено ${questions.length} вопросов из Firestore`);
     return questions;
   } catch (error: unknown) {
     // Если требуется индекс, пробуем без сортировки (сортируем на клиенте)
     const errorObj_ = error as { code?: string };
     if (errorObj_.code === 'failed-precondition') {
-      // console.log('⚠️ [QuestionService] Индекс не найден, загрузка без сортировки...');
       try {
         const q = query(
           collection(db, QUESTIONS_COLLECTION),
@@ -146,16 +144,13 @@ export const loadQuestionsForSection = async (sectionId: string): Promise<Questi
         // Сортируем на клиенте
         questions.sort((a, b) => a.id - b.id);
 
-        // console.log(`✅ [QuestionService] Загружено ${questions.length} вопросов (без индекса)`);
         return questions;
       } catch (fallbackError: unknown) {
-        // console.error('❌ [QuestionService] Ошибка загрузки вопросов:', fallbackError);
         const fallbackErrorObj = fallbackError as { message?: string };
         throw new Error(`Ошибка загрузки вопросов: ${fallbackErrorObj.message || 'Неизвестная ошибка'}`);
       }
     }
 
-    // console.error('❌ [QuestionService] Ошибка загрузки вопросов:', error);
     const errorObj = error as { message?: string };
     throw new Error(`Ошибка загрузки вопросов: ${errorObj.message || 'Неизвестная ошибка'}`);
   }
@@ -199,10 +194,8 @@ export const loadTicket = async (sectionId: string, ticketId: number): Promise<Q
       });
     });
 
-    // console.log(`✅ [QuestionService] Загружено ${questions.length} вопросов для билета ${ticketId}`);
     return questions;
   } catch (error: unknown) {
-    // console.error('❌ [QuestionService] Ошибка загрузки билета:', error);
     const errorObj = error as { message?: string };
     throw new Error(`Ошибка загрузки билета: ${errorObj.message || 'Неизвестная ошибка'}`);
   }
@@ -214,7 +207,6 @@ export const loadTicket = async (sectionId: string, ticketId: number): Promise<Q
  */
 export const getUserState = async (userId: string): Promise<UserState | null> => {
   if (!isFirebaseReady()) {
-    // console.warn('⚠️ [QuestionService] Firebase не настроен. Состояние недоступно.');
     return null;
   }
 
@@ -223,14 +215,11 @@ export const getUserState = async (userId: string): Promise<UserState | null> =>
     const docSnap = await getDoc(docRef);
 
     if (docSnap.exists()) {
-      // console.log('✅ [QuestionService] Состояние пользователя загружено из Firestore');
       return docSnap.data() as UserState;
     }
 
-    // console.log('ℹ️ [QuestionService] Состояние пользователя не найдено, создаём новое');
     return null;
   } catch {
-    // console.error('❌ [QuestionService] Ошибка получения состояния пользователя:');
     return null;
   }
 };

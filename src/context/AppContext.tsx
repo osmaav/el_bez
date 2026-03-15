@@ -1,7 +1,7 @@
-import React, { createContext, useState, useCallback, useEffect, useRef } from 'react';
+import React, { createContext, useState, useCallback, useEffect, useRef, useContext } from 'react';
 import type { Question, Ticket, TestStats, PageType, SectionType, SectionInfo } from '@/types';
 import { loadQuestionsForSection, saveUserState } from '@/services/questionService';
-import { useAuth } from '@/hooks/useAuth';
+import { AuthContext } from '@/context/AuthContext';
 import { SessionTracker } from '@/services/statisticsService';
 
 interface AppContextType {
@@ -86,7 +86,9 @@ const SECTIONS: SectionInfo[] = [
 ];
 
 const AppProvider = ({ children }: { children: React.ReactNode }) => {
-  const { user } = useAuth();
+  // Получаем пользователя из AuthContext напрямую, чтобы избежать циклической зависимости
+  const auth = useContext(AuthContext);
+  const user = auth?.user || null;
 
   // Session tracker для отслеживания статистики
   const sessionTrackerRef = useRef<SessionTracker | null>(null);
@@ -520,5 +522,13 @@ const AppProvider = ({ children }: { children: React.ReactNode }) => {
   );
 }
 
-export { AppProvider }
+function useApp() {
+  const context = useContext(AppContext);
+  if (context === undefined) {
+    throw new Error('useApp must be used within AppProvider');
+  }
+  return context;
+}
+
+export { AppProvider, useApp }
 export default AppContext;
