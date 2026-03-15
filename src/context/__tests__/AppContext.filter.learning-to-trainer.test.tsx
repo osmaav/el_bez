@@ -12,11 +12,12 @@
  * @scenario Learning to Trainer Filter Sync
  */
 
-import React, { useEffect } from 'react';
+import React from 'react';
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { render, screen, act, waitFor } from '@testing-library/react';
-import { AppProvider, useApp } from '@/context/AppContext';
+import { AppProvider } from '@/context/AppContext';
 import { AuthProvider } from '@/context/AuthContext';
+import { useApp } from '@/hooks/useApp';
 
 // Обёртка для тестирования контекста
 const wrapper = ({ children }: { children: React.ReactNode }) => (

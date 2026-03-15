@@ -44,9 +44,8 @@ describe('ExamSection', () => {
       });
 
       it('должен сбрасывать ответы', () => {
-        const answers: Record<number, number> = { 1: 0, 2: 1 };
         const newAnswers: Record<number, number> = {};
-        
+
         expect(Object.keys(newAnswers).length).toBe(0);
       });
 
@@ -163,21 +162,19 @@ describe('ExamSection', () => {
 
     describe('Сброс экзамена', () => {
       it('должен очищать ответы', () => {
-        const answers: Record<number, number> = { 1: 0, 2: 1 };
         const newAnswers: Record<number, number> = {};
-        
+
         expect(Object.keys(newAnswers).length).toBe(0);
       });
 
       it('должен сбрасывать выбранный билет', () => {
         let selectedTicket: number | null = 5;
         selectedTicket = null;
-        
+
         expect(selectedTicket).toBeNull();
       });
 
       it('должен сбрасывать результаты', () => {
-        const results: Record<number, boolean> = { 1: true, 2: false };
         const newResults: Record<number, boolean> = {};
         
         expect(Object.keys(newResults).length).toBe(0);

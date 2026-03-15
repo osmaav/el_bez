@@ -9,9 +9,9 @@
 import React from 'react';
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { renderHook, act, waitFor } from '@testing-library/react';
-import { AppProvider, useApp } from '@/context/AppContext';
+import { AppProvider } from '@/context/AppContext';
 import { AuthProvider } from '@/context/AuthContext';
-import type { SectionType } from '@/types';
+import { useApp } from '@/hooks/useApp';
 
 // Обёртка для тестирования контекста
 const wrapper = ({ children }: { children: React.ReactNode }) => (

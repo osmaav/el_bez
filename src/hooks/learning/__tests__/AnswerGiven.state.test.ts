@@ -9,7 +9,6 @@
  */
 
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { createMockQuestions } from '@/tests/utils/testHelpers';
 
 describe('LearningSection', () => {
   describe('State', () => {

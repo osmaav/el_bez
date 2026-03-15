@@ -522,13 +522,5 @@ const AppProvider = ({ children }: { children: React.ReactNode }) => {
   );
 }
 
-function useApp() {
-  const context = useContext(AppContext);
-  if (context === undefined) {
-    throw new Error('useApp must be used within AppProvider');
-  }
-  return context;
-}
-
-export { AppProvider, useApp }
+export { AppProvider, AppContext }
 export default AppContext;

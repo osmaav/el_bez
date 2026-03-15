@@ -10,8 +10,6 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { useLearningFilter } from '@/hooks/useLearningFilter';
 import { createMockQuestions } from '@/tests/utils/testHelpers';
-import { questionFilterService } from '@/services/questionFilterService';
-import { statisticsService } from '@/services/statisticsService';
 
 // Моки для сервисов
 vi.mock('@/services/questionFilterService', () => ({

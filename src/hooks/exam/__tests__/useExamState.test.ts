@@ -2,7 +2,7 @@
  * Тесты для useExamState
  */
 
-import { renderHook, act, waitFor } from '@testing-library/react';
+import { renderHook, act } from '@testing-library/react';
 import { useExamState } from '@/sections/exam/hooks/useExamState';
 import type { Ticket } from '@/types';
 
