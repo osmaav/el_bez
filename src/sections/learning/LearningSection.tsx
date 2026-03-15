@@ -7,9 +7,9 @@
  */
 
 import { useState, useCallback, useRef, useMemo, useEffect } from 'react';
-import { useApp } from '@/context/AppContext';
-import { useAuth } from '@/context/AuthContext';
-import { useToast } from '@/context/ToastContext';
+import { useApp } from '@/hooks/useApp';
+import { useAuth } from '@/hooks/useAuth';
+import { useToast } from '@/hooks/useToast';
 import { SessionTracker, statisticsService } from '@/services/statisticsService';
 import { FilterModal } from '@/components/ui/FilterModal';
 import { LoadingModal } from '@/components/ui/loading-modal';

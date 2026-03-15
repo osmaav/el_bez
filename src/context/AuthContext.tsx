@@ -7,7 +7,7 @@
  * Полный профиль загружается из Firebase/Firestore при необходимости.
  */
 
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import React, { createContext, useState, useEffect, useCallback } from 'react';
 import type { UserProfile } from '@/types/auth';
 import { onAuthChange, logoutUser as authLogout, checkEmailVerification, resendVerificationEmail, refreshCurrentUser } from '@/services/authService';
 import { saveUserState } from '@/services/questionService';
@@ -200,14 +200,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       {children}
     </AuthContext.Provider>
   );
-}
-
-export function useAuth() {
-  const context = useContext(AuthContext);
-  if (context === undefined) {
-    throw new Error('useAuth must be used within AuthProvider');
-  }
-  return context;
 }
 
 export { AuthProvider }

@@ -1,7 +1,7 @@
-import React, { createContext, useContext, useState, useCallback, useEffect, useRef } from 'react';
+import React, { createContext, useState, useCallback, useEffect, useRef } from 'react';
 import type { Question, Ticket, TestStats, PageType, SectionType, SectionInfo } from '@/types';
 import { loadQuestionsForSection, saveUserState } from '@/services/questionService';
-import { useAuth } from './AuthContext';
+import { useAuth } from '@/hooks/useAuth';
 import { SessionTracker } from '@/services/statisticsService';
 
 interface AppContextType {
@@ -518,14 +518,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       {children}
     </AppContext.Provider>
   );
-}
-
-export function useApp() {
-  const context = useContext(AppContext);
-  if (context === undefined) {
-    throw new Error('useApp must be used within AppProvider');
-  }
-  return context;
 }
 
 export { AppProvider }

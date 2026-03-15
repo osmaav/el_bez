@@ -7,7 +7,7 @@
  */
 
 import { useState, useCallback } from 'react';
-import { useAuth } from '@/context/AuthContext';
+import { useAuth } from '@/hooks/useAuth';
 import { statisticsService } from '@/services/statisticsService';
 import type { UserStatistics } from '@/types';
 import type { StatisticsTab, UseStatisticsReturn } from '../types';

@@ -1,5 +1,4 @@
 import type { ReactNode } from 'react';
-import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { AlertTriangle, Info, CheckCircle2, XCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -196,53 +195,4 @@ export const ConfirmDialog = ({
  * };
  * ```
  */
-export const useConfirmDialog = () => {
-  const [config, setConfig] = useState<ConfirmDialogProps | null>(null);
-  const [resolvePromise, setResolvePromise] = useState<((value: boolean) => void) | null>(null);
-
-  const close = () => {
-    setConfig(null);
-    setResolvePromise(null);
-  };
-
-  const show = (props: Omit<ConfirmDialogProps, 'isOpen' | 'onClose' | 'onConfirm'> & { onConfirm?: () => void | Promise<void> }): Promise<boolean> => {
-    return new Promise((resolve) => {
-      setConfig(props as ConfirmDialogProps);
-      setResolvePromise(() => resolve);
-    });
-  };
-
-  const handleClose = () => {
-    resolvePromise?.(false);
-    close();
-  };
-
-  const handleConfirm = async () => {
-    await config?.onConfirm?.();
-    resolvePromise?.(true);
-    close();
-  };
-
-  const ConfirmDialogWrapper = () => {
-    if (!config) return null;
-
-    return (
-      <ConfirmDialog
-        {...config}
-        isOpen={true}
-        onClose={handleClose}
-        onConfirm={handleConfirm}
-      />
-    );
-  };
-
-  return {
-    show,
-    close,
-    ConfirmDialog: ConfirmDialogWrapper,
-  };
-};
-
-// eslint-disable-next-line react-refresh/only-export-components
-export { useConfirmDialog }
 export default ConfirmDialog;

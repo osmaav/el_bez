@@ -13,7 +13,7 @@ import {
 } from 'lucide-react';
 import { LoginModal } from '@/components/LoginModal';
 import { RegisterModal } from '@/components/RegisterModal';
-import { useAuth } from '@/context/AuthContext';
+import { useAuth } from '@/hooks/useAuth';
 
 const theoryTopics = [
   {

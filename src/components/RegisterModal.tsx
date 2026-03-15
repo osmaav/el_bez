@@ -14,7 +14,7 @@ import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AnimatedModal } from '@/components/ui/animated-modal';
 import { registerUser, validateRegisterData, checkEmailExists } from '@/services/authService';
-import { useAuth } from '@/context/AuthContext';
+import { useAuth } from '@/hooks/useAuth';
 import { Eye, EyeOff, UserPlus, Mail, Lock, User, Calendar, Building, Briefcase } from 'lucide-react';
 import type { RegisterUserData, ValidationErrors } from '@/types/auth';
 

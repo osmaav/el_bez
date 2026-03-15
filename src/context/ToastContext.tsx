@@ -6,7 +6,7 @@
  * @version 1.0.0
  */
 
-import { createContext, useContext, useState, useCallback, type ReactNode } from 'react';
+import { createContext, useState, useCallback, type ReactNode } from 'react';
 import type { ToastType, ToastAction } from '@/components/ui/toast-message';
 
 export interface ToastOptions {
@@ -127,17 +127,6 @@ export function ToastProvider({ children }: { children: ReactNode }) {
       {children}
     </ToastContext.Provider>
   );
-}
-
-/**
- * Хук для использования toast-уведомлений
- */
-export function useToast() {
-  const context = useContext(ToastContext);
-  if (context === undefined) {
-    throw new Error('useToast must be used within ToastProvider');
-  }
-  return context;
 }
 
 export { ToastProvider }

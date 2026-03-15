@@ -7,7 +7,7 @@
  */
 
 import { useCallback } from 'react';
-import { useApp } from '@/context/AppContext';
+import { useApp } from '@/hooks/useApp';
 
 interface UseLearningFilterHandlerReturn {
   handleApplyFilter: (

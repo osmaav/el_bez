@@ -1,5 +1,5 @@
-import { useApp } from '@/context/AppContext';
-import { useAuth } from '@/context/AuthContext';
+import { useApp } from '@/hooks/useApp';
+import { useAuth } from '@/hooks/useAuth';
 import type { PageType, SectionType } from '@/types';
 import { BookOpen, GraduationCap, Dumbbell, School, ChevronDown, LogOut, LogIn, BarChart3, UserCircle } from 'lucide-react';
 import { useState, useCallback } from 'react';

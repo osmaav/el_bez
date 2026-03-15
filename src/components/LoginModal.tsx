@@ -13,8 +13,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { AnimatedModal } from '@/components/ui/animated-modal';
 import { loginUser, sendPasswordResetEmailService } from '@/services/authService';
-import { useAuth } from '@/context/AuthContext';
-import { useToast } from '@/context/ToastContext';
+import { useAuth } from '@/hooks/useAuth';
+import { useToast } from '@/hooks/useToast';
 import { Eye, EyeOff, LogIn, Mail, Lock, KeyRound, ArrowLeft } from 'lucide-react';
 import type { LoginUserData } from '@/types/auth';
 

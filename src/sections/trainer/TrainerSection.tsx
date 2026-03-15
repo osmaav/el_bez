@@ -7,8 +7,8 @@
  */
 
 import { useState, useCallback } from 'react';
-import { useApp } from '@/context/AppContext';
-import { useToast } from '@/context/ToastContext';
+import { useApp } from '@/hooks/useApp';
+import { useToast } from '@/hooks/useToast';
 import { statisticsService } from '@/services/statisticsService';
 import { FilterModal } from '@/components/ui/FilterModal';
 import { LoadingModal } from '@/components/ui/loading-modal';

@@ -1,6 +1,8 @@
-import { AppProvider, useApp } from '@/context/AppContext';
+import { AppProvider } from '@/context/AppContext';
+import { useApp } from '@/hooks/useApp';
 import { AuthProvider } from '@/context/AuthContext';
-import { ToastProvider, useToast } from '@/context/ToastContext';
+import { ToastProvider } from '@/context/ToastContext';
+import { useToast } from '@/hooks/useToast';
 import { CookiesProvider } from 'react-cookie';
 import { Navigation } from '@/components/Navigation';
 import { Footer } from '@/sections/Footer';
