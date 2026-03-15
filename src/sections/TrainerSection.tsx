@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo } from 'react';
 import { useApp } from '@/hooks/useApp';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/useToast';
@@ -59,7 +59,12 @@ export function TrainerSection() {
 
   const currentSectionInfo = sections.find(s => s.id === currentSection);
 
-  const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
+  // ✅ selectedAnswer вычисляется из trainerAnswers — не нужно состояние
+  const currentQuestion = trainerQuestions[trainerCurrentIndex];
+  const selectedAnswer = currentQuestion 
+    ? trainerAnswers[currentQuestion.id] ?? null 
+    : null;
+  
   const [showResults, setShowResults] = useState(false);
   const [showResetConfirm, setShowResetConfirm] = useState(false);
   const [loadingModal, setLoadingModal] = useState<{
@@ -190,16 +195,12 @@ export function TrainerSection() {
     }
   };
 
-  // Синхронизация с состоянием
-  useEffect(() => {
-    const currentQuestion = trainerQuestions[trainerCurrentIndex];
+  // Обработчик выбора ответа — обновляем ТОЛЬКО источник данных
+  const handleAnswerSelect = (answerIndex: number) => {
     if (currentQuestion) {
-      setSelectedAnswer(prev => {
-        const newAnswer = trainerAnswers[currentQuestion.id] ?? null;
-        return prev !== newAnswer ? newAnswer : prev;
-      });
+      answerTrainerQuestion(answerIndex);
     }
-  }, [trainerCurrentIndex, trainerAnswers, trainerQuestions]);
+  };
 
   if (isLoading) {
     return (
@@ -595,7 +596,7 @@ export function TrainerSection() {
                 return (
                   <button
                     key={idx}
-                    onClick={() => !hasAnswered && setSelectedAnswer(idx)}
+                    onClick={() => !hasAnswered && handleAnswerSelect(idx)}
                     disabled={hasAnswered}
                     className={`
                     w-full p-4 text-left rounded-lg border-2 transition-all
