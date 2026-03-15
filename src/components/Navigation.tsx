@@ -49,7 +49,7 @@ export function Navigation() {
     setShowLoginModal(true);
   };
 
-  const currentSectionInfo = sections.find(s => s.id === currentSection);
+  const currentSectionInfo = sections.find((s: { id: SectionType }) => s.id === currentSection);
 
   // Короткие названия для разделов
   const getShortSectionName = (sectionId: SectionType) => {
@@ -121,7 +121,7 @@ export function Navigation() {
               {showSectionMenu && (
                 <div className="absolute left-0 mt-1 w-64 bg-white rounded-lg shadow-lg overflow-hidden z-50">
                   <div className="py-1">
-                    {sections.map((section) => (
+                    {sections.map((section: { id: SectionType; name: string }) => (
                       <button
                         key={section.id}
                         onClick={() => handleSectionChange(section.id)}

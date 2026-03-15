@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import type { ReactNode } from 'react';
 import { motion } from 'framer-motion';
 import { AlertTriangle, Info, CheckCircle2, XCircle } from 'lucide-react';
