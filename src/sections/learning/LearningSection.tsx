@@ -197,6 +197,7 @@ export function LearningSection() {
         userAnswers: quizState.userAnswers,
         shuffledAnswers: quizState.shuffledAnswers,
         isComplete: quizState.isComplete,
+        questionIds: quizState.currentQuestions.map(q => q.id),
       }).catch(console.error);
     }
   }, [quizState, currentPage, user?.id, saveProgress]);
