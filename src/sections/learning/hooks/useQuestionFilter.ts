@@ -6,7 +6,7 @@
  * @version 1.0.0
  */
 
-import { useState, useCallback, useEffect, useRef } from 'react';
+import { useState, useCallback, useRef, useLayoutEffect } from 'react';
 import { questionFilterService } from '@/services/questionFilterService';
 import { statisticsService } from '@/services/statisticsService';
 import type { Question, SectionType } from '@/types';
@@ -43,34 +43,43 @@ export function useQuestionFilter({
   const [excludeWeak, setExcludeWeak] = useState(false);
   const [isFilterActive, setIsFilterActive] = useState(false);
 
+  // ============================================================================
+  // Helper: Apply filter logic
+  // ============================================================================
+
+  const applyFilterLogic = useCallback((
+    filterSettings: { hiddenQuestionIds: number[]; excludeKnown: boolean; excludeWeak: boolean }
+  ) => {
+    const allQuestionIds = questions.map(q => q.id);
+    const questionStats = statisticsService.getQuestionStats(currentSection);
+    const filteredIds = questionFilterService.filterQuestions(allQuestionIds, questionStats, filterSettings);
+    const filtered = questions.filter(q => filteredIds.includes(q.id));
+
+    return {
+      filtered,
+      totalPages: Math.ceil(filtered.length / questionsPerPage),
+      isActive: filterSettings.excludeKnown || filterSettings.excludeWeak || filterSettings.hiddenQuestionIds.length > 0
+    };
+  }, [questions, currentSection, questionsPerPage]);
+
   // Настройки загружаются из AppContext, здесь только применяем фильтр к вопросам
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (questions.length > 0) {
       // Получаем настройки из localStorage (для обратной совместимости)
       const filterSettings = questionFilterService.getSettings(currentSection);
+      const result = applyFilterLogic(filterSettings);
 
-      // Применяем фильтр для получения отфильтрованных вопросов
-      const allQuestionIds = questions.map(q => q.id);
-      const questionStats = statisticsService.getQuestionStats(currentSection);
-      const filteredIds = questionFilterService.filterQuestions(allQuestionIds, questionStats, filterSettings);
-      const filtered = questions.filter(q => filteredIds.includes(q.id));
-
-      setFilteredQuestions(filtered);
-      setTotalPages(Math.ceil(filtered.length / questionsPerPage));
-
-      // Проверяем активность фильтра
-      const isActive = filterSettings.excludeKnown ||
-                       filterSettings.excludeWeak ||
-                       filterSettings.hiddenQuestionIds.length > 0;
-      setIsFilterActive(isActive);
+      setFilteredQuestions(result.filtered);
+      setTotalPages(result.totalPages);
+      setIsFilterActive(result.isActive);
 
       console.log('🔍 [useQuestionFilter] Фильтр применён при инициализации:', {
         total: questions.length,
-        filtered: filtered.length,
-        pages: Math.ceil(filtered.length / questionsPerPage)
+        filtered: result.filtered.length,
+        pages: result.totalPages
       });
     }
-  }, [currentSection, questions.length, questionsPerPage]);
+  }, [currentSection, questions.length, questionsPerPage, applyFilterLogic]);
 
   // Применение фильтра
   const applyFilter = useCallback(() => {
@@ -85,8 +94,8 @@ export function useQuestionFilter({
 
     // Проверяем активность фильтра
     const isActive = filterSettings.excludeKnown ||
-                     filterSettings.excludeWeak ||
-                     hiddenQuestionIds.length > 0;
+      filterSettings.excludeWeak ||
+      hiddenQuestionIds.length > 0;
     setIsFilterActive(isActive);
 
     console.log('🔍 [useQuestionFilter] Фильтр применён:', {
@@ -117,10 +126,10 @@ export function useQuestionFilter({
 
     // Проверяем, изменились ли значения
     if (prevSettings.current &&
-        prevSettings.current.excludeKnown === excludeKnown &&
-        prevSettings.current.excludeWeak === excludeWeak &&
-        prevSettings.current.hiddenQuestionIds.length === hiddenQuestionIds.length &&
-        prevSettings.current.hiddenQuestionIds.every((id, i) => id === hiddenQuestionIds[i])) {
+      prevSettings.current.excludeKnown === excludeKnown &&
+      prevSettings.current.excludeWeak === excludeWeak &&
+      prevSettings.current.hiddenQuestionIds.length === hiddenQuestionIds.length &&
+      prevSettings.current.hiddenQuestionIds.every((id, i) => id === hiddenQuestionIds[i])) {
       // Значения не изменились, не сохраняем
       return;
     }

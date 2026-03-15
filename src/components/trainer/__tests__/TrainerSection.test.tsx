@@ -6,13 +6,18 @@
  */
 
 import { describe, it, expect, vi } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
-import '@testing-library/jest-dom';
 import React from 'react';
 
 // Mock для кнопок и компонентов
 vi.mock('@/components/ui/button', () => ({
-  Button: ({ children, onClick, disabled, variant, className, size }: any) => (
+  Button: ({ children, onClick, disabled, variant, className, size }: {
+    children: React.ReactNode;
+    onClick?: () => void;
+    disabled?: boolean;
+    variant?: string;
+    className?: string;
+    size?: string;
+  }) => (
     <button 
       onClick={onClick} 
       disabled={disabled}
@@ -26,28 +31,28 @@ vi.mock('@/components/ui/button', () => ({
 }));
 
 vi.mock('@/components/ui/card', () => ({
-  Card: ({ children, className }: any) => (
+  Card: ({ children, className }: { children: React.ReactNode; className?: string }) => (
     <div className={className}>{children}</div>
   ),
-  CardContent: ({ children, className }: any) => (
+  CardContent: ({ children, className }: { children: React.ReactNode; className?: string }) => (
     <div className={className}>{children}</div>
   ),
-  CardHeader: ({ children, className }: any) => (
+  CardHeader: ({ children, className }: { children: React.ReactNode; className?: string }) => (
     <div className={className}>{children}</div>
   ),
-  CardTitle: ({ children, className }: any) => (
+  CardTitle: ({ children, className }: { children: React.ReactNode; className?: string }) => (
     <h3 className={className}>{children}</h3>
   ),
 }));
 
 vi.mock('@/components/ui/progress', () => ({
-  Progress: ({ value, className }: any) => (
+  Progress: ({ value, className }: { value: number; className?: string }) => (
     <div className={className} data-value={value} data-testid="progress" />
   ),
 }));
 
 vi.mock('@/components/ui/badge', () => ({
-  Badge: ({ children, variant, className }: any) => (
+  Badge: ({ children, variant, className }: { children: React.ReactNode; variant?: string; className?: string }) => (
     <span className={className} data-variant={variant}>{children}</span>
   ),
 }));

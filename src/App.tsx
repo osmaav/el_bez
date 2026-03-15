@@ -66,7 +66,7 @@ function ToastWrapper() {
 
   return (
     <ToastContainer
-      toasts={toasts as any}
+      toasts={toasts}
       onDismiss={removeToast}
       position="top-right"
     />

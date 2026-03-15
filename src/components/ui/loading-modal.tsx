@@ -78,7 +78,7 @@ export function LoadingModal({
 
   // Обработка Escape
   useEffect(() => {
-    const handleEscape = (_e: KeyboardEvent) => {
+    const handleEscape = () => {
       if (isOpen && status === 'loading') {
         onClose();
       }

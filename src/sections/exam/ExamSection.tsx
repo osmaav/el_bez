@@ -84,13 +84,13 @@ export function ExamSection() {
 
     setTimeout(() => {
       startExam(ticketId);
-      setLoadingModal((prev: any) => ({
+      setLoadingModal((prev) => ({
         ...prev,
         status: 'success',
         progress: 100
       }));
       updateToast(loadingId, { type: 'success', title: 'Экзамен начат' });
-      
+
       setTimeout(() => {
         setLoadingModal(prev => ({ ...prev, isOpen: false }));
       }, 1000);

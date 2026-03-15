@@ -95,10 +95,10 @@ export function EditProfileModal({ isOpen, onClose }: EditProfileModalProps) {
       updateToast(loadingId, { type: 'success', title: 'Профиль обновлён' });
       success('Профиль обновлён', 'Данные успешно сохранены');
       onClose();
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('❌ [EditProfileModal] Ошибка сохранения профиля:', err);
       updateToast(loadingId, { type: 'error', title: 'Ошибка сохранения' });
-      toastError('Ошибка сохранения', err.message || 'Не удалось обновить профиль');
+      toastError('Ошибка сохранения', err instanceof Error ? err.message : 'Не удалось обновить профиль');
     } finally {
       setIsLoading(false);
     }

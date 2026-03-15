@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useMemo, useLayoutEffect } from 'react';
 import { useApp } from '@/context/AppContext';
 import { useAuth } from '@/context/AuthContext';
 import { useToast } from '@/context/ToastContext';
@@ -183,7 +183,7 @@ export function TrainerSection() {
 
       updateToast(loadingId, { type: 'success', title: 'PDF сохранён' });
       success('PDF сохранён', 'Файл загружен в папку загрузок');
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('❌ [TrainerSection] Ошибка экспорта PDF:', err);
       updateToast(loadingId, { type: 'error', title: 'Ошибка сохранения' });
       toastError('Ошибка экспорта', 'Не удалось сохранить PDF');
@@ -191,10 +191,13 @@ export function TrainerSection() {
   };
 
   // Синхронизация с состоянием
-  useEffect(() => {
+  useLayoutEffect(() => {
     const currentQuestion = trainerQuestions[trainerCurrentIndex];
     if (currentQuestion) {
-      setSelectedAnswer(trainerAnswers[currentQuestion.id] ?? null);
+      setSelectedAnswer(prev => {
+        const newAnswer = trainerAnswers[currentQuestion.id] ?? null;
+        return prev !== newAnswer ? newAnswer : prev;
+      });
     }
   }, [trainerCurrentIndex, trainerAnswers, trainerQuestions]);
 

@@ -79,7 +79,7 @@ export const setupFailedAuth = (errorCode: string) => {
 /**
  * Настройка успешной загрузки из Firestore
  */
-export const setupSuccessfulFirestoreLoad = (data: any) => {
+export const setupSuccessfulFirestoreLoad = (data: unknown) => {
   mockGetDoc.mockResolvedValueOnce({
     exists: () => true,
     data: () => data,

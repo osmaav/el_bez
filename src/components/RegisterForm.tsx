@@ -66,8 +66,8 @@ export function RegisterForm() {
       const exists = await checkEmailExists(email);
       setEmailExists(exists);
       // console.log('📧 [RegisterForm] Проверка email:', { email, exists });
-    } catch (err) {
-      // console.error('Ошибка проверки email:', err);
+    } catch {
+      // console.error('Ошибка проверки email:');
     } finally {
       setIsCheckingEmail(false);
     }
@@ -121,9 +121,9 @@ export function RegisterForm() {
       // Перенаправляем на главную сразу после регистрации
       // console.log('⚠️ [RegisterForm] Проверка email отключена, перенаправление на главную');
       navigate('/');
-    } catch (err: any) {
+    } catch (err: unknown) {
       // console.error('❌ [RegisterForm] Ошибка регистрации:', err);
-      setError(err.message || 'Ошибка при регистрации');
+      setError(err instanceof Error ? err.message : 'Ошибка при регистрации');
     } finally {
       setIsLoading(false);
     }

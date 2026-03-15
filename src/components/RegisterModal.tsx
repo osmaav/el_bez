@@ -121,8 +121,8 @@ export function RegisterModal({ isOpen, onClose, onOpenLogin }: RegisterModalPro
       // Автоматический вход после регистрации
       login(user);
       onClose();
-    } catch (err: any) {
-      setError(err.message || 'Ошибка при регистрации');
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Ошибка при регистрации');
     } finally {
       setIsLoading(false);
     }

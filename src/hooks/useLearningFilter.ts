@@ -5,7 +5,7 @@
  * и применением фильтрации к списку вопросов.
  */
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useCallback, useLayoutEffect } from 'react';
 import { questionFilterService } from '@/services/questionFilterService';
 import { statisticsService } from '@/services/statisticsService';
 import type { Question, SectionType } from '@/types';
@@ -63,62 +63,66 @@ export function useLearningFilter(
   const [filteredTotalPages, setFilteredTotalPages] = useState(0);
 
   // ============================================================================
+  // Helper: Apply filter logic
+  // ============================================================================
+
+  const applyFilterLogic = useCallback((
+    filterSettings: { hiddenQuestionIds: number[]; excludeKnown: boolean; excludeWeak: boolean }
+  ) => {
+    const allQuestionIds = questions.map(q => q.id);
+    const questionStats = statisticsService.getQuestionStats(currentSection);
+    const filteredIds = questionFilterService.filterQuestions(allQuestionIds, questionStats, filterSettings);
+    const filtered = questions.filter(q => filteredIds.includes(q.id));
+
+    return {
+      filtered,
+      totalPages: Math.ceil(filtered.length / QUESTIONS_PER_SESSION),
+      isActive: filterSettings.excludeKnown || filterSettings.excludeWeak || filterSettings.hiddenQuestionIds.length > 0
+    };
+  }, [questions, currentSection]);
+
+  // ============================================================================
   // Load Filter Settings on Init
   // ============================================================================
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (questions.length > 0) {
       const filterSettings = questionFilterService.getSettings(currentSection);
+      const result = applyFilterLogic(filterSettings);
+
       setHiddenQuestionIds(filterSettings.hiddenQuestionIds);
-
-      // Apply filter to get filtered questions
-      const allQuestionIds = questions.map(q => q.id);
-      const questionStats = statisticsService.getQuestionStats(currentSection);
-      const filteredIds = questionFilterService.filterQuestions(allQuestionIds, questionStats, filterSettings);
-      const filtered = questions.filter(q => filteredIds.includes(q.id));
-      setFilteredQuestions(filtered);
-      setFilteredTotalPages(Math.ceil(filtered.length / QUESTIONS_PER_SESSION));
-
-      // Check if filter is active
-      const isFilterEnabled = filterSettings.excludeKnown || filterSettings.excludeWeak || filterSettings.hiddenQuestionIds.length > 0;
-      setIsFilterActive(isFilterEnabled);
+      setFilteredQuestions(result.filtered);
+      setFilteredTotalPages(result.totalPages);
+      setIsFilterActive(result.isActive);
 
       console.log('🔍 [useLearningFilter] Фильтр применён при инициализации:', {
         total: questions.length,
-        filtered: filtered.length,
-        pages: Math.ceil(filtered.length / QUESTIONS_PER_SESSION)
+        filtered: result.filtered.length,
+        pages: result.totalPages
       });
     }
-  }, [currentSection, questions.length]);
+  }, [currentSection, questions.length, applyFilterLogic]);
 
   // Re-apply filter when hiddenQuestionIds change
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (questions.length === 0) return;
 
-    const allQuestionIds = questions.map(q => q.id);
-    const questionStats = statisticsService.getQuestionStats(currentSection);
     const filterSettings = questionFilterService.getSettings(currentSection);
-
-    // Обновляем настройки фильтра актуальными hiddenQuestionIds
     filterSettings.hiddenQuestionIds = hiddenQuestionIds;
 
-    // Получаем отфильтрованные ID с учётом всех настроек (включая excludeKnown/excludeWeak)
-    const filteredIds = questionFilterService.filterQuestions(allQuestionIds, questionStats, filterSettings);
-    const filtered = questions.filter(q => filteredIds.includes(q.id));
-    setFilteredQuestions(filtered);
-    setFilteredTotalPages(Math.ceil(filtered.length / QUESTIONS_PER_SESSION));
+    const result = applyFilterLogic(filterSettings);
 
-    // Обновляем флаг активности фильтра на основе настроек
-    const isFilterEnabled = filterSettings.excludeKnown || filterSettings.excludeWeak || hiddenQuestionIds.length > 0;
-    setIsFilterActive(isFilterEnabled);
+    setFilteredQuestions(result.filtered);
+    setFilteredTotalPages(result.totalPages);
+    setIsFilterActive(result.isActive);
 
     console.log('🔍 [useLearningFilter] Скрытые вопросы обновлены:', {
       total: questions.length,
-      filtered: filtered.length,
-      pages: Math.ceil(filtered.length / QUESTIONS_PER_SESSION),
-      active: isFilterEnabled
+      filtered: result.filtered.length,
+      pages: result.totalPages,
+      active: result.isActive
     });
-  }, [hiddenQuestionIds, currentSection, questions.length]);
+  }, [hiddenQuestionIds, currentSection, questions.length, applyFilterLogic]);
 
   // ============================================================================
   // Apply Filter
@@ -139,7 +143,7 @@ export function useLearningFilter(
       filtered: filtered.length,
       pages: Math.ceil(filtered.length / QUESTIONS_PER_SESSION)
     });
-  }, [currentSection, questions]);
+  }, [currentSection, questions, questionFilterService, statisticsService]);
 
   // ============================================================================
   // Handle Apply Filter from Modal
@@ -172,7 +176,7 @@ export function useLearningFilter(
     setTimeout(() => {
       setIsFilterApplying(false);
     }, 100);
-  }, [currentSection, questions, hiddenQuestionIds.length]);
+  }, [currentSection, questions, hiddenQuestionIds.length, questionFilterService]);
 
   // ============================================================================
   // Reset Filter

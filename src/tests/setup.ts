@@ -2,12 +2,12 @@ import '@testing-library/jest-dom'
 
 // Глобальные переменные для тестов
 declare global {
-  var describe: any;
-  var it: any;
-  var expect: any;
-  var beforeEach: any;
-  var afterEach: any;
-  var vi: any;
+  var describe: unknown;
+  var it: unknown;
+  var expect: unknown;
+  var beforeEach: unknown;
+  var afterEach: unknown;
+  var vi: unknown;
 }
 
 // Настройка localStorage для jsdom

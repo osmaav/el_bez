@@ -243,4 +243,6 @@ export const useConfirmDialog = () => {
   };
 };
 
+// eslint-disable-next-line react-refresh/only-export-components
+export { useConfirmDialog }
 export default ConfirmDialog;

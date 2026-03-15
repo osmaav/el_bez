@@ -41,7 +41,7 @@ export const updateUserProfileData = async (
     });
 
     console.log('✅ [updateUserProfileData] Профиль обновлён:', userId);
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('❌ [updateUserProfileData] Ошибка обновления профиля:', error);
     throw error;
   }
@@ -70,7 +70,7 @@ export const updateUserName = async (
     });
 
     console.log('✅ [updateUserName] Имя обновлено:', displayName);
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('❌ [updateUserName] Ошибка обновления имени:', error);
     throw error;
   }
@@ -98,7 +98,7 @@ export const getUserProfileData = async (
       id: userSnap.id,
       ...userSnap.data()
     } as UserProfile;
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('❌ [getUserProfileData] Ошибка получения профиля:', error);
     return null;
   }

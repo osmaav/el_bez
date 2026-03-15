@@ -335,7 +335,7 @@ export function useLearningProgress(
 
     if (user?.id) {
       saveLearningProgress(user.id, currentSection, newSavedStates)
-        .catch((err: any) => {
+        .catch((err: unknown) => {
           console.error('❌ [useLearningProgress] Ошибка сохранения прогресса:', err);
           toastError('Ошибка сохранения', 'Не удалось сохранить прогресс в облако');
         });

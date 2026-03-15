@@ -128,7 +128,7 @@ export function ExamSection() {
 
       updateToast(loadingId, { type: 'success', title: 'PDF сохранён' });
       success('PDF сохранён', 'Файл загружен в папку загрузок');
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('❌ [ExamSection] Ошибка экспорта PDF:', err);
       updateToast(loadingId, { type: 'error', title: 'Ошибка сохранения' });
     }

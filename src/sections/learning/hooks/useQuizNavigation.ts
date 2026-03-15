@@ -33,21 +33,20 @@ export function useQuizNavigation({
   storageKey,
   onLoadPage,
 }: UseQuizNavigationOptions): UseQuizNavigationReturn {
-  const [currentPage, setCurrentPage] = useState(initialPage);
-
-  // Загрузка сохранённой страницы при монтировании
-  useEffect(() => {
+  const [currentPage, setCurrentPage] = useState(() => {
+    // Загрузка сохранённой страницы при инициализации
     if (storageKey && typeof window !== 'undefined') {
       const savedPage = localStorage.getItem(storageKey);
       if (savedPage) {
         const page = parseInt(savedPage, 10);
         if (page > 0 && page <= totalPages) {
-          setCurrentPage(page);
           console.log('📄 [useQuizNavigation] Загружена сохранённая страница:', page);
+          return page;
         }
       }
     }
-  }, [storageKey, totalPages]);
+    return initialPage;
+  });
 
   // Вызов колбэка при загрузке страницы
   useEffect(() => {

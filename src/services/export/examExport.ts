@@ -124,13 +124,13 @@ export const exportExamToPDF = async (data: ExamExportData): Promise<void> => {
       0: { fontStyle: 'bold', cellWidth: 70 },
       1: { cellWidth: 40, halign: 'right' }
     },
-    didParseCell: (cellData: any) => {
+    didParseCell: (cellData: { row: { index: number }; column: { index: number }; cell: { styles: { textColor?: [number, number, number] } } }) => {
       const row = statsData[cellData.row.index];
       if (cellData.column.index === 1 && row.color) {
         cellData.cell.styles.textColor = row.color;
       }
     },
-    willDrawCell: (_data: any) => {
+    willDrawCell: () => {
       doc.setFont('Roboto', 'normal');
     },
     margin: { left: margin, right: margin + 10 }
@@ -181,7 +181,7 @@ export const exportExamToPDF = async (data: ExamExportData): Promise<void> => {
       2: { cellWidth: 60 },
       3: { cellWidth: 60 }
     },
-    willDrawCell: (_data: any) => {
+    willDrawCell: () => {
       doc.setFont('Roboto', 'normal');
     },
     margin: { left: margin, right: margin }

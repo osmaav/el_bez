@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -46,13 +46,6 @@ export const AnimatedModal = ({
   showCloseButton = true,
   className = '',
 }: AnimatedModalProps) => {
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-    return () => setMounted(false);
-  }, []);
-
   // Блокировка скролла при открытом модальном окне
   useEffect(() => {
     if (isOpen) {
@@ -75,8 +68,6 @@ export const AnimatedModal = ({
     document.addEventListener('keydown', handleEscape);
     return () => document.removeEventListener('keydown', handleEscape);
   }, [isOpen, onClose]);
-
-  if (!mounted) return null;
 
   // Варианты анимации оверлея
   const overlayVariants = {

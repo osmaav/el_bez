@@ -148,14 +148,14 @@ export const exportLearningToPDF = async (data: LearningExportData): Promise<voi
       2: { cellWidth: 60 },
       3: { cellWidth: 60 }
     },
-    didParseCell: (cellData: any) => {
+    didParseCell: (cellData: { row: { index: number }; column: { index: number }; cell: { styles: { textColor?: [number, number, number] } } }) => {
       const row = tableData[cellData.row.index];
       // Окрашиваем неверные ответы красным
       if (cellData.column.index === 2 && !row.isCorrect) {
         cellData.cell.styles.textColor = COLORS.error;
       }
     },
-    willDrawCell: (_data: any) => {
+    willDrawCell: () => {
       doc.setFont('Roboto', 'normal');
     },
     margin: { left: margin, right: margin }

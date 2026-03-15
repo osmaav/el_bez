@@ -113,8 +113,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           updatedAt: Timestamp.now()
         });
         // console.log('✅ [AuthContext] Состояние сохранено в Firestore');
-      } catch (error) {
-        // console.error('❌ [AuthContext] Ошибка сохранения в Firestore:', error);
+      } catch {
+        // console.error('❌ [AuthContext] Ошибка сохранения в Firestore:');
       }
     }
   }, []);
@@ -209,3 +209,6 @@ export function useAuth() {
   }
   return context;
 }
+
+export { AuthProvider }
+export default AuthContext;

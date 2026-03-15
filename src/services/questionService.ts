@@ -115,9 +115,10 @@ export const loadQuestionsForSection = async (sectionId: string): Promise<Questi
 
     // console.log(`✅ [QuestionService] Загружено ${questions.length} вопросов из Firestore`);
     return questions;
-  } catch (error: any) {
+  } catch (error: unknown) {
     // Если требуется индекс, пробуем без сортировки (сортируем на клиенте)
-    if (error.code === 'failed-precondition') {
+    const errorObj = error as { code?: string };
+    if (errorObj.code === 'failed-precondition') {
       // console.log('⚠️ [QuestionService] Индекс не найден, загрузка без сортировки...');
       try {
         const q = query(
@@ -147,14 +148,16 @@ export const loadQuestionsForSection = async (sectionId: string): Promise<Questi
 
         // console.log(`✅ [QuestionService] Загружено ${questions.length} вопросов (без индекса)`);
         return questions;
-      } catch (fallbackError: any) {
+      } catch (fallbackError: unknown) {
         // console.error('❌ [QuestionService] Ошибка загрузки вопросов:', fallbackError);
-        throw new Error(`Ошибка загрузки вопросов: ${fallbackError.message}`);
+        const errorObj = fallbackError as { message?: string };
+        throw new Error(`Ошибка загрузки вопросов: ${errorObj.message || 'Неизвестная ошибка'}`);
       }
     }
 
     // console.error('❌ [QuestionService] Ошибка загрузки вопросов:', error);
-    throw new Error(`Ошибка загрузки вопросов: ${error.message}`);
+    const errorObj = error as { message?: string };
+    throw new Error(`Ошибка загрузки вопросов: ${errorObj.message || 'Неизвестная ошибка'}`);
   }
 };
 
@@ -198,9 +201,10 @@ export const loadTicket = async (sectionId: string, ticketId: number): Promise<Q
 
     // console.log(`✅ [QuestionService] Загружено ${questions.length} вопросов для билета ${ticketId}`);
     return questions;
-  } catch (error: any) {
+  } catch (error: unknown) {
     // console.error('❌ [QuestionService] Ошибка загрузки билета:', error);
-    throw new Error(`Ошибка загрузки билета: ${error.message}`);
+    const errorObj = error as { message?: string };
+    throw new Error(`Ошибка загрузки билета: ${errorObj.message || 'Неизвестная ошибка'}`);
   }
 };
 
@@ -225,8 +229,8 @@ export const getUserState = async (userId: string): Promise<UserState | null> =>
 
     // console.log('ℹ️ [QuestionService] Состояние пользователя не найдено, создаём новое');
     return null;
-  } catch (error: any) {
-    // console.error('❌ [QuestionService] Ошибка получения состояния пользователя:', error);
+  } catch {
+    // console.error('❌ [QuestionService] Ошибка получения состояния пользователя:');
     return null;
   }
 };
@@ -264,8 +268,8 @@ export const saveUserState = async (userId: string, state: Partial<UserState>): 
     });
 
     // console.log('✅ [QuestionService] Состояние пользователя сохранено в Firestore');
-  } catch (error: any) {
-    // console.error('❌ [QuestionService] Ошибка сохранения состояния пользователя:', error);
+  } catch {
+    // console.error('❌ [QuestionService] Ошибка сохранения состояния пользователя:');
   }
 };
 
@@ -300,7 +304,7 @@ export const saveLearningProgress = async (
     const currentState = docSnap.exists() ? docSnap.data() : {};
 
     // Сериализуем shuffledAnswers в строку для Firestore
-    const serializedProgress: Record<string, any> = {};
+    const serializedProgress: Record<string, unknown> = {};
     Object.entries(progress).forEach(([page, state]) => {
       serializedProgress[page] = {
         ...state,
@@ -324,8 +328,8 @@ export const saveLearningProgress = async (
     });
 
     // console.log('✅ [QuestionService] Прогресс обучения сохранён в Firestore:', { userId, section });
-  } catch (error: any) {
-    // console.error('❌ [QuestionService] Ошибка сохранения прогресса обучения:', error);
+  } catch {
+    // console.error('❌ [QuestionService] Ошибка сохранения прогресса обучения:');
   }
 };
 
@@ -360,12 +364,13 @@ export const loadLearningProgress = async (
       if (progress) {
         // Десериализуем shuffledAnswers из строки обратно в массив
         const deserializedProgress: LearningProgressState = {};
-        Object.entries(progress).forEach(([page, state]: [string, any]) => {
+        Object.entries(progress).forEach(([page, state]) => {
+          const stateObj = state as { shuffledAnswers?: string };
           deserializedProgress[Number(page)] = {
-            ...state,
-            shuffledAnswers: typeof state.shuffledAnswers === 'string' 
-              ? JSON.parse(state.shuffledAnswers) 
-              : state.shuffledAnswers
+            ...stateObj,
+            shuffledAnswers: typeof stateObj.shuffledAnswers === 'string'
+              ? JSON.parse(stateObj.shuffledAnswers)
+              : stateObj.shuffledAnswers
           };
         });
 
@@ -380,8 +385,8 @@ export const loadLearningProgress = async (
 
     // console.log('ℹ️ [QuestionService] Прогресс обучения не найден');
     return null;
-  } catch (error: any) {
-    // console.error('❌ [QuestionService] Ошибка загрузки прогресса обучения:', error);
+  } catch {
+    // console.error('❌ [QuestionService] Ошибка загрузки прогресса обучения:');
     return null;
   }
 };

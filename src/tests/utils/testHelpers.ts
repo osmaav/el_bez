@@ -23,7 +23,7 @@ export const createMockQuestion = (overrides?: Partial<Question>): Question => (
  * Создание массива тестовых вопросов для конкретного раздела
  * Количество вопросов берётся из актуальной базы Firebase
  */
-export const createMockQuestions = (count: number, _section: SectionType = '1258-20'): Question[] => {
+export const createMockQuestions = (count: number): Question[] => {
   return Array.from({ length: count }, (_, i) =>
     createMockQuestion({
       id: i + 1,
@@ -51,7 +51,7 @@ export const getSectionTotalQuestions = (section: SectionType): number => {
 /**
  * Создание тестового пользователя
  */
-export const createMockUser = (overrides?: Partial<any>): any => ({
+export const createMockUser = (overrides?: Partial<unknown>): unknown => ({
   id: 'test-user-id',
   email: 'test@example.com',
   surname: 'Иванов',

@@ -50,6 +50,10 @@ export function SuccessModal({
 }: SuccessModalProps) {
   const IconComponent = iconMap[icon];
 
+  const handleClose = () => {
+    onClose();
+  };
+
   // Блокировка скролла
   useEffect(() => {
     if (isOpen) {
@@ -70,11 +74,11 @@ export function SuccessModal({
       }, autoClose);
       return () => clearTimeout(timer);
     }
-  }, [autoClose, isOpen]);
+  }, [autoClose, isOpen, handleClose]);
 
   // Обработка Escape
   useEffect(() => {
-    const handleEscape = (_e: KeyboardEvent) => {
+    const handleEscape = () => {
       if (isOpen) {
         onClose();
       }
@@ -82,10 +86,6 @@ export function SuccessModal({
     document.addEventListener('keydown', handleEscape);
     return () => document.removeEventListener('keydown', handleEscape);
   }, [isOpen, onClose]);
-
-  const handleClose = () => {
-    onClose();
-  };
 
   // Варианты анимации
   const overlayVariants = {

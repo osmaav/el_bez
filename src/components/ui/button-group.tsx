@@ -75,9 +75,8 @@ function ButtonGroupSeparator({
   )
 }
 
-export {
-  ButtonGroup,
-  ButtonGroupSeparator,
-  ButtonGroupText,
-  buttonGroupVariants,
-}
+export { ButtonGroup }
+export { ButtonGroupSeparator }
+export { ButtonGroupText }
+// eslint-disable-next-line react-refresh/only-export-components
+export { buttonGroupVariants }

@@ -140,4 +140,5 @@ export function useToast() {
   return context;
 }
 
-export default ToastProvider;
+export { ToastProvider }
+export default ToastContext;

@@ -58,7 +58,7 @@ export const StatisticsSection: React.FC = () => {
   const section1258Stats = statistics.sections['1258-20'];
 
   const getSectionData = (section: SectionType): {
-    stats: any;
+    stats: typeof section1256Stats;
     progressData: Array<{ date: string; accuracy: number; sessions: number }>;
   } => {
     return {

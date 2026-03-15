@@ -55,7 +55,7 @@ interface AppContextType {
 }
 
 // Добавляем тип для расширенного контекста со статистикой
-export interface AppContextWithStats extends AppContextType {
+export type AppContextWithStats = AppContextType & {
   // Статистика будет добавлена в будущем
 }
 
@@ -150,10 +150,10 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   // Загрузка настроек фильтра при первой инициализации
   useEffect(() => {
     if (typeof window === 'undefined') return;
-    
+
     const filterKey = `elbez_question_filter_${currentSection}`;
     const stored = localStorage.getItem(filterKey);
-    
+
     if (stored) {
       try {
         const settings = JSON.parse(stored);
@@ -164,7 +164,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         console.error('❌ [AppContext] Error loading filter settings:', error);
       }
     }
-  }, []); // Пустой массив - загружаем только один раз при инициализации
+  }, [currentSection]);
 
   // Вычисляем активность фильтра
   const isFilterActive = filterHiddenQuestionIds.length > 0 || filterExcludeKnown || filterExcludeWeak;
@@ -268,12 +268,12 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   }, [currentSection, user]);
 
   // Генерация билетов из данных с учётом поля ticket
-  const generateTicketsFromData = (questions: Question[], rawQuestions: any[]) => {
+  const generateTicketsFromData = (questions: Question[], rawQuestions: Question[]) => {
     // console.log('🔵 Генерация билетов, вопросов:', questions.length, 'сырых:', rawQuestions.length);
     const ticketMap = new Map<number, Question[]>();
 
     // Группируем вопросы по номеру билета
-    rawQuestions.forEach((rawQ: any, index: number) => {
+    rawQuestions.forEach((rawQ, index) => {
       const ticketId = rawQ.ticket;
       if (ticketId) {
         const question = questions[index];
@@ -527,3 +527,6 @@ export function useApp() {
   }
   return context;
 }
+
+export { AppProvider }
+export default AppContext;

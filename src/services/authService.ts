@@ -87,7 +87,7 @@ export const registerUser = async (userData: RegisterUserData): Promise<UserProf
     await setDoc(doc(db, USERS_COLLECTION, user.uid), userProfile);
 
     return userProfile;
-  } catch (error: any) {
+  } catch (error: unknown) {
     throw handleAuthError(error);
   }
 };
@@ -164,10 +164,11 @@ export const loginUser = async (userData: LoginUserData): Promise<UserProfile> =
     }
 
     throw new Error('Профиль пользователя не найден');
-  } catch (error: any) {
+  } catch (error: unknown) {
     // Полная обработка ошибок Firebase REST API
-    const errorMessage = error?.message || '';
-    const errorData = error?.response?.data || error?.response || null;
+    const errorObj = error as { message?: string; response?: { data?: { error?: { message?: string }; message?: string } } };
+    const errorMessage = errorObj?.message || '';
+    const errorData = errorObj?.response?.data || errorObj?.response || null;
 
     // Парсинг ошибок из Firebase REST API (JSON формат)
     if (errorData) {
@@ -240,7 +241,7 @@ export const logoutUser = async (): Promise<void> => {
 
   try {
     await signOut(auth);
-  } catch (error: any) {
+  } catch (error: unknown) {
     throw handleAuthError(error);
   }
 };
@@ -262,7 +263,7 @@ export const getUserProfile = async (uid: string): Promise<UserProfile | null> =
     }
 
     return null;
-  } catch (error: any) {
+  } catch (error: unknown) {
     throw handleAuthError(error);
   }
 };
@@ -286,8 +287,8 @@ export const checkEmailExists = async (email: string): Promise<boolean> => {
 
     const querySnapshot = await getDocs(q);
     return !querySnapshot.empty;
-  } catch (error: any) {
-    // console.error('Ошибка проверки email:', error);
+  } catch {
+    // console.error('Ошибка проверки email:');
     return false;
   }
 };
@@ -313,7 +314,7 @@ export const updateUserProfile = async (
       ...updates,
       updatedAt: new Date().toISOString()
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     throw handleAuthError(error);
   }
 };
@@ -356,7 +357,8 @@ export const onAuthChange = (
 /**
  * Обработка ошибок Firebase Auth
  */
-const handleAuthError = (error: any): Error => {
+const handleAuthError = (error: unknown): Error => {
+  const errorObj = error as { code?: string; message?: string };
   const errorMessages: Record<string, string> = {
     'auth/email-already-in-use': 'Email уже зарегистрирован',
     'auth/invalid-email': 'Неверный формат email',
@@ -373,8 +375,8 @@ const handleAuthError = (error: any): Error => {
   };
 
   // Получаем код ошибки
-  const errorCode = error.code || '';
-  const errorMessage = error.message || '';
+  const errorCode = errorObj.code || '';
+  const errorMessage = errorObj.message || '';
 
   // Обработка ошибок Firebase REST API
   if (errorMessage.includes('INVALID_PASSWORD')) {
@@ -481,7 +483,7 @@ export const resendVerificationEmail = async (user: User): Promise<void> => {
   try {
     await sendEmailVerification(user);
     // console.log('✅ Письмо подтверждения отправлено повторно');
-  } catch (error: any) {
+  } catch (error: unknown) {
     throw handleAuthError(error);
   }
 };
@@ -556,8 +558,8 @@ export const checkEmailVerification = async (uid: string): Promise<UserProfile |
     }
     // console.log('❌ [checkEmailVerification] currentUser не найден');
     return null;
-  } catch (error: any) {
-    // console.error('❌ [checkEmailVerification] Ошибка проверки email:', error);
+  } catch {
+    // console.error('❌ [checkEmailVerification] Ошибка проверки email:');
     return null;
   }
 };
@@ -596,12 +598,13 @@ export const sendPasswordResetEmailService = async (email: string): Promise<void
       handleCodeInApp: true
     });
     // console.log('✅ [sendPasswordResetEmail] Письмо отправлено на:', email);
-  } catch (error: any) {
-    // console.error('❌ [sendPasswordResetEmail] Ошибка отправки:', error);
+  } catch (error: unknown) {
+    // console.error('❌ [sendPasswordResetEmail] Ошибка отправки:');
 
     // Обработка ошибок Firebase Auth
-    const errorCode = error.code;
-    const errorMessage = error.message || '';
+    const errorObj = error as { code?: string; message?: string };
+    const errorCode = errorObj.code;
+    const errorMessage = errorObj.message || '';
 
     // Парсинг ошибок Firebase REST API
     let userFriendlyMessage = 'Не удалось отправить письмо. Попробуйте позже.';

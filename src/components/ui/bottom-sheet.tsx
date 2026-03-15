@@ -63,7 +63,7 @@ export function BottomSheet({
 
   // Обработка Escape
   useEffect(() => {
-    const handleEscape = (_e: KeyboardEvent) => {
+    const handleEscape = () => {
       if (isOpen) {
         onClose();
       }
@@ -91,12 +91,12 @@ export function BottomSheet({
     // Можно добавить логику при начале перетаскивания
   };
 
-  const handleDrag = useCallback((_event: any, _info: any) => {
+  const handleDrag = useCallback(() => {
     // Можно добавить логику для изменения snap во время драга
   }, []);
 
   const handleDragEnd = useCallback(
-    (_event: any, info: any) => {
+    (_event: unknown, info: { offset: { y: number }; velocity?: { y?: number } }) => {
       const threshold = 100;
 
       // Если свайпнули вверх

@@ -119,13 +119,13 @@ export function TrainerSection() {
     setTimeout(() => {
       clearInterval(progressInterval);
       startTrainer(questionCount);
-      setLoadingModal((prev: any) => ({
+      setLoadingModal((prev) => ({
         ...prev,
         status: 'success',
         progress: 100
       }));
       updateToast(loadingId, { type: 'success', title: 'Тренажёр запущен' });
-      
+
       setTimeout(() => {
         setLoadingModal(prev => ({ ...prev, isOpen: false }));
       }, 1000);

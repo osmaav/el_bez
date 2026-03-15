@@ -111,13 +111,13 @@ export const exportTrainerToPDF = async (data: TrainerExportData): Promise<void>
       0: { cellWidth: 33 },
       1: { cellWidth: 15, halign: 'right' }
     },
-    didParseCell: (cellData: any) => {
+    didParseCell: (cellData: { row: { index: number }; column: { index: number }; cell: { styles: { textColor?: [number, number, number] } } }) => {
       const row = statsData[cellData.row.index];
       if (cellData.column.index === 1 && row.color) {
         cellData.cell.styles.textColor = row.color;
       }
     },
-    willDrawCell: (_data: any) => {
+    willDrawCell: () => {
       doc.setFont('Roboto', 'normal');
     },
     margin: { left: margin, right: margin + 10 }
@@ -171,14 +171,14 @@ export const exportTrainerToPDF = async (data: TrainerExportData): Promise<void>
       2: { cellWidth: 60 },
       3: { cellWidth: 60 }
     },
-    didParseCell: (cellData: any) => {
+    didParseCell: (cellData: { row: { index: number }; column: { index: number }; cell: { styles: { textColor?: [number, number, number] } } }) => {
       const row = tableData[cellData.row.index];
       // Окрашиваем неверные ответы красным
       if (cellData.column.index === 2 && !row.isCorrect) {
         cellData.cell.styles.textColor = COLORS.error;
       }
     },
-    willDrawCell: (_data: any) => {
+    willDrawCell: () => {
       doc.setFont('Roboto', 'normal');
     },
     margin: { left: margin, right: margin }

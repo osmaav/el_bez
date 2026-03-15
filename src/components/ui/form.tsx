@@ -155,13 +155,12 @@ function FormMessage({ className, ...props }: React.ComponentProps<"p">) {
   )
 }
 
-export {
-  useFormField,
-  Form,
-  FormItem,
-  FormLabel,
-  FormControl,
-  FormDescription,
-  FormMessage,
-  FormField,
-}
+// eslint-disable-next-line react-refresh/only-export-components
+export { useFormField }
+export { Form }
+export { FormItem }
+export { FormLabel }
+export { FormControl }
+export { FormDescription }
+export { FormMessage }
+export { FormField }

@@ -2,7 +2,7 @@ import { useApp } from '@/context/AppContext';
 import { useAuth } from '@/context/AuthContext';
 import type { PageType, SectionType } from '@/types';
 import { BookOpen, GraduationCap, Dumbbell, School, ChevronDown, LogOut, LogIn, BarChart3, UserCircle } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { useState, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { LoginModal } from '@/components/LoginModal';
 import { RegisterModal } from '@/components/RegisterModal';
@@ -24,17 +24,14 @@ export function Navigation() {
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [showRegisterModal, setShowRegisterModal] = useState(false);
   const [showEditProfileModal, setShowEditProfileModal] = useState(false);
-  const [isTouchDevice, setIsTouchDevice] = useState(false);
+  const [isTouchDevice] = useState(() => {
+    // Инициализация при первом рендере
+    return 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+  });
 
-  // Определяем тач-устройства для отключения подсказок
-  useEffect(() => {
-    const isTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
-    setIsTouchDevice(isTouch);
-  }, []);
-
-  const handlePageChange = (page: PageType) => {
+  const handlePageChange = useCallback((page: PageType) => {
     setCurrentPage(page);
-  };
+  }, [setCurrentPage]);
 
   const handleSectionChange = (sectionId: SectionType) => {
     setCurrentSection(sectionId);

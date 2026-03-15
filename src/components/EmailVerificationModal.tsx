@@ -77,8 +77,8 @@ export function EmailVerificationModal({
       // Проверяем статус через useAuth (checkEmail обновил контекст)
       // localStorage больше не содержит персональных данных
       // console.log('✅ [EmailVerificationModal] Проверка выполнена');
-    } catch (error) {
-      // console.error('❌ [EmailVerificationModal] Ошибка проверки email:', error);
+    } catch {
+      // console.error('❌ [EmailVerificationModal] Ошибка проверки email:');
     } finally {
       setIsChecking(false);
     }
@@ -93,8 +93,8 @@ export function EmailVerificationModal({
       await onResend();
       setResendCountdown(60); // 60 секунд между отправками
       // console.log('✅ [EmailVerificationModal] Письмо отправлено, таймер 60 сек');
-    } catch (error) {
-      // console.error('❌ [EmailVerificationModal] Ошибка отправки письма:', error);
+    } catch {
+      // console.error('❌ [EmailVerificationModal] Ошибка отправки письма:');
     } finally {
       setIsResending(false);
     }

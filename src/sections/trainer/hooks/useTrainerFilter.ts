@@ -6,7 +6,7 @@
  * @version 1.0.0
  */
 
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useLayoutEffect } from 'react';
 import { questionFilterService } from '@/services/questionFilterService';
 import { statisticsService } from '@/services/statisticsService';
 import type { Question, SectionType } from '@/types';
@@ -32,32 +32,42 @@ export function useTrainerFilter({
   const [hiddenQuestionIds, setHiddenQuestionIdsState] = useState<number[]>([]);
   const [isFilterActive, setIsFilterActive] = useState(false);
 
+  // ============================================================================
+  // Helper: Apply filter logic
+  // ============================================================================
+
+  const applyFilterLogic = useCallback((
+    filterSettings: { hiddenQuestionIds: number[]; excludeKnown: boolean; excludeWeak: boolean }
+  ) => {
+    const allQuestionIds = questions.map(q => q.id);
+    const questionStats = statisticsService.getQuestionStats(currentSection);
+    const filteredIds = questionFilterService.filterQuestions(allQuestionIds, questionStats, filterSettings);
+    const filtered = questions.filter(q => filteredIds.includes(q.id));
+
+    return {
+      filtered,
+      isActive: filterSettings.excludeKnown || filterSettings.excludeWeak || filterSettings.hiddenQuestionIds.length > 0
+    };
+  }, [questions, currentSection]);
+
   // Загрузка настроек фильтра при инициализации
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (questions.length > 0) {
       const filterSettings = questionFilterService.getSettings(currentSection);
+      const result = applyFilterLogic(filterSettings);
+
       setHiddenQuestionIdsState(filterSettings.hiddenQuestionIds);
-      
-      // Применяем фильтр для получения отфильтрованных вопросов
-      const allQuestionIds = questions.map(q => q.id);
-      const questionStats = statisticsService.getQuestionStats(currentSection);
-      const filteredIds = questionFilterService.filterQuestions(allQuestionIds, questionStats, filterSettings);
-      
-      const filtered = questions.filter(q => filteredIds.includes(q.id));
-      setFilteredQuestions(filtered);
-      
+      setFilteredQuestions(result.filtered);
+
       // Проверяем активность фильтра
-      const isActive = filterSettings.excludeKnown || 
-                       filterSettings.excludeWeak || 
-                       filterSettings.hiddenQuestionIds.length > 0;
-      setIsFilterActive(isActive);
-      
+      setIsFilterActive(result.isActive);
+
       console.log('🔍 [useTrainerFilter] Фильтр применён при инициализации:', {
         total: questions.length,
-        filtered: filtered.length,
+        filtered: result.filtered.length,
       });
     }
-  }, [currentSection, questions.length]);
+  }, [currentSection, questions.length, applyFilterLogic]);
 
   // Установка скрытых вопросов
   const setHiddenQuestionIds = useCallback((ids: number[]) => {

@@ -71,22 +71,23 @@ export function LoginModal({ isOpen, onClose, onOpenRegister }: LoginModalProps)
 
       // Закрываем модальное окно
       onClose();
-    } catch (err: any) {
+    } catch (err: unknown) {
       // Полная отладка ошибки
+      const errorObj = err as { message?: string; code?: string };
       console.error('❌ [LoginModal] Ошибка входа:', {
-        message: err.message,
-        code: err.code,
+        message: errorObj.message,
+        code: errorObj.code,
         fullError: JSON.stringify(err, null, 2)
       });
-      
+
       // Получаем сообщение об ошибке
       let errorMessage = 'Ошибка при входе';
-      
-      if (err.message) {
-        errorMessage = err.message;
-      } else if (err.code) {
+
+      if (errorObj.message) {
+        errorMessage = errorObj.message;
+      } else if (errorObj.code) {
         // Обработка кодов ошибок Firebase
-        switch (err.code) {
+        switch (errorObj.code) {
           case 'auth/user-not-found':
           case 'EMAIL_NOT_FOUND':
             errorMessage = 'Пользователь не найден';
@@ -104,10 +105,10 @@ export function LoginModal({ isOpen, onClose, onOpenRegister }: LoginModalProps)
             errorMessage = 'Аккаунт отключён';
             break;
           default:
-            errorMessage = err.code || 'Ошибка при входе';
+            errorMessage = errorObj.code || 'Ошибка при входе';
         }
       }
-      
+
       toastError('Ошибка входа', errorMessage);
     } finally {
       setIsLoading(false);
@@ -134,8 +135,8 @@ export function LoginModal({ isOpen, onClose, onOpenRegister }: LoginModalProps)
         setResetEmail('');
         setResetSuccess(null);
       }, 5000);
-    } catch (err: any) {
-      toastError('Ошибка', err.message || 'Не удалось отправить письмо');
+    } catch (err: unknown) {
+      toastError('Ошибка', err instanceof Error ? err.message : 'Не удалось отправить письмо');
     } finally {
       setResetLoading(false);
     }

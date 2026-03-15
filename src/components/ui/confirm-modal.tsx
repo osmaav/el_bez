@@ -104,7 +104,7 @@ export function ConfirmModal({
 
   // Обработка Escape
   useEffect(() => {
-    const handleEscape = (_e: KeyboardEvent) => {
+    const handleEscape = () => {
       if (isOpen && !isLoading) {
         onClose();
       }

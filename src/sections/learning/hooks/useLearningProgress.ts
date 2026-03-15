@@ -39,13 +39,13 @@ const getStorageKeys = (section: string) => ({
   progress: `elbez_learning_progress_${section}`
 });
 
-const saveProgressToStorage = (state: Record<number, any>, section: string) => {
+const saveProgressToStorage = (state: Record<number, unknown>, section: string) => {
   if (typeof window === 'undefined') return;
   const keys = getStorageKeys(section);
   localStorage.setItem(keys.progress, JSON.stringify(state));
 };
 
-const loadProgressFromStorage = (section: string): Record<number, any> | null => {
+const loadProgressFromStorage = (section: string): Record<number, unknown> | null => {
   if (typeof window === 'undefined') return null;
   const keys = getStorageKeys(section);
   const stored = localStorage.getItem(keys.progress);
@@ -61,7 +61,7 @@ export function useLearningProgress({
   userId,
   currentSection,
 }: UseLearningProgressOptions): UseLearningProgressReturn {
-  const [savedStates, setSavedStates] = useState<Record<number, any>>({});
+  const [savedStates, setSavedStates] = useState<Record<number, unknown>>({});
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -74,7 +74,7 @@ export function useLearningProgress({
         setIsLoading(true);
         setError(null);
 
-        let progress: Record<number, any> | null = null;
+        let progress: Record<number, unknown> | null = null;
 
         // Пытаемся загрузить из Firestore
         if (userId) {
@@ -153,7 +153,7 @@ export function useLearningProgress({
   const loadProgress = useCallback(async () => {
     try {
       setIsLoading(true);
-      let progress: Record<number, any> | null = null;
+      let progress: Record<number, unknown> | null = null;
 
       if (userId) {
         progress = await loadLearningProgress(userId, currentSection);

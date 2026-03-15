@@ -36,8 +36,8 @@ export const formatDate = (timestamp: number): string => {
 /**
  * Получение текста ответа по индексу
  */
-export const getAnswerText = (question: any, answerIndex: number): string => {
-  return question.options[answerIndex] || `Вариант ${answerIndex + 1}`;
+export const getAnswerText = (question: { options?: string[] }, answerIndex: number): string => {
+  return question.options?.[answerIndex] || `Вариант ${answerIndex + 1}`;
 };
 
 /**
