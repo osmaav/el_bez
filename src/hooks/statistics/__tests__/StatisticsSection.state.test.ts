@@ -134,7 +134,7 @@ describe('StatisticsSection', () => {
 
     describe('Переключение раздела', () => {
       it('должен отображать статистику для выбранного раздела', () => {
-        let currentSection = '1256-19';
+        const currentSection = '1256-19';
         const sectionStats = {
           '1256-19': { accuracy: 80 },
           '1258-20': { accuracy: 90 },

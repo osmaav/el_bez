@@ -4,7 +4,7 @@ import { ToastProvider, useToast } from '@/context/ToastContext';
 import { CookiesProvider } from 'react-cookie';
 import { Navigation } from '@/components/Navigation';
 import { Footer } from '@/sections/Footer';
-import { LearningSection } from '@/sections/LearningSection';
+import { LearningSection } from '@/sections/learning/LearningSection';
 import { TheorySection } from '@/sections/TheorySection';
 import { TrainerSection } from '@/sections/TrainerSection';
 import { ExamSection } from '@/sections/ExamSection';

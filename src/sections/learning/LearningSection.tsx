@@ -78,32 +78,32 @@ export function LearningSection() {
   } = useApp();
 
   // Отладка: лог значений из useApp
-  console.log('🔵 [LearningSection] Значения из useApp:', {
-    filterExcludeKnown,
-    filterExcludeWeak,
-    hiddenQuestionIds: hiddenQuestionIds.length,
-    isFilterActive
-  });
+  // console.log('🔵 [LearningSection] Значения из useApp:', {
+  //   filterExcludeKnown,
+  //   filterExcludeWeak,
+  //   hiddenQuestionIds: hiddenQuestionIds.length,
+  //   isFilterActive
+  // });
 
   // Применяем фильтр к вопросам
   const filteredQuestions = useMemo(() => {
-    console.log('🔍 [LearningSection] Применение фильтра:', {
-      isFilterActive,
-      filterExcludeKnown,
-      filterExcludeWeak,
-      hiddenQuestionIds,
-      questionsCount: questions.length
-    });
+    // console.log('🔍 [LearningSection] Применение фильтра:', {
+    //   isFilterActive,
+    //   filterExcludeKnown,
+    //   filterExcludeWeak,
+    //   hiddenQuestionIds,
+    //   questionsCount: questions.length
+    // });
 
     if (!isFilterActive) return questions;
 
     // Получаем статистику один раз
     const questionStats = statisticsService.getQuestionStats(currentSection);
-    console.log('📊 [LearningSection] Статистика вопросов:', {
-      total: questionStats.length,
-      known: questionStats.filter(s => s.isKnown).length,
-      weak: questionStats.filter(s => s.isWeak).length
-    });
+    // console.log('📊 [LearningSection] Статистика вопросов:', {
+    //   total: questionStats.length,
+    //   known: questionStats.filter(s => s.isKnown).length,
+    //   weak: questionStats.filter(s => s.isWeak).length
+    // });
 
     return questions.filter(q => {
       // Скрытые вопросы
@@ -112,7 +112,7 @@ export function LearningSection() {
       if (filterExcludeKnown) {
         const stats = questionStats.find(s => s.questionId === q.id);
         if (stats?.isKnown) {
-          console.log('❌ [LearningSection] Исключён известный вопрос:', q.id);
+          // console.log('❌ [LearningSection] Исключён известный вопрос:', q.id);
           return false;
         }
       }
@@ -120,7 +120,7 @@ export function LearningSection() {
       if (filterExcludeWeak) {
         const stats = questionStats.find(s => s.questionId === q.id);
         if (stats?.isWeak) {
-          console.log('❌ [LearningSection] Исключён слабый вопрос:', q.id);
+          // console.log('❌ [LearningSection] Исключён слабый вопрос:', q.id);
           return false;
         }
       }
@@ -204,7 +204,7 @@ export function LearningSection() {
   // Глобальный прогресс
   const globalProgress = useMemo(() => {
     let totalAnswered = 0;
-    Object.values(savedStates).forEach((state: any) => {
+    Object.values(savedStates).forEach((state: { userAnswers: (number | null)[] }) => {
       state.userAnswers.forEach((answer: number | null) => {
         if (answer !== null) totalAnswered++;
       });
@@ -284,7 +284,7 @@ export function LearningSection() {
         body: tableData,
         theme: 'striped',
         headStyles: { fillColor: [59, 130, 246] },
-        didParseCell: (data: any) => {
+        didParseCell: (data) => {
           if (data.section === 'body' && data.column.index === 3) {
             if (data.cell.raw === '✓') {
               data.cell.styles.textColor = [34, 197, 94];
@@ -300,7 +300,7 @@ export function LearningSection() {
 
       updateToast(loadingId, { type: 'success', title: 'PDF сохранён' });
       success('PDF сохранён', `Файл ${fileName} загружен`);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('❌ [LearningSection] Ошибка сохранения PDF:', err);
       updateToast(loadingId, { type: 'error', title: 'Ошибка сохранения' });
       toastError('Ошибка сохранения', 'Не удалось сохранить PDF');

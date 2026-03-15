@@ -51,7 +51,7 @@ describe('ExamSection', () => {
       });
 
       it('должен устанавливать currentIndex = 0', () => {
-        let currentIndex = 0;
+        const currentIndex = 0;
         expect(currentIndex).toBe(0);
       });
     });

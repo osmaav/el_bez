@@ -26,14 +26,14 @@ describe('LearningSection', () => {
       });
 
       it('должен ограничивать номер страницы минимумом', () => {
-        let currentPage = 1;
+        const currentPage = 1;
         const newPage = Math.max(1, 0);
         expect(newPage).toBe(1);
       });
 
       it('должен ограничивать номер страницы максимумом', () => {
         const totalPages = 10;
-        let currentPage = 10;
+        const currentPage = 10;
         const newPage = Math.min(totalPages, 11);
         expect(newPage).toBe(10);
       });

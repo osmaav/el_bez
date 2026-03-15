@@ -39,8 +39,6 @@ export function useLearningFilterHandler(
       hiddenQuestionIds: number[];
     }
   ) => {
-    console.log('🔍 [useLearningFilterHandler] Применение фильтра:', settings);
-
     // Обновляем настройки фильтра
     setFilterHiddenQuestionIds(settings.hiddenQuestionIds);
     setFilterExcludeKnown(settings.excludeKnown);
@@ -49,21 +47,15 @@ export function useLearningFilterHandler(
     // Сбрасываем навигацию и викторину
     resetPage();
     resetQuiz();
-
-    console.log('✅ [useLearningFilterHandler] Фильтр применён и состояние сброшено');
   }, [setFilterHiddenQuestionIds, setFilterExcludeKnown, setFilterExcludeWeak, resetPage, resetQuiz]);
 
   const handleResetFilter = useCallback(() => {
-    console.log('🔄 [useLearningFilterHandler] Сброс фильтра');
-
     setFilterHiddenQuestionIds([]);
     setFilterExcludeKnown(false);
     setFilterExcludeWeak(false);
 
     resetPage();
     resetQuiz();
-
-    console.log('✅ [useLearningFilterHandler] Фильтр сброшен');
   }, [setFilterHiddenQuestionIds, setFilterExcludeKnown, setFilterExcludeWeak, resetPage, resetQuiz]);
 
   return { handleApplyFilter, handleResetFilter };
