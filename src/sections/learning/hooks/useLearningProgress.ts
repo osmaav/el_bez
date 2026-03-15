@@ -129,12 +129,17 @@ export function useLearningProgress({
     }
   ) => {
     try {
-      const newSavedStates = {
-        ...savedStates,
-        [page]: state,
-      };
-
-      setSavedStates(newSavedStates);
+      // Используем функциональное обновление для актуального состояния
+      const newSavedStates = await new Promise<LearningProgressState>((resolve) => {
+        setSavedStates(prev => {
+          const updated = {
+            ...prev,
+            [page]: state,
+          };
+          resolve(updated);
+          return updated;
+        });
+      });
 
       // Сохраняем в Firestore для авторизованных
       if (userId) {
@@ -151,7 +156,7 @@ export function useLearningProgress({
       console.error('❌ [useLearningProgress] Ошибка сохранения:', err);
       throw err;
     }
-  }, [userId, currentSection, savedStates]);
+  }, [userId, currentSection]);
 
   // Загрузка прогресса (публичный метод)
   const loadProgress = useCallback(async () => {
