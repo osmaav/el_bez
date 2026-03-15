@@ -6,7 +6,7 @@ import tseslint from 'typescript-eslint'
 import { defineConfig, globalIgnores } from 'eslint/config'
 
 export default defineConfig([
-  globalIgnores(['dist']),
+  globalIgnores(['docs', './src/components/ui/']),
   {
     files: ['**/*.{ts,tsx}'],
     extends: [
@@ -43,7 +43,7 @@ export default defineConfig([
       // Разрешить any в тестах для моков
       '@typescript-eslint/no-explicit-any': 'off',
       // Разрешить неиспользуемые переменные (для импортов тестовых утилит)
-      '@typescript-eslint/no-unused-vars': ['warn', { 
+      '@typescript-eslint/no-unused-vars': ['warn', {
         'argsIgnorePattern': '^_',
         'varsIgnorePattern': '^_|^React$'
       }],

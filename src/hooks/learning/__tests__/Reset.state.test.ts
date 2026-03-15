@@ -34,9 +34,9 @@ describe('LearningSection', () => {
       });
 
       it('должен сбрасывать статистику', () => {
-        const stats = { correct: 5, incorrect: 3, remaining: 2 };
+        const _stats = { correct: 5, incorrect: 3, remaining: 2 };
         const resetStats = { correct: 0, incorrect: 0, remaining: 10 };
-        
+
         expect(resetStats.correct).toBe(0);
         expect(resetStats.incorrect).toBe(0);
       });

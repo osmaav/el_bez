@@ -116,11 +116,11 @@ describe('LearningSection', () => {
 
       describe('Сброс состояния при смене раздела', () => {
         it('должен сбрасывать прогресс при смене раздела', () => {
-          const progress = { page: 5, answers: [0, 1, 2] };
-          
+          const _progress = { page: 5, answers: [0, 1, 2] };
+
           // Сброс
           const newProgress = { page: 1, answers: [] };
-          
+
           expect(newProgress.page).toBe(1);
           expect(newProgress.answers.length).toBe(0);
         });

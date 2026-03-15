@@ -4,7 +4,7 @@ import { loadQuestionsForSection, saveUserState } from '@/services/questionServi
 import { AuthContext } from '@/context/AuthContext';
 import { SessionTracker } from '@/services/statisticsService';
 
-interface AppContextType {
+export interface AppContextType {
   // Навигация
   currentPage: PageType;
   setCurrentPage: (page: PageType) => void;

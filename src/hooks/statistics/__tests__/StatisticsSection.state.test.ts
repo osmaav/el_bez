@@ -110,24 +110,24 @@ describe('StatisticsSection', () => {
       });
 
       it('должен сбрасывать статистику раздела', () => {
-        const sectionStats = {
+        const _sectionStats = {
           '1256-19': { totalSessions: 5 },
           '1258-20': { totalSessions: 3 },
         };
-        
+
         const resetStats: any = {};
-        
+
         expect(Object.keys(resetStats).length).toBe(0);
       });
 
       it('должен сбрасывать историю сессий', () => {
-        const sessions = [
+        const _sessions = [
           { id: 1, accuracy: 80 },
           { id: 2, accuracy: 90 },
         ];
-        
+
         const resetSessions: any[] = [];
-        
+
         expect(resetSessions.length).toBe(0);
       });
     });

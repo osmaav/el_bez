@@ -129,5 +129,4 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   );
 }
 
-export { ToastProvider }
 export default ToastContext;

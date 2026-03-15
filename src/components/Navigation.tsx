@@ -121,7 +121,7 @@ export function Navigation() {
               {showSectionMenu && (
                 <div className="absolute left-0 mt-1 w-64 bg-white rounded-lg shadow-lg overflow-hidden z-50">
                   <div className="py-1">
-                    {sections.map((section: { id: SectionType; name: string }) => (
+                    {sections.map((section: { id: SectionType; name: string; description: string; totalQuestions: number; totalTickets: number }) => (
                       <button
                         key={section.id}
                         onClick={() => handleSectionChange(section.id)}

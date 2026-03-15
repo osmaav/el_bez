@@ -20,42 +20,42 @@ describe('LearningSection', () => {
       });
 
       it('должен сохранять номер страницы', () => {
-        let currentPage = 1;
-        currentPage = 2;
-        expect(currentPage).toBe(2);
+        let _currentPage = 1;
+        _currentPage = 2;
+        expect(_currentPage).toBe(2);
       });
 
       it('должен ограничивать номер страницы минимумом', () => {
-        const currentPage = 1;
+        const _currentPage = 1;
         const newPage = Math.max(1, 0);
         expect(newPage).toBe(1);
       });
 
       it('должен ограничивать номер страницы максимумом', () => {
         const totalPages = 10;
-        const currentPage = 10;
+        const _currentPage = 10;
         const newPage = Math.min(totalPages, 11);
         expect(newPage).toBe(10);
       });
 
       it('должен вычислять startIndex для вопросов', () => {
         const QUESTIONS_PER_SESSION = 10;
-        const currentPage = 1;
-        const startIndex = (currentPage - 1) * QUESTIONS_PER_SESSION;
+        const _currentPage = 1;
+        const startIndex = (_currentPage - 1) * QUESTIONS_PER_SESSION;
         expect(startIndex).toBe(0);
       });
 
       it('должен вычислять startIndex для страницы 2', () => {
         const QUESTIONS_PER_SESSION = 10;
-        const currentPage = 2;
-        const startIndex = (currentPage - 1) * QUESTIONS_PER_SESSION;
+        const _currentPage = 2;
+        const startIndex = (_currentPage - 1) * QUESTIONS_PER_SESSION;
         expect(startIndex).toBe(10);
       });
 
       it('должен вычислять startIndex для страницы 5', () => {
         const QUESTIONS_PER_SESSION = 10;
-        const currentPage = 5;
-        const startIndex = (currentPage - 1) * QUESTIONS_PER_SESSION;
+        const _currentPage = 5;
+        const startIndex = (_currentPage - 1) * QUESTIONS_PER_SESSION;
         expect(startIndex).toBe(40);
       });
 

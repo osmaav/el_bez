@@ -16,7 +16,7 @@ import { auth, isFirebaseReady } from '@/lib/firebase';
 const STORAGE_KEY_AUTH = 'elbez_is_authenticated';
 const STORAGE_KEY_USER_ID = 'elbez_user_id'; // Только ID, не полный профиль
 
-interface AuthContextType {
+export interface AuthContextType {
   isAuthenticated: boolean;
   user: UserProfile | null;
   isLoading: boolean;
