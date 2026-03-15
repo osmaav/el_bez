@@ -149,7 +149,7 @@ export function useLearningFilter(
     setTimeout(() => {
       setIsFilterApplying(false);
     }, 100);
-  }, [currentSection, questionFilterService]);
+  }, [currentSection]);
 
   // ============================================================================
   // Reset Filter

@@ -342,7 +342,7 @@ export function useLearningProgress(
     } else {
       saveProgressToStorage(newSavedStates, currentSection);
     }
-  }, [quizState, isInitialized, user, currentSection, isSectionChanging]);
+  }, [quizState, isInitialized, user, currentSection, isSectionChanging, savedStates, toastError]);
 
   // ============================================================================
   // Save Current Page

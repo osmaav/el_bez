@@ -53,7 +53,7 @@ export function useExamState({
 
     const timer = setInterval(() => {
       setTimeSpent(Math.floor((Date.now() - examState.startTime!) / 1000));
-      
+
       // Проверка лимита времени
       if (timeLimit && timeSpent >= timeLimit * 60) {
         finishExam();
@@ -61,7 +61,7 @@ export function useExamState({
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [examState.startTime, examState.isFinished, timeLimit, timeSpent]);
+  }, [examState.startTime, examState.isFinished, timeLimit, timeSpent, finishExam]);
 
   // Инициализация экзамена при выборе билета
   useEffect(() => {

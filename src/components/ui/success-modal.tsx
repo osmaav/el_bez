@@ -6,7 +6,7 @@
  * @version 1.0.0
  */
 
-import { useEffect } from 'react';
+import { useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { Check, X, Sparkles, Trophy, Star, Award } from 'lucide-react';
@@ -50,9 +50,9 @@ export function SuccessModal({
 }: SuccessModalProps) {
   const IconComponent = iconMap[icon];
 
-  const handleClose = () => {
+  const handleClose = useCallback(() => {
     onClose();
-  };
+  }, [onClose]);
 
   // Блокировка скролла
   useEffect(() => {
