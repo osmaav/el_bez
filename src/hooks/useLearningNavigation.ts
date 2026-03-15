@@ -50,7 +50,7 @@ export function useLearningNavigation({
     const newPage = Math.max(1, Math.min(page, totalPages));
     console.log('📄 [useLearningNavigation] Переход на страницу', newPage, 'из', totalPages);
     setCurrentPage(newPage);
-  }, [totalPages]);
+  }, [totalPages, setCurrentPage]);
 
   // ============================================================================
   // Next Page

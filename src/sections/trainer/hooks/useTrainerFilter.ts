@@ -6,7 +6,7 @@
  * @version 1.0.0
  */
 
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useMemo } from 'react';
 import { questionFilterService } from '@/services/questionFilterService';
 import { statisticsService } from '@/services/statisticsService';
 import type { Question, SectionType } from '@/types';
@@ -28,46 +28,48 @@ export function useTrainerFilter({
   currentSection,
   questions,
 }: UseTrainerFilterOptions): UseTrainerFilterReturn {
-  const [filteredQuestions, setFilteredQuestions] = useState<Question[]>(questions);
   const [hiddenQuestionIds, setHiddenQuestionIdsState] = useState<number[]>([]);
-  const [isFilterActive, setIsFilterActive] = useState(false);
+  const [excludeKnown, setExcludeKnown] = useState(false);
+  const [excludeWeak, setExcludeWeak] = useState(false);
 
   // ============================================================================
-  // Helper: Apply filter logic
+  // Compute filtered questions using useMemo (вместо setState в useEffect)
   // ============================================================================
 
-  const applyFilterLogic = useCallback((
-    filterSettings: { hiddenQuestionIds: number[]; excludeKnown: boolean; excludeWeak: boolean }
-  ) => {
+  const filterSettings = useMemo(() => ({
+    hiddenQuestionIds,
+    excludeKnown,
+    excludeWeak
+  }), [hiddenQuestionIds, excludeKnown, excludeWeak]);
+
+  const { filteredQuestions, isFilterActive } = useMemo(() => {
+    if (questions.length === 0) {
+      return { filteredQuestions: questions, isFilterActive: false };
+    }
+
     const allQuestionIds = questions.map(q => q.id);
     const questionStats = statisticsService.getQuestionStats(currentSection);
     const filteredIds = questionFilterService.filterQuestions(allQuestionIds, questionStats, filterSettings);
     const filtered = questions.filter(q => filteredIds.includes(q.id));
 
     return {
-      filtered,
-      isActive: filterSettings.excludeKnown || filterSettings.excludeWeak || filterSettings.hiddenQuestionIds.length > 0
+      filteredQuestions: filtered,
+      isFilterActive: filterSettings.excludeKnown || filterSettings.excludeWeak || filterSettings.hiddenQuestionIds.length > 0
     };
-  }, [questions, currentSection]);
+  }, [questions, currentSection, filterSettings]);
 
-  // Загрузка настроек фильтра при инициализации
+  // ============================================================================
+  // Load Filter Settings on Init
+  // ============================================================================
+
   useEffect(() => {
     if (questions.length > 0) {
       const filterSettings = questionFilterService.getSettings(currentSection);
-      const result = applyFilterLogic(filterSettings);
-
       setHiddenQuestionIdsState(filterSettings.hiddenQuestionIds);
-      setFilteredQuestions(result.filtered);
-
-      // Проверяем активность фильтра
-      setIsFilterActive(result.isActive);
-
-      console.log('🔍 [useTrainerFilter] Фильтр применён при инициализации:', {
-        total: questions.length,
-        filtered: result.filtered.length,
-      });
+      setExcludeKnown(filterSettings.excludeKnown);
+      setExcludeWeak(filterSettings.excludeWeak);
     }
-  }, [currentSection, questions.length, applyFilterLogic]);
+  }, [currentSection, questions.length]);
 
   // Установка скрытых вопросов
   const setHiddenQuestionIds = useCallback((ids: number[]) => {
@@ -83,11 +85,11 @@ export function useTrainerFilter({
   const resetFilter = useCallback(() => {
     questionFilterService.resetSettings(currentSection);
     setHiddenQuestionIdsState([]);
-    setFilteredQuestions(questions);
-    setIsFilterActive(false);
-    
+    setExcludeKnown(false);
+    setExcludeWeak(false);
+
     console.log('🔄 [useTrainerFilter] Фильтр сброшен');
-  }, [currentSection, questions]);
+  }, [currentSection]);
 
   return {
     filteredQuestions,

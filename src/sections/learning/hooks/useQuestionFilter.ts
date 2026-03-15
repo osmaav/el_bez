@@ -6,7 +6,7 @@
  * @version 1.0.0
  */
 
-import { useState, useCallback, useRef, useEffect } from 'react';
+import { useState, useCallback, useRef, useEffect, useMemo } from 'react';
 import { questionFilterService } from '@/services/questionFilterService';
 import { statisticsService } from '@/services/statisticsService';
 import type { Question, SectionType } from '@/types';
@@ -36,74 +36,63 @@ export function useQuestionFilter({
   questions,
   questionsPerPage,
 }: UseQuestionFilterOptions): UseQuestionFilterReturn {
-  const [filteredQuestions, setFilteredQuestions] = useState<Question[]>([]);
-  const [totalPages, setTotalPages] = useState(0);
   const [hiddenQuestionIds, setHiddenQuestionIdsState] = useState<number[]>([]);
   const [excludeKnown, setExcludeKnown] = useState(false);
   const [excludeWeak, setExcludeWeak] = useState(false);
-  const [isFilterActive, setIsFilterActive] = useState(false);
 
   // ============================================================================
-  // Helper: Apply filter logic
+  // Compute filtered questions using useMemo (вместо setState в useEffect)
   // ============================================================================
 
-  const applyFilterLogic = useCallback((
-    filterSettings: { hiddenQuestionIds: number[]; excludeKnown: boolean; excludeWeak: boolean }
-  ) => {
+  const filterSettings = useMemo(() => ({
+    hiddenQuestionIds,
+    excludeKnown,
+    excludeWeak
+  }), [hiddenQuestionIds, excludeKnown, excludeWeak]);
+
+  const { filteredQuestions, totalPages, isFilterActive } = useMemo(() => {
+    if (questions.length === 0) {
+      return { filteredQuestions: [], totalPages: 0, isFilterActive: false };
+    }
+
     const allQuestionIds = questions.map(q => q.id);
     const questionStats = statisticsService.getQuestionStats(currentSection);
     const filteredIds = questionFilterService.filterQuestions(allQuestionIds, questionStats, filterSettings);
     const filtered = questions.filter(q => filteredIds.includes(q.id));
 
     return {
-      filtered,
+      filteredQuestions: filtered,
       totalPages: Math.ceil(filtered.length / questionsPerPage),
-      isActive: filterSettings.excludeKnown || filterSettings.excludeWeak || filterSettings.hiddenQuestionIds.length > 0
+      isFilterActive: filterSettings.excludeKnown || filterSettings.excludeWeak || filterSettings.hiddenQuestionIds.length > 0
     };
-  }, [questions, currentSection, questionsPerPage]);
+  }, [questions, currentSection, questionsPerPage, filterSettings]);
 
-  // Настройки загружаются из AppContext, здесь только применяем фильтр к вопросам
+  // ============================================================================
+  // Load Filter Settings on Init
+  // ============================================================================
+
   useEffect(() => {
     if (questions.length > 0) {
-      // Получаем настройки из localStorage (для обратной совместимости)
       const filterSettings = questionFilterService.getSettings(currentSection);
-      const result = applyFilterLogic(filterSettings);
-
-      setFilteredQuestions(result.filtered);
-      setTotalPages(result.totalPages);
-      setIsFilterActive(result.isActive);
-
-      console.log('🔍 [useQuestionFilter] Фильтр применён при инициализации:', {
-        total: questions.length,
-        filtered: result.filtered.length,
-        pages: result.totalPages
-      });
+      setHiddenQuestionIdsState(filterSettings.hiddenQuestionIds);
+      setExcludeKnown(filterSettings.excludeKnown);
+      setExcludeWeak(filterSettings.excludeWeak);
     }
-  }, [currentSection, questions.length, questionsPerPage, applyFilterLogic]);
+  }, [currentSection, questions.length]);
 
   // Применение фильтра
   const applyFilter = useCallback(() => {
     const filterSettings = questionFilterService.getSettings(currentSection);
-    const questionStats = statisticsService.getQuestionStats(currentSection);
-    const allQuestionIds = questions.map(q => q.id);
-    const filteredIds = questionFilterService.filterQuestions(allQuestionIds, questionStats, filterSettings);
-
-    const filtered = questions.filter(q => filteredIds.includes(q.id));
-    setFilteredQuestions(filtered);
-    setTotalPages(Math.ceil(filtered.length / questionsPerPage));
-
-    // Проверяем активность фильтра
-    const isActive = filterSettings.excludeKnown ||
-      filterSettings.excludeWeak ||
-      hiddenQuestionIds.length > 0;
-    setIsFilterActive(isActive);
+    setHiddenQuestionIdsState(filterSettings.hiddenQuestionIds);
+    setExcludeKnown(filterSettings.excludeKnown);
+    setExcludeWeak(filterSettings.excludeWeak);
 
     console.log('🔍 [useQuestionFilter] Фильтр применён:', {
       total: questions.length,
-      filtered: filtered.length,
-      pages: Math.ceil(filtered.length / questionsPerPage)
+      filtered: filteredQuestions.length,
+      pages: totalPages
     });
-  }, [currentSection, questions, questionsPerPage, hiddenQuestionIds]);
+  }, [currentSection, questions.length, filteredQuestions.length, totalPages]);
 
   // Установка скрытых вопросов (только состояние, без сохранения)
   const setHiddenQuestionIds = useCallback((ids: number[]) => {
@@ -114,7 +103,7 @@ export function useQuestionFilter({
   const isInitialMount = useRef(true);
   const prevSettings = useRef<{ excludeKnown: boolean; excludeWeak: boolean; hiddenQuestionIds: number[] } | null>(null);
 
-  // Обновление isFilterActive и сохранение настроек при изменении параметров фильтра
+  // Сохранение настроек при изменении параметров фильтра
   useEffect(() => {
     // Пропускаем первую загрузку (когда значения только что установлены из localStorage)
     if (isInitialMount.current) {
@@ -133,10 +122,6 @@ export function useQuestionFilter({
       // Значения не изменились, не сохраняем
       return;
     }
-
-    // Проверяем активность фильтра напрямую по состоянию
-    const isActive = excludeKnown || excludeWeak || hiddenQuestionIds.length > 0;
-    setIsFilterActive(isActive);
 
     // Сохраняем ВСЕ настройки в сервис
     const filterSettings = questionFilterService.getSettings(currentSection);
@@ -166,12 +151,8 @@ export function useQuestionFilter({
     setExcludeKnown(false);
     setExcludeWeak(false);
 
-    setFilteredQuestions(questions);
-    setTotalPages(Math.ceil(questions.length / questionsPerPage));
-    setIsFilterActive(false);
-
     console.log('🔄 [useQuestionFilter] Фильтр сброшен');
-  }, [currentSection, questions, questionsPerPage]);
+  }, [currentSection]);
 
   return {
     filteredQuestions,
