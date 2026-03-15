@@ -415,6 +415,7 @@ export function LearningSection() {
         onApply={handleApplyFilter}
         onReset={handleResetFilter}
         questionStats={statisticsService.getQuestionStats(currentSection)}
+        questions={questions}
         hiddenQuestionIds={hiddenQuestionIds}
         onHiddenChange={setHiddenQuestionIds}
         currentSection={currentSection}
