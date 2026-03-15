@@ -25,6 +25,7 @@ import {
   useLearningProgress,
   useQuizNavigation,
   useQuizState,
+  useLearningFilterHandler,
 } from './hooks';
 
 // Импорт компонентов
@@ -73,8 +74,6 @@ export function LearningSection() {
     filterExcludeKnown,
     filterExcludeWeak,
     setFilterHiddenQuestionIds: setHiddenQuestionIds,
-    setFilterExcludeKnown: setExcludeKnown,
-    setFilterExcludeWeak: setExcludeWeak,
     isFilterActive,
   } = useApp();
 
@@ -313,40 +312,11 @@ export function LearningSection() {
     setIsFilterModalOpen(true);
   }, []);
 
-  // Обработка применения фильтра
-  const handleApplyFilter = useCallback((_filteredIds: number[], settings: { excludeKnown: boolean; excludeWeak: boolean; hiddenQuestionIds: number[] }) => {
-    console.log('🔍 [LearningSection] handleApplyFilter вызван:', {
-      settings,
-      _filteredIds_length: _filteredIds.length
-    });
-    
-    // Обновляем все параметры фильтра напрямую
-    setHiddenQuestionIds(settings.hiddenQuestionIds);
-    setExcludeKnown(settings.excludeKnown);
-    setExcludeWeak(settings.excludeWeak);
-
-    console.log('✅ [LearningSection] Настройки фильтра обновлены:', {
-      hiddenQuestionIds: settings.hiddenQuestionIds,
-      excludeKnown: settings.excludeKnown,
-      excludeWeak: settings.excludeWeak
-    });
-
-    // Сбрасываем на первую страницу
-    resetPage();
-    
-    // Сбрасываем состояние викторины чтобы не восстанавливались старые ответы
-    resetQuiz();
-    
-    console.log('🔄 [LearningSection] Состояние викторины сброшено');
-  }, [setHiddenQuestionIds, setExcludeKnown, setExcludeWeak, resetPage, resetQuiz]);
-
-  // Обработка сброса фильтра (прямой вызов для корректного сброса isFilterActive)
-  const handleResetFilter = useCallback(() => {
-    setHiddenQuestionIds([]);
-    setExcludeKnown(false);
-    setExcludeWeak(false);
-    resetPage();
-  }, [setHiddenQuestionIds, setExcludeKnown, setExcludeWeak, resetPage]);
+  // Хук для обработки применения фильтра
+  const { handleApplyFilter, handleResetFilter } = useLearningFilterHandler(
+    resetPage,
+    resetQuiz
+  );
 
   // Рендер
   const currentSectionInfo = sections.find(s => s.id === currentSection);
