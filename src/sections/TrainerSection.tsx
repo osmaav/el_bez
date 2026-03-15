@@ -1,4 +1,4 @@
-import { useState, useMemo, useLayoutEffect } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useApp } from '@/context/AppContext';
 import { useAuth } from '@/context/AuthContext';
 import { useToast } from '@/context/ToastContext';
@@ -191,7 +191,7 @@ export function TrainerSection() {
   };
 
   // Синхронизация с состоянием
-  useLayoutEffect(() => {
+  useEffect(() => {
     const currentQuestion = trainerQuestions[trainerCurrentIndex];
     if (currentQuestion) {
       setSelectedAnswer(prev => {

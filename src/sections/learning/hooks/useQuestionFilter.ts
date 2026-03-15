@@ -6,7 +6,7 @@
  * @version 1.0.0
  */
 
-import { useState, useCallback, useRef, useLayoutEffect } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import { questionFilterService } from '@/services/questionFilterService';
 import { statisticsService } from '@/services/statisticsService';
 import type { Question, SectionType } from '@/types';
@@ -63,7 +63,7 @@ export function useQuestionFilter({
   }, [questions, currentSection, questionsPerPage]);
 
   // Настройки загружаются из AppContext, здесь только применяем фильтр к вопросам
-  useLayoutEffect(() => {
+  useEffect(() => {
     if (questions.length > 0) {
       // Получаем настройки из localStorage (для обратной совместимости)
       const filterSettings = questionFilterService.getSettings(currentSection);

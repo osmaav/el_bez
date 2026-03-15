@@ -6,7 +6,7 @@
  * @version 1.0.0
  */
 
-import { useState, useCallback, useLayoutEffect } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { questionFilterService } from '@/services/questionFilterService';
 import { statisticsService } from '@/services/statisticsService';
 import type { Question, SectionType } from '@/types';
@@ -51,7 +51,7 @@ export function useTrainerFilter({
   }, [questions, currentSection]);
 
   // Загрузка настроек фильтра при инициализации
-  useLayoutEffect(() => {
+  useEffect(() => {
     if (questions.length > 0) {
       const filterSettings = questionFilterService.getSettings(currentSection);
       const result = applyFilterLogic(filterSettings);

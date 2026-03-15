@@ -5,7 +5,7 @@
  * и применением фильтрации к списку вопросов.
  */
 
-import { useState, useCallback, useLayoutEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { questionFilterService } from '@/services/questionFilterService';
 import { statisticsService } from '@/services/statisticsService';
 import type { Question, SectionType } from '@/types';
@@ -85,7 +85,7 @@ export function useLearningFilter(
   // Load Filter Settings on Init
   // ============================================================================
 
-  useLayoutEffect(() => {
+  useEffect(() => {
     if (questions.length > 0) {
       const filterSettings = questionFilterService.getSettings(currentSection);
       const result = applyFilterLogic(filterSettings);
@@ -104,7 +104,7 @@ export function useLearningFilter(
   }, [currentSection, questions.length, applyFilterLogic]);
 
   // Re-apply filter when hiddenQuestionIds change
-  useLayoutEffect(() => {
+  useEffect(() => {
     if (questions.length === 0) return;
 
     const filterSettings = questionFilterService.getSettings(currentSection);
