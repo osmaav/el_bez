@@ -194,21 +194,21 @@ export function LearningSection() {
 
   // Сохранение прогресса при изменении quizState
   useEffect(() => {
-    if (quizState.currentQuestions.length > 0 && user?.id) {
-      const hasUserAnswers = quizState.userAnswers.some(a => a !== null);
-      console.log('💾 [LearningSection] Сохранение прогресса:', {
-        page: currentPage,
-        hasUserAnswers,
-        userAnswers: quizState.userAnswers,
-        userId: user.id,
-      });
-      saveProgress(currentPage, {
-        userAnswers: quizState.userAnswers,
-        shuffledAnswers: quizState.shuffledAnswers,
-        isComplete: quizState.isComplete,
-        questionIds: quizState.currentQuestions.map(q => q.id),
-      }).catch(console.error);
-    }
+    if (quizState.currentQuestions.length === 0) return;
+    
+    const hasUserAnswers = quizState.userAnswers.some(a => a !== null);
+    console.log('💾 [LearningSection] Сохранение прогресса:', {
+      page: currentPage,
+      hasUserAnswers,
+      userAnswers: quizState.userAnswers,
+      userId: user?.id || 'anonymous',
+    });
+    saveProgress(currentPage, {
+      userAnswers: quizState.userAnswers,
+      shuffledAnswers: quizState.shuffledAnswers,
+      isComplete: quizState.isComplete,
+      questionIds: quizState.currentQuestions.map(q => q.id),
+    }).catch(console.error);
   }, [quizState, currentPage, user?.id, saveProgress]);
 
   // Глобальный прогресс
