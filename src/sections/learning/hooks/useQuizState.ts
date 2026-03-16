@@ -162,12 +162,6 @@ export function useQuizState({
     const savedState = savedStates?.[currentPage];
     if (!savedState || !savedState.questionIds) return;
 
-    // Не восстанавливаем если состояние уже установлено
-    if (quizState.userAnswers.length > 0 && quizState.userAnswers.some(a => a !== null)) {
-      console.log('⏭️ [useQuizState] Пропуск восстановления - состояние уже установлено');
-      return;
-    }
-
     const startIndex = (currentPage - 1) * questionsPerPage;
     const selected = questions
       .slice(startIndex, startIndex + questionsPerPage)
@@ -180,20 +174,33 @@ export function useQuizState({
     const currentQuestionIds = selected.map(q => q.id);
     const savedQuestionIds = savedState.questionIds;
 
-    const questionsMatch = 
+    const questionsMatch =
       savedQuestionIds.length === currentQuestionIds.length &&
       savedQuestionIds.every((id, idx) => id === currentQuestionIds[idx]);
 
-    if (questionsMatch) {
-      console.log('💾 [useQuizState] Восстановление состояния при загрузке savedStates');
-      setQuizStateState({
-        currentQuestions: selected,
-        shuffledAnswers: savedState.shuffledAnswers,
-        userAnswers: savedState.userAnswers,
-        isComplete: savedState.isComplete,
-      });
+    if (!questionsMatch) return;
+
+    // Проверяем нужно ли восстанавливать
+    // Восстанавливаем если:
+    // 1. quizState ещё не инициализирован (пустые userAnswers)
+    // 2. ИЛИ shuffledAnswers не совпадают с сохранёнными (значит был resetQuiz)
+    const shuffledAnswersMatch = JSON.stringify(quizState.shuffledAnswers) === JSON.stringify(savedState.shuffledAnswers);
+    const hasNoAnswers = quizState.userAnswers.length === 0 || quizState.userAnswers.every(a => a === null);
+    
+    // Не восстанавливаем только если shuffledAnswers совпадают И есть ответы
+    if (!hasNoAnswers && shuffledAnswersMatch) {
+      console.log('⏭️ [useQuizState] Пропуск восстановления - состояние актуально');
+      return;
     }
-  }, [savedStates, isLoaded, currentPage, questions, questionsPerPage, quizState.userAnswers]);
+
+    console.log('💾 [useQuizState] Восстановление состояния при загрузке savedStates');
+    setQuizStateState({
+      currentQuestions: selected,
+      shuffledAnswers: savedState.shuffledAnswers,
+      userAnswers: savedState.userAnswers,
+      isComplete: savedState.isComplete,
+    });
+  }, [savedStates, isLoaded, currentPage, questions, questionsPerPage, quizState.shuffledAnswers, quizState.userAnswers]);
 
   // Инициализация при монтировании и изменении зависимостей
   useEffect(() => {
