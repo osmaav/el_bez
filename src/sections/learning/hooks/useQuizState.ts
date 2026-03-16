@@ -153,7 +153,41 @@ export function useQuizState({
       total: questions.length,
       selected: selected.length,
     });
-  }, [questions, currentPage, questionsPerPage, savedStates, isLoaded]);
+  }, [questions, currentPage, questionsPerPage, isLoaded]); // Убрал savedStates из зависимостей
+
+  // Восстановление состояния при загрузке savedStates
+  useEffect(() => {
+    if (!isLoaded || questions.length === 0 || !savedStates) return;
+    
+    const savedState = savedStates?.[currentPage];
+    if (!savedState || !savedState.questionIds) return;
+
+    const startIndex = (currentPage - 1) * questionsPerPage;
+    const selected = questions
+      .slice(startIndex, startIndex + questionsPerPage)
+      .map(q => ({
+        ...q,
+        question: q.text,
+        answers: q.options,
+      }));
+
+    const currentQuestionIds = selected.map(q => q.id);
+    const savedQuestionIds = savedState.questionIds;
+
+    const questionsMatch = 
+      savedQuestionIds.length === currentQuestionIds.length &&
+      savedQuestionIds.every((id, idx) => id === currentQuestionIds[idx]);
+
+    if (questionsMatch) {
+      console.log('💾 [useQuizState] Восстановление состояния при загрузке savedStates');
+      setQuizStateState({
+        currentQuestions: selected,
+        shuffledAnswers: savedState.shuffledAnswers,
+        userAnswers: savedState.userAnswers,
+        isComplete: savedState.isComplete,
+      });
+    }
+  }, [savedStates, isLoaded, currentPage, questions, questionsPerPage]);
 
   // Инициализация при монтировании и изменении зависимостей
   useEffect(() => {
