@@ -63,6 +63,7 @@ export function LearningSection() {
     savedStates,
     saveProgress,
     clearProgress,
+    isLoaded,
   } = useLearningProgress({
     userId: user?.id,
     currentSection,
@@ -157,6 +158,7 @@ export function LearningSection() {
     savedStates,
     questionsPerPage: QUESTIONS_PER_SESSION,
     currentPage,
+    isLoaded,
   });
 
   // SessionTracker - создание при инициализации
@@ -193,6 +195,13 @@ export function LearningSection() {
   // Сохранение прогресса при изменении quizState
   useEffect(() => {
     if (quizState.currentQuestions.length > 0 && user?.id) {
+      const hasUserAnswers = quizState.userAnswers.some(a => a !== null);
+      console.log('💾 [LearningSection] Сохранение прогресса:', {
+        page: currentPage,
+        hasUserAnswers,
+        userAnswers: quizState.userAnswers,
+        userId: user.id,
+      });
       saveProgress(currentPage, {
         userAnswers: quizState.userAnswers,
         shuffledAnswers: quizState.shuffledAnswers,

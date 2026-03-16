@@ -36,6 +36,7 @@ interface UseLearningProgressReturn {
   }) => Promise<void>;
   loadProgress: () => Promise<void>;
   clearProgress: () => void;
+  isLoaded: boolean;
 }
 
 const getStorageKeys = (section: string) => ({
@@ -203,6 +204,7 @@ export function useLearningProgress({
     saveProgress,
     loadProgress,
     clearProgress,
+    isLoaded: !isLoading, // Флаг завершения загрузки
   };
 }
 

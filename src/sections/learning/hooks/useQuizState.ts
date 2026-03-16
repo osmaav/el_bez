@@ -29,6 +29,7 @@ interface UseQuizStateOptions {
   savedStates?: Record<number, QuestionState>;
   questionsPerPage: number;
   currentPage: number;
+  isLoaded?: boolean; // Флаг загрузки сохранённого состояния
 }
 
 interface UseQuizStateReturn {
@@ -61,9 +62,10 @@ export function useQuizState({
   savedStates,
   questionsPerPage,
   currentPage,
+  isLoaded = true,
 }: UseQuizStateOptions): UseQuizStateReturn {
   const [showSources, setShowSources] = useState<Record<number, boolean>>({});
-  
+
   const [quizState, setQuizStateState] = useState<QuizState>({
     currentQuestions: [],
     shuffledAnswers: [],
@@ -74,6 +76,12 @@ export function useQuizState({
   // Инициализация вопросов при изменении страницы или вопросов
   const initializeQuestions = useCallback(() => {
     if (questions.length === 0) return;
+    
+    // Не инициализируем пока savedStates не загружен
+    if (!isLoaded) {
+      console.log('⏳ [useQuizState] Ожидание загрузки savedStates...');
+      return;
+    }
 
     const startIndex = (currentPage - 1) * questionsPerPage;
     const selected = questions
@@ -87,16 +95,32 @@ export function useQuizState({
     // Проверяем сохранённое состояние
     const savedState = savedStates?.[currentPage];
 
+    console.log('🔍 [useQuizState] Инициализация:', {
+      page: currentPage,
+      hasSavedState: !!savedState,
+      savedQuestionIds: savedState?.questionIds,
+      currentQuestionIds: selected.map(q => q.id),
+      savedUserAnswers: savedState?.userAnswers,
+      savedShuffledAnswers: savedState?.shuffledAnswers?.length,
+    });
+
     // Проверяем можно ли восстановить состояние
     // Сравниваем ID вопросов чтобы убедиться что это те же вопросы
     const currentQuestionIds = selected.map(q => q.id);
     const savedQuestionIds = savedState?.questionIds || [];
-    
+
     // Восстанавливаем только если questionIds сохранены и совпадают
-    const questionsMatch = savedState && 
+    const questionsMatch = savedState &&
                            savedState.questionIds && // Важно: questionIds должны быть сохранены
                            savedQuestionIds.length === currentQuestionIds.length &&
                            savedQuestionIds.every((id, idx) => id === currentQuestionIds[idx]);
+
+    console.log('🔍 [useQuizState] Проверка восстановления:', {
+      questionsMatch,
+      hasSavedState: !!savedState,
+      hasQuestionIds: !!savedState?.questionIds,
+      idsLengthMatch: savedQuestionIds.length === currentQuestionIds.length,
+    });
 
     if (savedState && questionsMatch) {
       // Восстанавливаем сохранённое состояние
@@ -129,7 +153,7 @@ export function useQuizState({
       total: questions.length,
       selected: selected.length,
     });
-  }, [questions, currentPage, questionsPerPage, savedStates]);
+  }, [questions, currentPage, questionsPerPage, savedStates, isLoaded]);
 
   // Инициализация при монтировании и изменении зависимостей
   useEffect(() => {
