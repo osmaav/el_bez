@@ -192,11 +192,13 @@ export function LearningSection() {
     }
   }, [handleAnswerSelect, quizState]);
 
-  // Сохранение прогресса при изменении quizState
+  // Сохранение прогресса при изменении userAnswers
   useEffect(() => {
     if (quizState.currentQuestions.length === 0) return;
-    
+
     const hasUserAnswers = quizState.userAnswers.some(a => a !== null);
+    if (!hasUserAnswers) return; // Не сохраняем если нет ответов
+
     console.log('💾 [LearningSection] Сохранение прогресса:', {
       page: currentPage,
       hasUserAnswers,
@@ -209,7 +211,15 @@ export function LearningSection() {
       isComplete: quizState.isComplete,
       questionIds: quizState.currentQuestions.map(q => q.id),
     }).catch(console.error);
-  }, [quizState, currentPage, user?.id, saveProgress]);
+  }, [
+    currentPage,
+    user?.id,
+    saveProgress,
+    // Сохраняем только при изменении этих полей
+    quizState.userAnswers.join(','),
+    quizState.isComplete,
+    quizState.currentQuestions.map(q => q.id).join(','),
+  ]);
 
   // Глобальный прогресс
   const globalProgress = useMemo(() => {
