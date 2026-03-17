@@ -1,6 +1,7 @@
 /**
  * Firebase Question Service
  * Сервис для работы с вопросами в Firestore
+ * Поддерживает режим Mock данных для разработки
  */
 
 import {
@@ -15,6 +16,7 @@ import {
 } from 'firebase/firestore';
 import { db, isFirebaseReady } from '@/lib/firebase';
 import type { Question } from '@/types';
+import { getMockQuestions, isMockModeEnabled } from '@/data/mocks/mockQuestions';
 
 /**
  * Коллекции Firestore
@@ -31,7 +33,7 @@ interface QuestionDocument {
   section: string; // '1256-19' или '1258-20'
   question: string;
   answers: string[];
-  correct: number;
+  correct: number[];
   link?: string;
   createdAt: Timestamp;
   updatedAt: Timestamp;
@@ -74,14 +76,20 @@ export interface LearningProgressState {
 
 /**
  * Загрузка всех вопросов для раздела
- * Загружает вопросы ТОЛЬКО из Firebase Firestore
+ * Загружает вопросы из Firebase Firestore или Mock данных
  */
 export const loadQuestionsForSection = async (sectionId: string): Promise<Question[]> => {
-  // console.log('📚 [QuestionService] Загрузка вопросов для раздела:', sectionId);
+  // Проверка режима Mock
+  if (isMockModeEnabled()) {
+    console.log('🎭 [QuestionService] Режим MOCK - загрузка тестовых данных для:', sectionId);
+    return getMockQuestions(sectionId);
+  }
+
+  console.log('📚 [QuestionService] Загрузка вопросов для раздела:', sectionId);
 
   if (!isFirebaseReady()) {
-    // console.warn('⚠️ [QuestionService] Firebase не настроен. Вопросы недоступны.');
-    // console.warn('📝 Настройте Firebase в .env.local для загрузки вопросов');
+    console.warn('⚠️ [QuestionService] Firebase не настроен. Вопросы недоступны.');
+    console.warn('📝 Настройте Firebase в .env.local для загрузки вопросов');
     return [];
   }
 

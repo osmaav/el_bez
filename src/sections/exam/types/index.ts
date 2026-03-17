@@ -38,7 +38,7 @@ export interface ExamStats {
 export interface ExamState {
   ticket: Ticket | null;
   currentQuestionIndex: number;
-  answers: Record<number, number>;
+  answers: Record<number, number | number[]>;
   isFinished: boolean;
   startTime: number | null;
   endTime: number | null;
@@ -73,9 +73,9 @@ export interface ExamQuestionCardProps {
   question: Question;
   questionIndex: number;
   totalQuestions: number;
-  selectedAnswer: number | null;
+  selectedAnswer: number | number[] | null;
   isAnswered: boolean;
-  onSelectAnswer: (answerIndex: number) => void;
+  onSelectAnswer: (answerIndex: number | number[]) => void;
   onNext: () => void;
   onPrev: () => void;
   canGoPrev: boolean;

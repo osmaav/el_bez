@@ -1,9 +1,9 @@
 /**
  * LearningQuestionsList — список вопросов для обучения
- * 
+ *
  * @description Отображение списка вопросов с ответами
  * @author el-bez Team
- * @version 1.0.0
+ * @version 2.1.0 (Исправление ошибок множественного выбора)
  */
 
 import { LearningQuestionCard } from './LearningQuestionCard';
@@ -17,19 +17,33 @@ export function LearningQuestionsList({
 }: Omit<QuestionsListProps, 'questions'>) {
   return (
     <div className="space-y-6">
-      {quizState.currentQuestions.map((question, qIdx) => (
-        <LearningQuestionCard
-          key={question.id}
-          question={question}
-          questionIndex={qIdx}
-          shuffledAnswers={quizState.shuffledAnswers[qIdx]}
-          userAnswer={quizState.userAnswers[qIdx]}
-          isAnswered={quizState.userAnswers[qIdx] !== null}
-          showSources={showSources[qIdx]}
-          onAnswerSelect={onAnswerSelect}
-          onToggleSource={onToggleSource}
-        />
-      ))}
+      {quizState.currentQuestions.map((question, qIdx) => {
+        const userAnswer = quizState.userAnswers[qIdx];
+        const correctAnswers = Array.isArray(question.correct) ? question.correct : [question.correct];
+        const expectedCount = correctAnswers.length;
+        
+        // Для множественного выбора: isAnswered=true только если выбраны все ответы
+        // Для одиночного выбора: isAnswered=true если есть любой ответ
+        const isAnswered = userAnswer !== null && (
+          Array.isArray(userAnswer)
+            ? userAnswer.length >= expectedCount
+            : expectedCount === 1
+        );
+
+        return (
+          <LearningQuestionCard
+            key={question.id}
+            question={question}
+            questionIndex={qIdx}
+            shuffledAnswers={quizState.shuffledAnswers[qIdx]}
+            userAnswer={userAnswer}
+            isAnswered={isAnswered}
+            showSources={showSources[qIdx]}
+            onAnswerSelect={onAnswerSelect}
+            onToggleSource={onToggleSource}
+          />
+        );
+      })}
     </div>
   );
 }

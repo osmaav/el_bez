@@ -14,6 +14,7 @@ import { StatisticsSection } from '@/sections/StatisticsSection';
 import { ToastContainer } from '@/components/ui/toast-message';
 import { useEffect } from 'react';
 import { BrowserRouter, HashRouter, Routes, Route } from 'react-router-dom';
+import { MockModeToggle } from '@/components/MockModeToggle';
 
 function AppContent() {
   const { currentPage, currentSection } = useApp();
@@ -35,6 +36,7 @@ function AppContent() {
         {currentPage === 'statistics' && <StatisticsSection />}
       </main>
       <Footer />
+      <MockModeToggle />
     </div>
   );
 }

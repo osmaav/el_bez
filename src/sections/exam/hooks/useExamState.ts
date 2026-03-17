@@ -1,14 +1,15 @@
 /**
  * useExamState — хук для управления состоянием экзамена
- * 
+ *
  * @description Управление билетом, ответами, временем
  * @author el-bez Team
- * @version 1.0.0
+ * @version 2.0.0 (Поддержка множественного выбора)
  */
 
 import { useState, useCallback, useMemo, useEffect } from 'react';
 import type { Ticket, Question } from '@/types';
 import type { ExamState, ExamStats } from '../types';
+import { checkAnswer } from '@/utils/answerValidator';
 
 interface UseExamStateOptions {
   ticket: Ticket | null;
@@ -19,11 +20,11 @@ interface UseExamStateReturn {
   examState: ExamState;
   stats: ExamStats;
   currentQuestion: Question | null;
-  selectedAnswer: number | null;
+  selectedAnswer: number | number[] | null;
   canGoPrev: boolean;
   canGoNext: boolean;
   canFinish: boolean;
-  selectAnswer: (answerIndex: number) => void;
+  selectAnswer: (answerIndex: number | number[]) => void;
   nextQuestion: () => void;
   prevQuestion: () => void;
   finishExam: () => void;
@@ -44,7 +45,7 @@ export function useExamState({
     endTime: null,
   });
 
-  const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
+  const [selectedAnswer, setSelectedAnswer] = useState<number | number[] | null>(null);
   const [timeSpent, setTimeSpent] = useState(0);
 
   // Завершение экзамена — объявляем РАНЬШЕ чем используем в useEffect
@@ -96,7 +97,7 @@ export function useExamState({
   }, [ticket]);
 
   // Выбор ответа
-  const selectAnswer = useCallback((answerIndex: number) => {
+  const selectAnswer = useCallback((answerIndex: number | number[]) => {
     setSelectedAnswer(answerIndex);
   }, []);
 
@@ -172,7 +173,15 @@ export function useExamState({
 
     Object.entries(examState.answers).forEach(([index, answer]) => {
       const question = questions[parseInt(index)];
-      if (question && answer === question.correct_index) {
+      if (!question) return;
+      
+      const correctAnswers = Array.isArray(question.correct_index) 
+        ? question.correct_index 
+        : [question.correct_index];
+      
+      const userAnswers = Array.isArray(answer) ? answer : [answer];
+      
+      if (checkAnswer(userAnswers, correctAnswers)) {
         correct++;
       }
     });

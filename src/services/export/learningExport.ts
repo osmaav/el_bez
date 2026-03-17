@@ -110,11 +110,28 @@ export const exportLearningToPDF = async (data: LearningExportData): Promise<voi
 
   const tableData = data.questions.map((q, qIdx) => {
     const userAnswerIdx = data.userAnswers[qIdx];
-    const isAnswered = userAnswerIdx !== null;
-    const shuffledIdx = isAnswered ? data.shuffledAnswers[qIdx][userAnswerIdx] : -1;
-    const isCorrect = isAnswered && shuffledIdx === q.correct_index;
-    const userAnswerText = isAnswered ? getAnswerText(q, shuffledIdx) : 'Не отвечено';
-    const correctAnswerText = getAnswerText(q, q.correct_index);
+    const isAnswered = userAnswerIdx !== null && (Array.isArray(userAnswerIdx) ? userAnswerIdx.length > 0 : true);
+    
+    // Получаем индексы правильных ответов
+    const correctIndices = Array.isArray(q.correct) ? q.correct : [q.correct];
+    
+    // Получаем текст ответа пользователя
+    const userAnswerText = getAnswerText(q, userAnswerIdx);
+    
+    // Получаем текст правильных ответов
+    const correctAnswerText = correctIndices.map(idx => q.options?.[idx] || '').join(', ');
+    
+    // Проверяем правильность
+    let isCorrect = false;
+    if (isAnswered && Array.isArray(userAnswerIdx)) {
+      const userIndices = userAnswerIdx.map(idx => data.shuffledAnswers[qIdx][idx]).sort((a, b) => a - b);
+      const correctSorted = [...correctIndices].sort((a, b) => a - b);
+      isCorrect = userIndices.length === correctSorted.length && 
+                  userIndices.every((val, idx) => val === correctSorted[idx]);
+    } else if (isAnswered && typeof userAnswerIdx === 'number') {
+      const userOriginalIdx = data.shuffledAnswers[qIdx][userAnswerIdx];
+      isCorrect = correctIndices.includes(userOriginalIdx);
+    }
 
     return {
       number: qIdx + 1,

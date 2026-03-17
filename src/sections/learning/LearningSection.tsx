@@ -170,23 +170,88 @@ export function LearningSection() {
   }, [questions.length, currentSection]);
 
   // Запись ответа в SessionTracker
-  const handleAnswerWithTracking = useCallback((questionIndex: number, answerIndex: number) => {
+  const handleAnswerWithTracking = useCallback((questionIndex: number, answerIndex: number | number[]) => {
     handleAnswerSelect(questionIndex, answerIndex);
-    
-    const question = quizState.currentQuestions[questionIndex];
-    if (sessionTrackerRef.current && question) {
-      const shuffledIndex = quizState.shuffledAnswers[questionIndex][answerIndex];
-      sessionTrackerRef.current.recordAnswer(
-        question.id,
-        question.ticket,
-        shuffledIndex,
-        question.correct_index,
-        0
-      );
 
-      // Завершение сессии
-      if (quizState.userAnswers.every((a: number | null, i: number) => i === questionIndex || a !== null)) {
-        sessionTrackerRef.current?.finish();
+    const question = quizState.currentQuestions[questionIndex];
+    console.log('📝 [LearningSection] handleAnswerWithTracking:', {
+      questionIndex,
+      questionId: question?.id,
+      answerIndex,
+      hasTracker: !!sessionTrackerRef.current,
+    });
+    
+    if (sessionTrackerRef.current && question) {
+      // Для множественного выбора записываем ответ когда выбраны все варианты
+      const correctAnswers = Array.isArray(question.correct) ? question.correct : [question.correct];
+      const expectedCount = correctAnswers.length;
+      const isSelectedAll = Array.isArray(answerIndex) && answerIndex.length >= expectedCount;
+
+      console.log('📝 [LearningSection] Проверка записи:', {
+        expectedCount,
+        isSelectedAll,
+        shouldRecord: expectedCount === 1 || isSelectedAll,
+      });
+
+      // Для одиночного выбора записываем сразу
+      // Для множественного - когда выбраны все ответы
+      if (expectedCount === 1 || isSelectedAll) {
+        // Получаем оригинальные индексы ответов
+        const shuffledIndices = Array.isArray(answerIndex)
+          ? answerIndex.map(idx => quizState.shuffledAnswers[questionIndex][idx])
+          : [quizState.shuffledAnswers[questionIndex][answerIndex as number]];
+
+        console.log('📝 [LearningSection] Запись ответа:', {
+          questionId: question.id,
+          shuffledIndices,
+          correctAnswers,
+        });
+
+        sessionTrackerRef.current.recordAnswer(
+          question.id,
+          question.ticket,
+          shuffledIndices, // Передаём массив индексов
+          correctAnswers,
+          0
+        );
+      }
+
+      // Завершение сессии если все вопросы отвечены
+      const newUserAnswers = [...quizState.userAnswers];
+      newUserAnswers[questionIndex] = answerIndex;
+      const allAnswered = newUserAnswers.every((a, i) => 
+        a !== null && (Array.isArray(a) ? a.length > 0 : true)
+      );
+      
+      if (allAnswered && sessionTrackerRef.current) {
+        console.log('✅ [LearningSection] Все вопросы отвечены, запись незаписанных ответов...');
+        
+        // Сначала записываем все незаписанные ответы (вопросы с множественным выбором)
+        newUserAnswers.forEach((userAnswer, idx) => {
+          if (userAnswer === null) return;
+          
+          const q = quizState.currentQuestions[idx];
+          if (!q) return;
+          
+          const correctAns = Array.isArray(q.correct) ? q.correct : [q.correct];
+          const expCount = correctAns.length;
+          const userAnsArray = Array.isArray(userAnswer) ? userAnswer : [userAnswer];
+          
+          // Если вопрос с множественным выбором и не полностью отвечен - записываем что есть
+          if (expCount > 1 && userAnsArray.length < expCount && userAnsArray.length > 0) {
+            console.log(`📝 [LearningSection] Запись неполного ответа на вопрос ${q.id}:`, {
+              userAnswer,
+              correctAns,
+            });
+            
+            const shuffledIdx = userAnsArray.map(i => quizState.shuffledAnswers[idx][i]);
+            sessionTrackerRef.current?.recordAnswer(q.id, q.ticket, shuffledIdx, correctAns, 0);
+          }
+        });
+        
+        // Теперь завершаем сессию
+        console.log('✅ [LearningSection] Завершение сессии');
+        sessionTrackerRef.current.finish();
         sessionTrackerRef.current = null;
       }
     }

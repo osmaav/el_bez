@@ -55,10 +55,10 @@ export interface QuestionCardProps {
   question: Question;
   questionIndex: number;
   shuffledAnswers: number[];
-  userAnswer: number | null;
+  userAnswer: number | number[] | null;
   isAnswered: boolean;
   showSources: boolean;
-  onAnswerSelect: (questionIndex: number, answerIndex: number) => void;
+  onAnswerSelect: (questionIndex: number, answerIndex: number | number[]) => void;
   onToggleSource: (questionIndex: number) => void;
 }
 

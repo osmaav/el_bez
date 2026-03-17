@@ -10,13 +10,13 @@ export interface Question {
   question?: string; // Для совместимости с JSON
   options: string[];
   answers?: string[]; // Для совместимости с JSON
-  correct_index: number;
-  correct?: number; // Для совместимости с JSON
+  correct_index: number[];
+  correct?: number[]; // Для совместимости с JSON
   link?: string;
 }
 
 export interface QuestionWithAnswer extends Question {
-  userAnswer?: number;
+  userAnswer?: number | number[];
   isCorrect?: boolean;
 }
 
@@ -66,8 +66,8 @@ export interface QuestionAttempt {
   ticket: number;
   section: SectionType;
   isCorrect: boolean;
-  userAnswer: number;
-  correctAnswer: number;
+  userAnswer: number | number[];
+  correctAnswer: number | number[];
   timestamp: number; // Unix timestamp
   timeSpent: number; // время в секундах
 }

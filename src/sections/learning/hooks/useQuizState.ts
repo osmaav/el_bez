@@ -1,24 +1,25 @@
 /**
  * useQuizState — хук для управления состоянием викторины
- * 
+ *
  * @description Управление вопросами, ответами, перемешиванием
  * @author el-bez Team
- * @version 1.0.0
+ * @version 2.0.0 (Поддержка множественного выбора)
  */
 
 import { useState, useCallback, useMemo, useEffect } from 'react';
 import type { Question } from '@/types';
+import { checkAnswer, isMultipleChoice } from '@/utils/answerValidator';
 
 export interface QuizState {
   currentQuestions: Question[];
   shuffledAnswers: number[][];
-  userAnswers: (number | null)[];
+  userAnswers: (number | number[] | null)[];
   isComplete: boolean;
   questionIds?: number[];
 }
 
 export interface QuestionState {
-  userAnswers: (number | null)[];
+  userAnswers: (number | number[] | null)[];
   shuffledAnswers: number[][];
   isComplete: boolean;
   questionIds?: number[]; // ID вопросов для проверки актуальности
@@ -40,7 +41,7 @@ interface UseQuizStateReturn {
     remaining: number;
     answered: number;
   };
-  handleAnswerSelect: (questionIndex: number, answerIndex: number) => void;
+  handleAnswerSelect: (questionIndex: number, answerIndex: number | number[]) => void;
   resetQuiz: () => void;
   setQuizState: (state: QuizState) => void;
   showSources: Record<number, boolean>;
@@ -212,12 +213,26 @@ export function useQuizState({
     let correct = 0;
     let answered = 0;
 
-    quizState.userAnswers.forEach((userAnswerIdx, qIdx) => {
-      if (userAnswerIdx === null) return;
+    quizState.userAnswers.forEach((userAnswer, qIdx) => {
+      if (userAnswer === null) return;
+      
       answered++;
-      const originalAnswerIndex = quizState.shuffledAnswers[qIdx][userAnswerIdx];
-      const correctOriginalIndex = quizState.currentQuestions[qIdx].correct;
-      if (originalAnswerIndex === correctOriginalIndex) {
+      
+      const question = quizState.currentQuestions[qIdx];
+      const correctAnswers = Array.isArray(question.correct) ? question.correct : [question.correct];
+      
+      // Нормализуем ответ пользователя к массиву индексов в shuffledAnswers
+      let userAnswerIndices: number[];
+      if (Array.isArray(userAnswer)) {
+        // userAnswer уже массив индексов shuffledAnswers
+        userAnswerIndices = userAnswer.map(idx => quizState.shuffledAnswers[qIdx][idx]);
+      } else {
+        // Одиночный ответ
+        userAnswerIndices = [quizState.shuffledAnswers[qIdx][userAnswer]];
+      }
+      
+      // Проверяем правильность
+      if (checkAnswer(userAnswerIndices, correctAnswers)) {
         correct++;
       }
     });
@@ -229,20 +244,40 @@ export function useQuizState({
   }, [quizState.userAnswers, quizState.shuffledAnswers, quizState.currentQuestions]);
 
   // Обработка выбора ответа
-  const handleAnswerSelect = useCallback((questionIndex: number, answerIndex: number) => {
-    if (quizState.userAnswers[questionIndex] !== null) return;
+  const handleAnswerSelect = useCallback((questionIndex: number, answerIndex: number | number[]) => {
+    setQuizStateState(prevState => {
+      const newAnswers = [...prevState.userAnswers];
+      newAnswers[questionIndex] = answerIndex;
 
-    const newAnswers = [...quizState.userAnswers];
-    newAnswers[questionIndex] = answerIndex;
+      const newState = { ...prevState, userAnswers: newAnswers };
 
-    const newState = { ...quizState, userAnswers: newAnswers };
-    setQuizStateState(newState);
+      // Автозавершение если все ответы даны на ВСЕ вопросы
+      // Для множественного выбора: проверяем что выбраны все ожидаемые ответы
+      const allQuestionsAnswered = newAnswers.every((a, idx) => {
+        if (a === null) return false;
 
-    // Автозавершение если все ответы даны
-    if (newAnswers.every(a => a !== null)) {
-      setQuizStateState({ ...newState, isComplete: true });
-    }
-  }, [quizState]);
+        const question = prevState.currentQuestions[idx];
+        if (!question) return false;
+
+        const correctAnswers = Array.isArray(question.correct) ? question.correct : [question.correct];
+        const expectedCount = correctAnswers.length;
+
+        // Для множественного выбора: проверяем что выбраны все ответы
+        if (Array.isArray(a)) {
+          return a.length >= expectedCount;
+        }
+
+        // Для одиночного выбора: достаточно любого ответа
+        return expectedCount === 1;
+      });
+
+      if (allQuestionsAnswered) {
+        newState.isComplete = true;
+      }
+
+      return newState;
+    });
+  }, []);
 
   // Сброс викторины
   const resetQuiz = useCallback(() => {

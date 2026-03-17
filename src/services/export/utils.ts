@@ -35,9 +35,20 @@ export const formatDate = (timestamp: number): string => {
 
 /**
  * Получение текста ответа по индексу
+ * Поддерживает множественные ответы (массив индексов)
  */
-export const getAnswerText = (question: { options?: string[] }, answerIndex: number): string => {
-  return question.options?.[answerIndex] || `Вариант ${answerIndex + 1}`;
+export const getAnswerText = (
+  question: { options?: string[] },
+  answerIndex: number | number[] | null | undefined
+): string => {
+  if (answerIndex === null || answerIndex === undefined) {
+    return 'Не отвечено';
+  }
+
+  const indices = Array.isArray(answerIndex) ? answerIndex : [answerIndex];
+  const answers = indices.map(idx => question.options?.[idx] || `Вариант ${idx + 1}`);
+
+  return answers.join(', ');
 };
 
 /**

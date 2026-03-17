@@ -37,7 +37,7 @@ export interface TrainerStats {
 export interface TrainerState {
   questions: Question[];
   currentIndex: number;
-  answers: Record<number, number>;
+  answers: Record<number, number | number[]>;
   isFinished: boolean;
 }
 
@@ -60,11 +60,11 @@ export interface TrainerQuestionCardProps {
   question: Question;
   questionIndex: number;
   totalQuestions: number;
-  selectedAnswer: number | null;
+  selectedAnswer: number | number[] | null;
   isAnswered: boolean;
   isCorrect: boolean | null;
   showExplanation: boolean;
-  onSelectAnswer: (answerIndex: number) => void;
+  onSelectAnswer: (answerIndex: number | number[]) => void;
   onNext: () => void;
   onPrev: () => void;
   canGoPrev: boolean;

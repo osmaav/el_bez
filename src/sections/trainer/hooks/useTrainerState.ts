@@ -1,14 +1,15 @@
 /**
  * useTrainerState — хук для управления состоянием тренажёра
- * 
+ *
  * @description Управление вопросами, ответами, навигацией
  * @author el-bez Team
- * @version 1.0.0
+ * @version 2.0.0 (Поддержка множественного выбора)
  */
 
 import { useState, useCallback, useMemo } from 'react';
 import type { Question } from '@/types';
 import type { TrainerState, TrainerStats } from '../types';
+import { checkAnswer } from '@/utils/answerValidator';
 
 interface UseTrainerStateOptions {
   questions: Question[];
@@ -20,13 +21,13 @@ interface UseTrainerStateReturn {
   trainerState: TrainerState;
   stats: TrainerStats;
   currentQuestion: Question | null;
-  selectedAnswer: number | null;
+  selectedAnswer: number | number[] | null;
   isAnswered: boolean;
   isCorrect: boolean | null;
   canGoPrev: boolean;
   canGoNext: boolean;
   canFinish: boolean;
-  selectAnswer: (answerIndex: number) => void;
+  selectAnswer: (answerIndex: number | number[]) => void;
   nextQuestion: () => void;
   prevQuestion: () => void;
   resetTrainer: () => void;
@@ -56,7 +57,7 @@ export function useTrainerState({
     isFinished: false,
   });
 
-  const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
+  const [selectedAnswer, setSelectedAnswer] = useState<number | number[] | null>(null);
 
   // Инициализация тренажёра
   const initializeTrainer = useCallback(() => {
@@ -87,7 +88,7 @@ export function useTrainerState({
   }, [questions, questionCount, shuffleQuestions]);
 
   // Выбор ответа
-  const selectAnswer = useCallback((answerIndex: number) => {
+  const selectAnswer = useCallback((answerIndex: number | number[]) => {
     setSelectedAnswer(answerIndex);
   }, []);
 
@@ -161,10 +162,20 @@ export function useTrainerState({
   const currentQuestion = trainerState.questions[trainerState.currentIndex] || null;
 
   // Проверка ответа
-  const isAnswered = selectedAnswer !== null;
+  const isAnswered = selectedAnswer !== null && (Array.isArray(selectedAnswer) ? selectedAnswer.length > 0 : true);
   const isCorrect = useMemo(() => {
     if (!currentQuestion || selectedAnswer === null) return null;
-    return selectedAnswer === currentQuestion.correct_index;
+    
+    const correctAnswers = Array.isArray(currentQuestion.correct_index) 
+      ? currentQuestion.correct_index 
+      : [currentQuestion.correct_index];
+    
+    // Нормализуем ответ пользователя
+    const userAnswers = Array.isArray(selectedAnswer) 
+      ? selectedAnswer 
+      : [selectedAnswer];
+    
+    return checkAnswer(userAnswers, correctAnswers);
   }, [currentQuestion, selectedAnswer]);
 
   // Навигация
@@ -180,7 +191,15 @@ export function useTrainerState({
 
     Object.entries(trainerState.answers).forEach(([index, answer]) => {
       const question = trainerState.questions[parseInt(index)];
-      if (question && answer === question.correct_index) {
+      if (!question) return;
+      
+      const correctAnswers = Array.isArray(question.correct_index) 
+        ? question.correct_index 
+        : [question.correct_index];
+      
+      const userAnswers = Array.isArray(answer) ? answer : [answer];
+      
+      if (checkAnswer(userAnswers, correctAnswers)) {
         correct++;
       }
     });
