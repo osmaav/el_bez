@@ -216,7 +216,7 @@ export const exportExamToPDF = async (data: ExamExportData): Promise<void> => {
 
       // Окрашиваем столбец "Ваш ответ" для неправильных ответов
       if (cellData.column.index === 2 && row.answerDetails && row.answerDetails.length > 0) {
-        // Сохраняем информацию о деталях ответа в cell data для использования в willDrawCell
+        // Сохраняем информацию о деталях ответа в cell data для использования в didDrawCell
         cellData.cell.answerDetails = row.answerDetails;
 
         // Для одиночного неправильного ответа устанавливаем красный цвет
@@ -226,7 +226,7 @@ export const exportExamToPDF = async (data: ExamExportData): Promise<void> => {
       }
     },
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    willDrawCell: (data: any) => {
+    didDrawCell: (data: any) => {
       doc.setFont('Roboto', 'normal');
 
       // Для столбца "Ваш ответ" с answerDetails - рисуем каждый ответ отдельно
@@ -261,9 +261,6 @@ export const exportExamToPDF = async (data: ExamExportData): Promise<void> => {
 
           // Сбрасываем цвет
           doc.setTextColor(COLORS.slate[0]);
-
-          // Отменяем стандартную отрисовку ячейки
-          data.cell.text = '';
         }
       }
     },
