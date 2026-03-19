@@ -240,10 +240,10 @@ export const exportExamToPDF = async (data: ExamExportData): Promise<void> => {
           details.forEach((detail: { text: string; isCorrect: boolean }, idx: number) => {
             // Устанавливаем цвет для каждого ответа
             doc.setTextColor(detail.isCorrect ? COLORS.slate[0] : COLORS.error[0]);
-            doc.text(detail.text, currentX, y);
+            doc.text(String(detail.text), currentX, y);
 
             // Вычисляем ширину текста для следующего ответа
-            const textWidth = doc.getTextWidth(detail.text);
+            const textWidth = doc.getTextWidth(String(detail.text));
             currentX += textWidth + (idx < details.length - 1 ? doc.getTextWidth(', ') : 0);
 
             // Рисуем запятую если это не последний ответ
