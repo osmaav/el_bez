@@ -527,15 +527,36 @@ export function ExamSection() {
 
             <div className="space-y-3">
               {currentQuestion.options.map((option, idx) => {
-                const isSelected = selectedAnswer === idx;
+                // Проверяем, выбран ли этот ответ (поддержка множественного выбора)
+                const isSelected = Array.isArray(selectedAnswer)
+                  ? selectedAnswer.includes(idx)
+                  : selectedAnswer === idx;
+
+                const handleClick = () => {
+                  const correctAnswers = Array.isArray(currentQuestion.correct_index)
+                    ? currentQuestion.correct_index
+                    : [currentQuestion.correct_index];
+                  const expectedCount = correctAnswers.length;
+                  
+                  if (expectedCount > 1) {
+                    // Множественный выбор - переключаем ответ
+                    const currentAnswers = Array.isArray(selectedAnswer) ? selectedAnswer : [];
+                    const newAnswers = currentAnswers.includes(idx)
+                      ? currentAnswers.filter(a => a !== idx)
+                      : [...currentAnswers, idx];
+                    setSelectedAnswer(newAnswers);
+                    answerExamQuestion(currentQuestion.id, newAnswers);
+                  } else {
+                    // Одиночный выбор
+                    setSelectedAnswer(idx);
+                    answerExamQuestion(currentQuestion.id, idx);
+                  }
+                };
 
                 return (
                   <button
                     key={idx}
-                    onClick={() => {
-                      setSelectedAnswer(idx);
-                      answerExamQuestion(currentQuestion.id, idx);
-                    }}
+                    onClick={handleClick}
                     className={`
                     w-full p-4 text-left rounded-lg border-2 transition-all
                     ${isSelected
