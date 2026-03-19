@@ -4,7 +4,6 @@ import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/useToast';
 import { exportExamToPDF } from '@/services/export';
 import { LoadingModal } from '@/components/ui/loading-modal';
-import { ConfirmModal } from '@/components/ui/confirm-modal';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
@@ -46,7 +45,6 @@ export function ExamSection() {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState<number | number[] | null>(null);
   const [showConfirmFinish, setShowConfirmFinish] = useState(false);
-  const [showResetConfirm, setShowResetConfirm] = useState(false);
   const [isAutoAnswering, setIsAutoAnswering] = useState(false);
   const [autoAnswerCurrentIndex, setAutoAnswerCurrentIndex] = useState<number>(0);
   const [loadingModal, setLoadingModal] = useState<{
@@ -88,11 +86,6 @@ export function ExamSection() {
         setLoadingModal(prev => ({ ...prev, isOpen: false }));
       }, 1000);
     }, 800);
-  };
-
-  // Обёртка для resetExam с ConfirmModal
-  const handleResetExam = () => {
-    setShowResetConfirm(true);
   };
 
   const confirmResetExam = () => {
@@ -379,6 +372,19 @@ export function ExamSection() {
               {tickets.find(t => t.id === currentTicketId)?.questions.map((q, idx) => {
                 const isCorrect = examResults[q.id];
                 const userAnswer = examAnswers[q.id];
+                const correctAnswers = Array.isArray(q.correct_index) ? q.correct_index : [q.correct_index];
+                
+                // Получаем текст ответа пользователя
+                const getUserAnswerText = () => {
+                  if (userAnswer === undefined) return 'Не отвечено';
+                  const answers = Array.isArray(userAnswer) ? userAnswer : [userAnswer];
+                  return answers.map(idx => q.options[idx]).join(', ');
+                };
+                
+                // Получаем текст правильного ответа
+                const getCorrectAnswerText = () => {
+                  return correctAnswers.map(idx => q.options[idx]).join(', ');
+                };
 
                 return (
                   <div
@@ -397,14 +403,12 @@ export function ExamSection() {
                           {idx + 1}. {q.text}
                         </p>
                         <div className="space-y-1 text-sm">
-                          {userAnswer !== undefined && (
-                            <p className={isCorrect ? 'text-green-700' : 'text-red-700'}>
-                              <span className="font-medium">Ваш ответ:</span> {q.options[userAnswer]}
-                            </p>
-                          )}
+                          <p className={isCorrect ? 'text-green-700' : 'text-red-700'}>
+                            <span className="font-medium">Ваш ответ:</span> {getUserAnswerText()}
+                          </p>
                           {!isCorrect && (
                             <p className="text-green-700">
-                              <span className="font-medium">Правильный ответ:</span> {q.options[q.correct_index]}
+                              <span className="font-medium">Правильный ответ:</span> {getCorrectAnswerText()}
                             </p>
                           )}
                         </div>
@@ -428,7 +432,7 @@ export function ExamSection() {
           </Button>
           <Button
             size="lg"
-            onClick={handleResetExam}
+            onClick={confirmResetExam}
             className="bg-yellow-500 hover:bg-yellow-600"
           >
             <RotateCcw className="w-5 h-5 mr-2" />
@@ -644,18 +648,6 @@ export function ExamSection() {
           </div>
         )}
       </div>
-
-      {/* ConfirmModal для сброса экзамена */}
-      <ConfirmModal
-        isOpen={showResetConfirm}
-        onClose={() => setShowResetConfirm(false)}
-        onConfirm={confirmResetExam}
-        title="Сброс экзамена"
-        description="Вы уверены, что хотите сбросить текущий экзамен? Все ответы будут потеряны."
-        type="warning"
-        confirmLabel="Сбросить"
-        cancelLabel="Отмена"
-      />
 
       {/* LoadingModal для запуска экзамена */}
       <LoadingModal

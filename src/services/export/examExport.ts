@@ -121,7 +121,7 @@ export const exportExamToPDF = async (data: ExamExportData): Promise<void> => {
     theme: 'plain',
     styles: { fontSize: 10, font: 'Roboto', lineWidth: 0 },
     columnStyles: {
-      0: { fontStyle: 'bold', cellWidth: 45 },
+      0: { cellWidth: 45 },
       1: { cellWidth: 20, halign: 'left' }
     },
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -218,7 +218,7 @@ export const exportExamToPDF = async (data: ExamExportData): Promise<void> => {
       if (cellData.column.index === 2 && row.answerDetails && row.answerDetails.length > 0) {
         // Сохраняем информацию о деталях ответа в cell data для использования в willDrawCell
         cellData.cell.answerDetails = row.answerDetails;
-        
+
         // Для одиночного неправильного ответа устанавливаем красный цвет
         if (row.answerDetails.length === 1 && !row.answerDetails[0].isCorrect) {
           cellData.cell.styles.textColor = COLORS.error;
@@ -240,12 +240,12 @@ export const exportExamToPDF = async (data: ExamExportData): Promise<void> => {
           details.forEach((detail: { text: string; isCorrect: boolean }, idx: number) => {
             // Устанавливаем цвет для каждого ответа
             doc.setTextColor(detail.isCorrect ? COLORS.slate[0] : COLORS.error[0]);
-            
+
             // Для длинных ответов используем упрощённую отрисовку
-            const displayText = detail.text.length > 50 
-              ? detail.text.substring(0, 47) + '...' 
+            const displayText = detail.text.length > 50
+              ? detail.text.substring(0, 47) + '...'
               : detail.text;
-            
+
             doc.text(displayText, currentX, y);
 
             // Вычисляем ширину текста для следующего ответа
