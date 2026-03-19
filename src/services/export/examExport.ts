@@ -149,23 +149,12 @@ export const exportExamToPDF = async (data: ExamExportData): Promise<void> => {
   const tableData = data.questions.map((q, idx) => {
     const userAnswer = data.answers[q.id];
     const isAnswered = userAnswer !== undefined;
-    const correctAnswers = Array.isArray(q.correct_index) ? q.correct_index : [q.correct_index];
-
-    // Формируем текст ответа с информацией о правильности каждого варианта
+    
+    // Формируем текст ответа
     let userAnswerText = 'Не отвечено';
-    const answerDetails: { text: string; isCorrect: boolean }[] = [];
-
     if (isAnswered) {
       const userAnswers = Array.isArray(userAnswer) ? userAnswer : [userAnswer];
-      userAnswers.forEach((ansIdx) => {
-        const isCorrectAnswer = correctAnswers.includes(ansIdx);
-        const answerText = q.options[ansIdx] || `Вариант ${String.fromCharCode(1040 + ansIdx)}`;
-        answerDetails.push({
-          text: answerText,
-          isCorrect: isCorrectAnswer
-        });
-      });
-      userAnswerText = answerDetails.map(a => a.text).join(', ');
+      userAnswerText = userAnswers.map(idx => q.options[idx] || `Вариант ${String.fromCharCode(1040 + idx)}`).join(', ');
     }
 
     const correctAnswerText = getAnswerText(q, q.correct_index);
@@ -177,7 +166,6 @@ export const exportExamToPDF = async (data: ExamExportData): Promise<void> => {
       number: idx + 1,
       question: truncateText(q.text, 300),
       yourAnswer: truncateText(userAnswerText, 200),
-      answerDetails,
       correctAnswer: truncateText(correctAnswerText, 200),
       isCorrect
     };
@@ -198,7 +186,7 @@ export const exportExamToPDF = async (data: ExamExportData): Promise<void> => {
       font: 'Roboto',
       halign: 'center',
       fontSize: 12,
-      textColor: 'white' // Заголовок чёрный
+      textColor: 'white'
     },
     styles: { fontSize: 8, cellPadding: 2, font: 'Roboto', lineWidth: 0 },
     columnStyles: {
@@ -209,60 +197,14 @@ export const exportExamToPDF = async (data: ExamExportData): Promise<void> => {
     },
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     didParseCell: (cellData: any) => {
-      // Окрашиваем только тело таблицы (не заголовки)
-      if (cellData.section === 'head') return;
-
       const row = tableData[cellData.row.index];
-
-      // Окрашиваем столбец "Ваш ответ" для неправильных ответов
-      if (cellData.column.index === 2 && row.answerDetails && row.answerDetails.length > 0) {
-        // Сохраняем информацию о деталях ответа в cell data для использования в didDrawCell
-        cellData.cell.answerDetails = row.answerDetails;
-
-        // Для одиночного неправильного ответа устанавливаем красный цвет
-        if (row.answerDetails.length === 1 && !row.answerDetails[0].isCorrect) {
-          cellData.cell.styles.textColor = COLORS.error;
-        }
+      // Окрашиваем неверные ответы красным
+      if (cellData.column.index === 2 && !row.isCorrect) {
+        cellData.cell.styles.textColor = COLORS.error;
       }
     },
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    didDrawCell: (data: any) => {
+    willDrawCell: () => {
       doc.setFont('Roboto', 'normal');
-
-      // Для столбца "Ваш ответ" с answerDetails - рисуем каждый ответ отдельно
-      if (data.section === 'body' && data.column.index === 2 && data.cell.answerDetails) {
-        const details = data.cell.answerDetails;
-        if (details && details.length > 0) {
-          const x = data.cell.x;
-          const y = data.cell.y + data.cell.styles.fontSize;
-          let currentX = x;
-
-          details.forEach((detail: { text: string; isCorrect: boolean }, idx: number) => {
-            // Устанавливаем цвет для каждого ответа
-            doc.setTextColor(detail.isCorrect ? COLORS.slate[0] : COLORS.error[0]);
-
-            // Для длинных ответов используем упрощённую отрисовку
-            const displayText = detail.text.length > 50
-              ? detail.text.substring(0, 47) + '...'
-              : detail.text;
-
-            doc.text(displayText, currentX, y);
-
-            // Вычисляем ширину текста для следующего ответа
-            const textWidth = doc.getTextWidth(displayText);
-            currentX += textWidth + (idx < details.length - 1 ? doc.getTextWidth(', ') : 0);
-
-            // Рисуем запятую если это не последний ответ
-            if (idx < details.length - 1) {
-              doc.setTextColor(COLORS.slate[0]);
-              doc.text(', ', currentX - doc.getTextWidth(', '), y);
-            }
-          });
-
-          // Сбрасываем цвет
-          doc.setTextColor(COLORS.slate[0]);
-        }
-      }
     },
     margin: { left: margin, right: margin }
   });
