@@ -152,16 +152,16 @@ export const exportExamToPDF = async (data: ExamExportData): Promise<void> => {
     const correctAnswers = Array.isArray(q.correct_index) ? q.correct_index : [q.correct_index];
 
     // Формируем текст ответа с информацией о правильности каждого варианта
-    let userAnswerText = '';//'Не отвечено';
+    let userAnswerText = 'Не отвечено';
     const answerDetails: { text: string; isCorrect: boolean }[] = [];
 
     if (isAnswered) {
       const userAnswers = Array.isArray(userAnswer) ? userAnswer : [userAnswer];
       userAnswers.forEach((ansIdx) => {
         const isCorrectAnswer = correctAnswers.includes(ansIdx);
-        //const answerLabel = String.fromCharCode(1040 + ansIdx); // А, Б, В, Г...
+        const answerLabel = String.fromCharCode(1040 + ansIdx); // А, Б, В, Г...
         answerDetails.push({
-          text: ansIdx,
+          text: answerLabel,
           isCorrect: isCorrectAnswer
         });
       });
