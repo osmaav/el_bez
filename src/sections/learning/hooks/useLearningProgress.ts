@@ -17,7 +17,7 @@ interface UseLearningProgressOptions {
 
 interface LearningProgressState {
   [page: number]: {
-    userAnswers: (number | null)[];
+    userAnswers: (number | number[] | null)[];
     shuffledAnswers: number[][];
     isComplete: boolean;
     questionIds?: number[];
@@ -29,7 +29,7 @@ interface UseLearningProgressReturn {
   isLoading: boolean;
   error: string | null;
   saveProgress: (page: number, state: {
-    userAnswers: (number | null)[];
+    userAnswers: (number | number[] | null)[];
     shuffledAnswers: number[][];
     isComplete: boolean;
     questionIds?: number[];

@@ -32,11 +32,11 @@ export interface AppContextType {
   // Тренажер
   trainerQuestions: Question[];
   trainerCurrentIndex: number;
-  trainerAnswers: Record<number, number>;
+  trainerAnswers: Record<number, number | number[]>;
   trainerStats: TestStats;
   isTrainerFinished: boolean;
   startTrainer: (questionCount?: number, questionsPool?: Question[]) => void;
-  answerTrainerQuestion: (answerIndex: number) => void;
+  answerTrainerQuestion: (answerIndex: number | number[]) => void;
   nextTrainerQuestion: () => void;
   prevTrainerQuestion: () => void;
   finishTrainer: () => void;
@@ -45,11 +45,11 @@ export interface AppContextType {
   // Экзамен
   tickets: Ticket[];
   currentTicketId: number | null;
-  examAnswers: Record<number, number>;
+  examAnswers: Record<number, number | number[]>;
   examResults: Record<number, boolean>;
   isExamFinished: boolean;
   startExam: (ticketId: number) => void;
-  answerExamQuestion: (questionId: number, answerIndex: number) => void;
+  answerExamQuestion: (questionId: number, answerIndex: number | number[]) => void;
   finishExam: () => void;
   resetExam: () => void;
   getExamStats: () => { correct: number; total: number; percentage: number };
@@ -313,13 +313,13 @@ const AppProvider = ({ children }: { children: React.ReactNode }) => {
   // Тренажер состояние
   const [trainerQuestions, setTrainerQuestions] = useState<Question[]>([]);
   const [trainerCurrentIndex, setTrainerCurrentIndex] = useState(0);
-  const [trainerAnswers, setTrainerAnswers] = useState<Record<number, number>>({});
+  const [trainerAnswers, setTrainerAnswers] = useState<Record<number, number | number[]>>({});
   const [isTrainerFinished, setIsTrainerFinished] = useState(false);
 
   // Экзамен состояние
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [currentTicketId, setCurrentTicketId] = useState<number | null>(null);
-  const [examAnswers, setExamAnswers] = useState<Record<number, number>>({});
+  const [examAnswers, setExamAnswers] = useState<Record<number, number | number[]>>({});
   const [examResults, setExamResults] = useState<Record<number, boolean>>({});
   const [isExamFinished, setIsExamFinished] = useState(false);
 
@@ -500,7 +500,7 @@ const AppProvider = ({ children }: { children: React.ReactNode }) => {
     sessionTrackerRef.current = new SessionTracker(currentSection, 'exam');
   }, [currentSection]);
 
-  const answerExamQuestion = useCallback((questionId: number, answerIndex: number) => {
+  const answerExamQuestion = useCallback((questionId: number, answerIndex: number | number[]) => {
     setExamAnswers(prev => ({
       ...prev,
       [questionId]: answerIndex

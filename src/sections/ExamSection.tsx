@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useApp } from '@/hooks/useApp';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/useToast';
@@ -44,9 +44,11 @@ export function ExamSection() {
 
   const currentSectionInfo = sections.find(s => s.id === currentSection);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-  const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
+  const [selectedAnswer, setSelectedAnswer] = useState<number | number[] | null>(null);
   const [showConfirmFinish, setShowConfirmFinish] = useState(false);
   const [showResetConfirm, setShowResetConfirm] = useState(false);
+  const [isAutoAnswering, setIsAutoAnswering] = useState(false);
+  const [autoAnswerCurrentIndex, setAutoAnswerCurrentIndex] = useState<number>(0);
   const [loadingModal, setLoadingModal] = useState<{
     isOpen: boolean;
     status: 'loading' | 'success' | 'error';
@@ -98,6 +100,116 @@ export function ExamSection() {
     resetExam();
     success('Экзамен сброшен', 'Все ответы очищены');
   };
+
+  // Автоответ на все вопросы — проходит по вопросам последовательно
+  const handleAutoAnswer = useCallback(() => {
+    console.log('🤖 [ExamSection] Автоответ на все вопросы...');
+    setIsAutoAnswering(true);
+    setAutoAnswerCurrentIndex(0);
+  }, []);
+
+  // Выбор ответа в режиме автоответа
+  useEffect(() => {
+    if (!isAutoAnswering) return;
+    
+    const ticket = tickets.find(t => t.id === currentTicketId);
+    if (!ticket) return;
+    
+    const currentQ = ticket.questions[autoAnswerCurrentIndex];
+    if (!currentQ) return;
+    
+    // Проверяем что ещё не отвечали на этот вопрос
+    if (examAnswers[currentQ.id] !== undefined) return;
+    
+    const correctAnswers = Array.isArray(currentQ.correct_index)
+      ? currentQ.correct_index
+      : [currentQ.correct_index];
+    const expectedCount = correctAnswers.length;
+    
+    // Для множественного выбора выбираем первые expectedCount вариантов
+    // Для одиночного - случайный ответ
+    const answerIndex = expectedCount > 1
+      ? Array.from({ length: expectedCount }, (_, idx) => idx)
+      : Math.floor(Math.random() * currentQ.options.length);
+    
+    console.log(`📝 [ExamSection] Вопрос ${autoAnswerCurrentIndex + 1}/${ticket.questions.length}: ответ ${answerIndex}`);
+    
+    // Отвечаем на вопрос
+    answerExamQuestion(currentQ.id, answerIndex);
+  }, [isAutoAnswering, autoAnswerCurrentIndex, tickets, currentTicketId, examAnswers, answerExamQuestion]);
+
+  // Обработка перехода к следующему вопросу в режиме автоответа
+  useEffect(() => {
+    if (!isAutoAnswering) return;
+    
+    const ticket = tickets.find(t => t.id === currentTicketId);
+    if (!ticket) return;
+    
+    const currentQ = ticket.questions[autoAnswerCurrentIndex];
+    if (!currentQ || examAnswers[currentQ.id] === undefined) return;
+    
+    // Ждём 500мс для визуального эффекта
+    const timer = setTimeout(() => {
+      if (autoAnswerCurrentIndex < ticket.questions.length - 1) {
+        // Переходим к следующему вопросу
+        setCurrentQuestionIndex(prev => prev + 1);
+        setAutoAnswerCurrentIndex(prev => prev + 1);
+      } else {
+        // Все вопросы отвечены, завершаем
+        setTimeout(() => {
+          finishExam();
+          setIsAutoAnswering(false);
+          console.log('✅ [ExamSection] Автоответ завершён');
+        }, 200);
+      }
+    }, 500);
+    
+    return () => clearTimeout(timer);
+  }, [isAutoAnswering, autoAnswerCurrentIndex, tickets, currentTicketId, examAnswers, finishExam]);
+
+  // Включаем кнопку автоответа
+  useEffect(() => {
+    // Не показываем кнопку во время автоответа или после завершения
+    if (isAutoAnswering || isExamFinished) {
+      return;
+    }
+  
+    // Проверяем что билет выбран
+    if (!currentTicketId || !tickets || tickets.length === 0) {
+      return;
+    }
+    
+    const ticket = tickets.find(t => t.id === currentTicketId);
+    if (!ticket || ticket.questions.length === 0) {
+      return;
+    }
+
+    // Проверяем есть ли не отвеченные вопросы
+    const hasUnanswered = ticket.questions.some(q => examAnswers[q.id] === undefined);
+
+    console.log('👁️ [ExamSection] AutoAnswer check:', {
+      hasUnanswered,
+      totalQuestions: ticket.questions.length,
+      answeredCount: ticket.questions.filter(q => examAnswers[q.id] !== undefined).length,
+    });
+
+    if (hasUnanswered) {
+      console.log('👁️ [ExamSection] Dispatching enableAutoAnswer event');
+      window.dispatchEvent(new CustomEvent('enableAutoAnswer', {
+        detail: { page: 'exam', handler: handleAutoAnswer },
+      }));
+    } else {
+      console.log('👁️ [ExamSection] Dispatching disableAutoAnswer event');
+      window.dispatchEvent(new CustomEvent('disableAutoAnswer', {
+        detail: { page: 'exam' },
+      }));
+    }
+    return () => {
+      window.dispatchEvent(new CustomEvent('disableAutoAnswer', {
+        detail: { page: 'exam' },
+      }));
+    };
+  }, [handleAutoAnswer, currentTicketId, tickets, examAnswers, isAutoAnswering, isExamFinished]);
 
   // Экспорт результатов в PDF
   const handleExportToPDF = async () => {

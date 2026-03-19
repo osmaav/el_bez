@@ -8,7 +8,7 @@
 
 import { useState, useCallback, useMemo, useEffect } from 'react';
 import type { Question } from '@/types';
-import { checkAnswer, isMultipleChoice } from '@/utils/answerValidator';
+import { checkAnswer } from '@/utils/answerValidator';
 
 export interface QuizState {
   currentQuestions: Question[];
@@ -77,7 +77,7 @@ export function useQuizState({
   // Инициализация вопросов при изменении страницы или вопросов
   const initializeQuestions = useCallback(() => {
     if (questions.length === 0) return;
-    
+
     // Не инициализируем пока savedStates не загружен
     if (!isLoaded) {
       console.log('⏳ [useQuizState] Ожидание загрузки savedStates...');
@@ -131,6 +131,41 @@ export function useQuizState({
         shuffledAnswers: savedState.shuffledAnswers,
         userAnswers: savedState.userAnswers,
         isComplete: savedState.isComplete,
+        questionIds: currentQuestionIds,
+      });
+    } else if (savedState && savedState.questionIds) {
+      // Вопрос IDs не совпадают (возможно применён фильтр или вопросы перегенерированы)
+      // Пытаемся восстановить ответы по ID вопросов
+      console.log('🔍 [useQuizState] Вопрос IDs не совпадает, восстановление по ID...');
+
+      const restoredUserAnswers: (number | number[] | null)[] = [];
+      const restoredShuffledAnswers: number[][] = [];
+
+      selected.forEach((q, idx) => {
+        // Ищем этот вопрос в сохранённых questionIds
+        const savedIndex = savedState.questionIds?.indexOf(q.id);
+
+        if (savedIndex !== undefined && savedIndex !== -1 && savedState.userAnswers[savedIndex] !== null) {
+          // Нашли ответ для этого вопроса
+          restoredUserAnswers[idx] = savedState.userAnswers[savedIndex];
+          restoredShuffledAnswers[idx] = savedState.shuffledAnswers[savedIndex];
+          console.log(`  ✅ Вопрос ${q.id}: ответ восстановлен (индекс ${savedIndex})`);
+        } else {
+          // Ответа нет
+          restoredUserAnswers[idx] = null;
+          // Создаём новые shuffled ответы
+          const answerCount = q.answers?.length || q.options?.length || 4;
+          restoredShuffledAnswers[idx] = shuffleArray([...Array(answerCount).keys()]);
+          console.log(`  ⚪ Вопрос ${q.id}: ответ не найден`);
+        }
+      });
+
+      setQuizStateState({
+        currentQuestions: selected,
+        shuffledAnswers: restoredShuffledAnswers,
+        userAnswers: restoredUserAnswers,
+        isComplete: false,
+        questionIds: currentQuestionIds,
       });
     } else {
       // Создаём новое состояние с ID вопросов
@@ -154,12 +189,12 @@ export function useQuizState({
       total: questions.length,
       selected: selected.length,
     });
-  }, [questions, currentPage, questionsPerPage, isLoaded]); // Убрал savedStates из зависимостей
+  }, [questions, currentPage, questionsPerPage, isLoaded, savedStates]);
 
   // Восстановление состояния при загрузке savedStates
   useEffect(() => {
     if (!isLoaded || questions.length === 0 || !savedStates) return;
-    
+
     const savedState = savedStates?.[currentPage];
     if (!savedState || !savedState.questionIds) return;
 
@@ -177,19 +212,26 @@ export function useQuizState({
 
     const questionsMatch =
       savedQuestionIds.length === currentQuestionIds.length &&
-      savedQuestionIds.every((id, idx) => id === currentQuestionIds[idx]);
+      savedQuestionIds.every((id, idx) => {
+        const match = id === currentQuestionIds[idx];
+        if (!match) {
+          console.log(`  ❌ ID не совпадает: saved[${idx}]=${id}, current[${idx}]=${currentQuestionIds[idx]}`);
+        }
+        return match;
+      });
 
     if (!questionsMatch) return;
 
     // Проверяем нужно ли восстанавливать
     // Восстанавливаем если:
-    // 1. quizState ещё не инициализирован (пустые userAnswers)
+    // 1. quizState ещё не инициализирован (пустые currentQuestions)
     // 2. ИЛИ shuffledAnswers не совпадают с сохранёнными (значит был resetQuiz)
     const shuffledAnswersMatch = JSON.stringify(quizState.shuffledAnswers) === JSON.stringify(savedState.shuffledAnswers);
+    const hasNoQuestions = quizState.currentQuestions.length === 0;
     const hasNoAnswers = quizState.userAnswers.length === 0 || quizState.userAnswers.every(a => a === null);
-    
-    // Не восстанавливаем только если shuffledAnswers совпадают И есть ответы
-    if (!hasNoAnswers && shuffledAnswersMatch) {
+
+    // Не восстанавливаем только если currentQuestions уже загружены И shuffledAnswers совпадают
+    if (!hasNoQuestions && !hasNoAnswers && shuffledAnswersMatch) {
       console.log('⏭️ [useQuizState] Пропуск восстановления - состояние актуально');
       return;
     }
@@ -201,7 +243,8 @@ export function useQuizState({
       userAnswers: savedState.userAnswers,
       isComplete: savedState.isComplete,
     });
-  }, [savedStates, isLoaded, currentPage, questions, questionsPerPage, quizState.shuffledAnswers, quizState.userAnswers]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [savedStates, isLoaded, currentPage, questions, questionsPerPage]);
 
   // Инициализация при монтировании и изменении зависимостей
   useEffect(() => {
@@ -215,22 +258,27 @@ export function useQuizState({
 
     quizState.userAnswers.forEach((userAnswer, qIdx) => {
       if (userAnswer === null) return;
-      
+
       answered++;
-      
+
       const question = quizState.currentQuestions[qIdx];
-      const correctAnswers = Array.isArray(question.correct) ? question.correct : [question.correct];
-      
+      const correctAnswers: number[] = Array.isArray(question.correct) 
+        ? question.correct.filter((n): n is number => typeof n === 'number')
+        : [question.correct].filter((n): n is number => typeof n === 'number');
+
       // Нормализуем ответ пользователя к массиву индексов в shuffledAnswers
       let userAnswerIndices: number[];
       if (Array.isArray(userAnswer)) {
         // userAnswer уже массив индексов shuffledAnswers
-        userAnswerIndices = userAnswer.map(idx => quizState.shuffledAnswers[qIdx][idx]);
+        userAnswerIndices = userAnswer
+          .map(idx => quizState.shuffledAnswers[qIdx]?.[idx])
+          .filter((n): n is number => typeof n === 'number');
       } else {
         // Одиночный ответ
-        userAnswerIndices = [quizState.shuffledAnswers[qIdx][userAnswer]];
+        const idx = quizState.shuffledAnswers[qIdx]?.[userAnswer];
+        userAnswerIndices = [typeof idx === 'number' ? idx : userAnswer];
       }
-      
+
       // Проверяем правильность
       if (checkAnswer(userAnswerIndices, correctAnswers)) {
         correct++;

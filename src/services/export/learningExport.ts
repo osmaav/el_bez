@@ -113,24 +113,31 @@ export const exportLearningToPDF = async (data: LearningExportData): Promise<voi
     const isAnswered = userAnswerIdx !== null && (Array.isArray(userAnswerIdx) ? userAnswerIdx.length > 0 : true);
     
     // Получаем индексы правильных ответов
-    const correctIndices = Array.isArray(q.correct) ? q.correct : [q.correct];
-    
+    const correctIndices: number[] = Array.isArray(q.correct) 
+      ? q.correct.filter((n): n is number => typeof n === 'number')
+      : [q.correct].filter((n): n is number => typeof n === 'number');
+
     // Получаем текст ответа пользователя
     const userAnswerText = getAnswerText(q, userAnswerIdx);
-    
+
     // Получаем текст правильных ответов
     const correctAnswerText = correctIndices.map(idx => q.options?.[idx] || '').join(', ');
-    
+
     // Проверяем правильность
     let isCorrect = false;
     if (isAnswered && Array.isArray(userAnswerIdx)) {
-      const userIndices = userAnswerIdx.map(idx => data.shuffledAnswers[qIdx][idx]).sort((a, b) => a - b);
+      const userIndices = userAnswerIdx
+        .map(idx => data.shuffledAnswers[qIdx]?.[idx])
+        .filter((n): n is number => typeof n === 'number')
+        .sort((a, b) => a - b);
       const correctSorted = [...correctIndices].sort((a, b) => a - b);
-      isCorrect = userIndices.length === correctSorted.length && 
+      isCorrect = userIndices.length === correctSorted.length &&
                   userIndices.every((val, idx) => val === correctSorted[idx]);
     } else if (isAnswered && typeof userAnswerIdx === 'number') {
-      const userOriginalIdx = data.shuffledAnswers[qIdx][userAnswerIdx];
-      isCorrect = correctIndices.includes(userOriginalIdx);
+      const userOriginalIdx = data.shuffledAnswers[qIdx]?.[userAnswerIdx];
+      if (typeof userOriginalIdx === 'number') {
+        isCorrect = correctIndices.includes(userOriginalIdx);
+      }
     }
 
     return {

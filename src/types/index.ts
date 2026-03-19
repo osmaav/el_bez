@@ -34,7 +34,23 @@ export interface Ticket {
 
 export type PageType = 'learning' | 'theory' | 'trainer' | 'exam' | 'statistics';
 
-export type SectionType = '1256-19' | '1258-20';
+export type SectionType =
+  | '1254-19'
+  | '1255-19'
+  | '1256-19'
+  | '1257-20'
+  | '1258-20'
+  | '1259-21'
+  | '1547-6'
+  | '1260-23'
+  | '1494-2'
+  | '1495-2'
+  | '1496-2'
+  | '1497-6'
+  | '1498-6'
+  | '1499-6'
+  | '1500-2'
+  | '1501-2';
 
 export interface SectionInfo {
   id: SectionType;
@@ -100,10 +116,7 @@ export interface SectionStats {
 
 export interface UserStatistics {
   userId: string;
-  sections: {
-    '1256-19'?: SectionStats;
-    '1258-20'?: SectionStats;
-  };
+  sections: Record<SectionType, SectionStats | undefined>;
   sessions: SessionStats[];
   totalSessions: number;
   totalQuestionsAnswered: number;

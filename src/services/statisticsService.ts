@@ -21,7 +21,7 @@ export const statisticsService = {
     const now = Date.now();
     const stats: UserStatistics = {
       userId,
-      sections: {},
+      sections: {} as Record<SectionType, SectionStats | undefined>,
       sessions: [],
       totalSessions: 0,
       totalQuestionsAnswered: 0,

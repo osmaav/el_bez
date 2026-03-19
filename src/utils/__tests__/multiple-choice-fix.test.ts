@@ -3,7 +3,7 @@
  * Ошибки: #1, #3, #4, #6
  */
 
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import { checkAnswer, isMultipleChoice } from '@/utils/answerValidator';
 
 describe('Multiple Choice - Исправление ошибок', () => {
@@ -100,7 +100,7 @@ describe('Multiple Choice - Исправление ошибок', () => {
         { correct: [0, 1], user: [0, 1, 2] }, // ✗ лишний ответ
       ];
 
-      const correctCount = questions.filter((q, idx) => {
+      const correctCount = questions.filter((q) => {
         const result = checkAnswer(q.user, q.correct);
         return result;
       }).length;

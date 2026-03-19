@@ -138,7 +138,11 @@ export const exportTrainerToPDF = async (data: TrainerExportData): Promise<void>
     const isAnswered = userAnswer !== undefined;
     const userAnswerText = isAnswered ? getAnswerText(q, userAnswer) : 'Не отвечено';
     const correctAnswerText = getAnswerText(q, q.correct_index);
-    const isCorrect = isAnswered && userAnswer === q.correct_index;
+    // Проверяем правильность с учётом множественного выбора
+    const isCorrect = Array.isArray(userAnswer)
+      ? userAnswer.length === q.correct_index.length && 
+        userAnswer.every((a, i) => a === q.correct_index[i])
+      : isAnswered && userAnswer === q.correct_index[0];
 
     return {
       number: idx + 1,

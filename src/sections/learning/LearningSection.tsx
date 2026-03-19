@@ -197,9 +197,11 @@ export function LearningSection() {
       // Для множественного - когда выбраны все ответы
       if (expectedCount === 1 || isSelectedAll) {
         // Получаем оригинальные индексы ответов
-        const shuffledIndices = Array.isArray(answerIndex)
-          ? answerIndex.map(idx => quizState.shuffledAnswers[questionIndex][idx])
-          : [quizState.shuffledAnswers[questionIndex][answerIndex as number]];
+        const shuffledIndices: number[] = Array.isArray(answerIndex)
+          ? answerIndex
+              .map(idx => quizState.shuffledAnswers[questionIndex]?.[idx])
+              .filter((n): n is number => typeof n === 'number')
+          : [quizState.shuffledAnswers[questionIndex]?.[answerIndex as number]].filter((n): n is number => typeof n === 'number');
 
         console.log('📝 [LearningSection] Запись ответа:', {
           questionId: question.id,
@@ -219,7 +221,7 @@ export function LearningSection() {
       // Завершение сессии если все вопросы отвечены
       const newUserAnswers = [...quizState.userAnswers];
       newUserAnswers[questionIndex] = answerIndex;
-      const allAnswered = newUserAnswers.every((a, i) => 
+      const allAnswered = newUserAnswers.every((a) =>
         a !== null && (Array.isArray(a) ? a.length > 0 : true)
       );
       
@@ -232,19 +234,23 @@ export function LearningSection() {
           
           const q = quizState.currentQuestions[idx];
           if (!q) return;
-          
-          const correctAns = Array.isArray(q.correct) ? q.correct : [q.correct];
+
+          const correctAns: number[] = Array.isArray(q.correct)
+            ? q.correct.filter((n): n is number => typeof n === 'number')
+            : [q.correct].filter((n): n is number => typeof n === 'number');
           const expCount = correctAns.length;
           const userAnsArray = Array.isArray(userAnswer) ? userAnswer : [userAnswer];
-          
+
           // Если вопрос с множественным выбором и не полностью отвечен - записываем что есть
           if (expCount > 1 && userAnsArray.length < expCount && userAnsArray.length > 0) {
             console.log(`📝 [LearningSection] Запись неполного ответа на вопрос ${q.id}:`, {
               userAnswer,
               correctAns,
             });
-            
-            const shuffledIdx = userAnsArray.map(i => quizState.shuffledAnswers[idx][i]);
+
+            const shuffledIdx: number[] = userAnsArray
+              .map(i => quizState.shuffledAnswers[idx]?.[i])
+              .filter((n): n is number => n !== undefined && typeof n === 'number');
             sessionTrackerRef.current?.recordAnswer(q.id, q.ticket, shuffledIdx, correctAns, 0);
           }
         });
@@ -264,24 +270,31 @@ export function LearningSection() {
     const hasUserAnswers = quizState.userAnswers.some(a => a !== null);
     if (!hasUserAnswers) return; // Не сохраняем если нет ответов
 
+    // Вычисляем актуальный номер страницы на основе ID первого вопроса
+    const firstQuestion = quizState.currentQuestions[0];
+    const actualPage = firstQuestion ? Math.ceil(firstQuestion.id / QUESTIONS_PER_SESSION) : currentPage;
+
     console.log('💾 [LearningSection] Сохранение прогресса:', {
-      page: currentPage,
+      page: actualPage,
+      currentPage,
       hasUserAnswers,
       userAnswers: quizState.userAnswers,
+      questionIds: quizState.currentQuestions.map(q => q.id),
       userId: user?.id || 'anonymous',
     });
-    saveProgress(currentPage, {
+    saveProgress(actualPage, {
       userAnswers: quizState.userAnswers,
       shuffledAnswers: quizState.shuffledAnswers,
       isComplete: quizState.isComplete,
       questionIds: quizState.currentQuestions.map(q => q.id),
     }).catch(console.error);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     currentPage,
     user?.id,
     saveProgress,
-    // Сохраняем только при изменении этих полей
     quizState.userAnswers.join(','),
+    quizState.shuffledAnswers.join(','),
     quizState.isComplete,
     quizState.currentQuestions.map(q => q.id).join(','),
   ]);
@@ -351,8 +364,13 @@ export function LearningSection() {
       const tableData = quizState.currentQuestions.map((q, idx) => {
         const userAnswer = quizState.userAnswers[idx];
         const correctAnswer = q.correct_index;
-        const isCorrect = userAnswer === correctAnswer;
-        const shuffledIndex = quizState.shuffledAnswers[idx][userAnswer ?? 0];
+        // Для множественного выбора проверяем массивы
+        const isCorrect = Array.isArray(userAnswer)
+          ? userAnswer.length === correctAnswer.length && userAnswer.every((a, i) => a === correctAnswer[i])
+          : userAnswer === correctAnswer[0];
+        // Получаем индекс ответа (для множественного выбора берём первый)
+        const answerIndex = Array.isArray(userAnswer) ? userAnswer[0] : (userAnswer ?? 0);
+        const shuffledIndex = quizState.shuffledAnswers[idx]?.[answerIndex];
         const originalAnswer = q.answers?.[shuffledIndex] || q.options[shuffledIndex];
 
         return [
@@ -391,6 +409,79 @@ export function LearningSection() {
       toastError('Ошибка сохранения', 'Не удалось сохранить PDF');
     }
   }, [currentSection, currentPage, displayTotalPages, stats, quizState, sections, loading, updateToast, success, toastError]);
+
+  // Автоматический ответ на все вопросы
+  const handleAutoAnswer = useCallback(async () => {
+    console.log('🤖 [LearningSection] Автоответ на все вопросы...');
+
+    // Создаём SessionTracker если его нет
+    if (!sessionTrackerRef.current) {
+      sessionTrackerRef.current = new SessionTracker(currentSection, 'learning');
+      console.log('📊 [LearningSection] SessionTracker создан для автоответа');
+    }
+
+    // Проходим по всем вопросам на текущей странице
+    const unansweredIndices: number[] = [];
+    quizState.currentQuestions.forEach((question, qIdx) => {
+      if (quizState.userAnswers[qIdx] === null) {
+        unansweredIndices.push(qIdx);
+        const correctAnswers = Array.isArray(question.correct) ? question.correct : [question.correct];
+        const expectedCount = correctAnswers.length;
+
+        // Для множественного выбора выбираем первые expectedCount вариантов
+        // Для одиночного - случайный ответ
+        const answerIndex = expectedCount > 1
+          ? Array.from({ length: expectedCount }, (_, i) => i) // [0, 1, ...] для множественного
+          : Math.floor(Math.random() * 4); // Случайный для одиночного
+
+        handleAnswerWithTracking(qIdx, answerIndex);
+      }
+    });
+
+    // Завершаем сессию если все вопросы отвечены
+    if (unansweredIndices.length > 0 && sessionTrackerRef.current) {
+      console.log('✅ [LearningSection] Автоответ завершён, завершение сессии...');
+      
+      // Ждём немного чтобы React обновил состояние
+      await new Promise(resolve => setTimeout(resolve, 200));
+      
+      // Завершаем сессию вручную
+      sessionTrackerRef.current.finish();
+      sessionTrackerRef.current = null;
+      console.log('✅ [LearningSection] Сессия завершена');
+    } else {
+      console.log('✅ [LearningSection] Автоответ завершён');
+    }
+  }, [quizState.currentQuestions, quizState.userAnswers, handleAnswerWithTracking, currentSection]);
+
+  // Включаем кнопку автоответа
+  useEffect(() => {
+    // Проверяем есть ли не отвеченные вопросы
+    const hasUnanswered = quizState.userAnswers.some(a => a === null);
+    
+    console.log('👁️ [LearningSection] AutoAnswer check:', {
+      hasUnanswered,
+      currentPage,
+    });
+    
+    if (hasUnanswered) {
+      console.log('👁️ [LearningSection] Dispatching enableAutoAnswer event');
+      window.dispatchEvent(new CustomEvent('enableAutoAnswer', {
+        detail: { page: 'learning', handler: handleAutoAnswer },
+      }));
+    } else {
+      console.log('👁️ [LearningSection] Dispatching disableAutoAnswer event');
+      window.dispatchEvent(new CustomEvent('disableAutoAnswer', {
+        detail: { page: 'learning' },
+      }));
+    }
+    
+    return () => {
+      window.dispatchEvent(new CustomEvent('disableAutoAnswer', {
+        detail: { page: 'learning' },
+      }));
+    };
+  }, [handleAutoAnswer, quizState.userAnswers, currentPage]);
 
   // Обработка открытия фильтра
   const handleFilterClick = useCallback(() => {

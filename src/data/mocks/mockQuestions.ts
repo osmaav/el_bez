@@ -9,7 +9,7 @@ import type { Question } from '@/types';
 /**
  * Генерация тестовых вопросов
  */
-const generateMockQuestions = (sectionId: string, sectionName: string): Question[] => {
+const generateMockQuestions = (_sectionId: string, sectionName: string): Question[] => {
   const questions: Question[] = [];
   const totalQuestions = 20;
 

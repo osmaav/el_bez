@@ -5,7 +5,7 @@
  * Эти тесты гарантируют что ошибки не вернутся в будущем
  */
 
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import { checkAnswer, isMultipleChoice, getCorrectAnswersCount } from '@/utils/answerValidator';
 
 // ============================================================================

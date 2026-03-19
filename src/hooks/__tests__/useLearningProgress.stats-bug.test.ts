@@ -225,7 +225,7 @@ describe('Статистика - предотвращение бага "answered
         },
       ];
 
-      testCases.forEach((quizState, idx) => {
+      testCases.forEach((quizState) => {
         const stats = calculateStats(quizState);
         expect(stats.correct + stats.incorrect).toBe(stats.answered);
       });

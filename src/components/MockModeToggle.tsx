@@ -12,6 +12,7 @@ export function MockModeToggle() {
   const [isMockMode, setIsMockMode] = useState(false);
   const [isClient, setIsClient] = useState(false);
 
+  // Инициализация состояния (требуется для чтения localStorage)
   useEffect(() => {
     setIsClient(true);
     setIsMockMode(localStorage.getItem('elbez_mock_mode') === 'true');

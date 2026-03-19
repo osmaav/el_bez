@@ -10,7 +10,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { CheckCircle2, XCircle, BookOpen } from 'lucide-react';
-import type { QuestionCardProps } from '../types';
 import { checkAnswer } from '@/utils/answerValidator';
 
 export function LearningQuestionCard({
@@ -107,7 +106,7 @@ export function LearningQuestionCard({
 
         {/* Варианты ответов */}
         <div className="space-y-3">
-          {shuffledAnswers.map((originalIdx, shuffledIdx) => (
+          {shuffledAnswers.map((originalIdx: number, shuffledIdx: number) => (
             <button
               key={shuffledIdx}
               onClick={() => handleAnswerClick(shuffledIdx)}

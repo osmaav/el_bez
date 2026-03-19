@@ -10,8 +10,19 @@ import { useState, useCallback } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { statisticsService } from '@/services/statisticsService';
 import type { UserStatistics } from '@/types';
-import type { StatisticsTab, UseStatisticsReturn } from '../types';
 import { toast as sonnerToast } from 'sonner';
+
+type StatisticsTab = 'overview' | 'progress' | 'activity' | 'weak-topics' | 'sessions';
+
+interface UseStatisticsReturn {
+  statistics: UserStatistics | null;
+  isLoading: boolean;
+  activeTab: StatisticsTab;
+  setActiveTab: (tab: StatisticsTab) => void;
+  refreshStatistics: () => Promise<void>;
+  handleExport: () => Promise<void>;
+  handleClear: () => Promise<void>;
+}
 
 export function useStatistics(): UseStatisticsReturn {
   const { user } = useAuth();
@@ -62,8 +73,8 @@ export function useStatistics(): UseStatisticsReturn {
     activeTab,
     setActiveTab,
     refreshStatistics: loadStatistics,
-    handleExport,
-    handleClear,
+    handleExport: () => Promise.resolve(handleExport()),
+    handleClear: () => Promise.resolve(handleClear()),
   };
 }
 

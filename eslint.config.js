@@ -19,6 +19,10 @@ export default defineConfig([
       ecmaVersion: 2020,
       globals: globals.browser,
     },
+    rules: {
+      // Отключаем строгое правило set-state-in-effect для случаев инициализации и сброса
+      'react-hooks/set-state-in-effect': 'off',
+    },
   },
   // Настройки для тестовых файлов
   {

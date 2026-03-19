@@ -7,17 +7,18 @@
  */
 
 import { LearningQuestionCard } from './LearningQuestionCard';
-import type { QuestionsListProps } from '../types';
+import type { LearningQuestionsListProps } from '../types';
+import type { Question } from '@/types';
 
 export function LearningQuestionsList({
   quizState,
   showSources,
   onAnswerSelect,
   onToggleSource,
-}: Omit<QuestionsListProps, 'questions'>) {
+}: Omit<LearningQuestionsListProps, 'questions'>) {
   return (
     <div className="space-y-6">
-      {quizState.currentQuestions.map((question, qIdx) => {
+      {quizState.currentQuestions.map((question: Question, qIdx: number) => {
         const userAnswer = quizState.userAnswers[qIdx];
         const correctAnswers = Array.isArray(question.correct) ? question.correct : [question.correct];
         const expectedCount = correctAnswers.length;

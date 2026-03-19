@@ -36,7 +36,7 @@ export interface TrainerExportData {
   section: SectionType;
   sectionInfo: SectionInfo;
   questions: Question[];
-  answers: Record<number, number>;
+  answers: Record<number, number | number[]>;
   stats: {
     total: number;
     correct: number;
@@ -59,7 +59,7 @@ export interface ExamExportData {
   sectionInfo: SectionInfo;
   ticketId: number;
   questions: Question[];
-  answers: Record<number, number>;
+  answers: Record<number, number | number[]>;
   results: Record<number, boolean>;
   stats: {
     total: number;

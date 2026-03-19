@@ -11,7 +11,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/useToast';
 import { saveLearningProgress, loadLearningProgress } from '@/services/questionService';
 import { SessionTracker } from '@/services/statisticsService';
-import { checkAnswer, shuffleArray } from '@/utils/answerValidator';
+import { checkAnswer } from '@/utils/answerValidator';
 import type { Question, SectionType } from '@/types';
 
 // ============================================================================
@@ -297,15 +297,22 @@ export function useLearningProgress(
         answered++;
 
         const question = quizState.currentQuestions[qIdx];
-        const correctAnswers = Array.isArray(question.correct) ? question.correct : [question.correct];
-        const shuffled = quizState.shuffledAnswers[qIdx];
+        const correctAnswers: number[] = Array.isArray(question.correct) 
+          ? question.correct.filter((n): n is number => typeof n === 'number')
+          : [question.correct].filter((n): n is number => typeof n === 'number');
+        const shuffled = quizState.shuffledAnswers[qIdx] || [];
 
         // Нормализуем ответ пользователя к массиву ОРИГИНАЛЬНЫХ индексов ответов
         let userOriginalIndices: number[];
         if (Array.isArray(userAnswer)) {
-          userOriginalIndices = userAnswer.map(idx => shuffled[idx]);
+          userOriginalIndices = userAnswer.map(idx => shuffled[idx]).filter((n): n is number => typeof n === 'number');
         } else {
-          userOriginalIndices = [shuffled[userAnswer]];
+          const idx = shuffled[userAnswer];
+          if (typeof idx === 'number') {
+            userOriginalIndices = [idx];
+          } else {
+            userOriginalIndices = [userAnswer];
+          }
         }
 
         // Проверяем правильность через checkAnswer
@@ -321,8 +328,7 @@ export function useLearningProgress(
   }, [
     quizState.userAnswers,
     quizState.shuffledAnswers,
-    quizState.currentQuestions,
-    checkAnswer
+    quizState.currentQuestions
   ]);
 
   // ============================================================================
