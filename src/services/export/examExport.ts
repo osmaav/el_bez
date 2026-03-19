@@ -149,7 +149,25 @@ export const exportExamToPDF = async (data: ExamExportData): Promise<void> => {
   const tableData = data.questions.map((q, idx) => {
     const userAnswer = data.answers[q.id];
     const isAnswered = userAnswer !== undefined;
-    const userAnswerText = isAnswered ? getAnswerText(q, userAnswer) : 'Не отвечено';
+    const correctAnswers = Array.isArray(q.correct_index) ? q.correct_index : [q.correct_index];
+    
+    // Формируем текст ответа с информацией о правильности каждого варианта
+    let userAnswerText = 'Не отвечено';
+    const answerDetails: { text: string; isCorrect: boolean }[] = [];
+    
+    if (isAnswered) {
+      const userAnswers = Array.isArray(userAnswer) ? userAnswer : [userAnswer];
+      userAnswers.forEach((ansIdx) => {
+        const isCorrectAnswer = correctAnswers.includes(ansIdx);
+        const answerLabel = String.fromCharCode(1040 + ansIdx); // А, Б, В, Г...
+        answerDetails.push({
+          text: answerLabel,
+          isCorrect: isCorrectAnswer
+        });
+      });
+      userAnswerText = answerDetails.map(a => a.text).join(', ');
+    }
+    
     const correctAnswerText = getAnswerText(q, q.correct_index);
     
     // Проверяем правильность ответа
@@ -159,6 +177,7 @@ export const exportExamToPDF = async (data: ExamExportData): Promise<void> => {
       number: idx + 1,
       question: truncateText(q.text, 300),
       yourAnswer: truncateText(userAnswerText, 200),
+      answerDetails,
       correctAnswer: truncateText(correctAnswerText, 200),
       isCorrect
     };
@@ -177,7 +196,8 @@ export const exportExamToPDF = async (data: ExamExportData): Promise<void> => {
     headStyles: {
       fillColor: COLORS.primary as unknown as [number, number, number],
       font: 'Roboto',
-      halign: 'center'
+      halign: 'center',
+      textColor: COLORS.slate // Заголовок чёрный
     },
     styles: { fontSize: 8, cellPadding: 2, font: 'Roboto', lineWidth: 0 },
     columnStyles: {
@@ -188,10 +208,29 @@ export const exportExamToPDF = async (data: ExamExportData): Promise<void> => {
     },
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     didParseCell: (cellData: any) => {
+      // Окрашиваем только тело таблицы (не заголовки)
+      if (cellData.section === 'head') return;
+      
       const row = tableData[cellData.row.index];
-      // Окрашиваем столбец "Ваш ответ" в красный если ответ неправильный
-      if (cellData.column.index === 2 && !row.isCorrect) {
-        cellData.cell.styles.textColor = COLORS.error;
+      
+      // Окрашиваем столбец "Ваш ответ" для неправильных ответов
+      if (cellData.column.index === 2 && row.answerDetails && row.answerDetails.length > 0) {
+        // Для множественного выбора - красим только неправильные ответы
+        if (row.answerDetails.length > 1) {
+          const cellText = cellData.cell.text;
+          const parts = cellText.split(', ');
+          
+          const formattedText = parts.map((text: string, idx: number) => {
+            const detail = row.answerDetails[idx];
+            return detail && !detail.isCorrect 
+              ? { text: text, styles: { textColor: COLORS.error } }
+              : text;
+          });
+          cellData.cell.text = formattedText;
+        } else if (!row.isCorrect) {
+          // Одиночный неправильный ответ - красим весь текст
+          cellData.cell.styles.textColor = COLORS.error;
+        }
       }
     },
     willDrawCell: () => {
