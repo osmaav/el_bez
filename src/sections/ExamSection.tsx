@@ -89,7 +89,6 @@ export function ExamSection() {
   };
 
   const confirmResetExam = () => {
-    setShowResetConfirm(false);
     resetExam();
     success('Экзамен сброшен', 'Все ответы очищены');
   };
