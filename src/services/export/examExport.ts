@@ -159,9 +159,9 @@ export const exportExamToPDF = async (data: ExamExportData): Promise<void> => {
       const userAnswers = Array.isArray(userAnswer) ? userAnswer : [userAnswer];
       userAnswers.forEach((ansIdx) => {
         const isCorrectAnswer = correctAnswers.includes(ansIdx);
-        const answerLabel = String.fromCharCode(1040 + ansIdx); // А, Б, В, Г...
+        const answerText = q.options[ansIdx] || `Вариант ${String.fromCharCode(1040 + ansIdx)}`;
         answerDetails.push({
-          text: answerLabel,
+          text: answerText,
           isCorrect: isCorrectAnswer
         });
       });
@@ -240,10 +240,16 @@ export const exportExamToPDF = async (data: ExamExportData): Promise<void> => {
           details.forEach((detail: { text: string; isCorrect: boolean }, idx: number) => {
             // Устанавливаем цвет для каждого ответа
             doc.setTextColor(detail.isCorrect ? COLORS.slate[0] : COLORS.error[0]);
-            doc.text(String(detail.text), currentX, y);
+            
+            // Для длинных ответов используем упрощённую отрисовку
+            const displayText = detail.text.length > 50 
+              ? detail.text.substring(0, 47) + '...' 
+              : detail.text;
+            
+            doc.text(displayText, currentX, y);
 
             // Вычисляем ширину текста для следующего ответа
-            const textWidth = doc.getTextWidth(String(detail.text));
+            const textWidth = doc.getTextWidth(displayText);
             currentX += textWidth + (idx < details.length - 1 ? doc.getTextWidth(', ') : 0);
 
             // Рисуем запятую если это не последний ответ
