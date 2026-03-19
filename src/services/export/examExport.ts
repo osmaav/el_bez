@@ -210,19 +210,21 @@ export const exportExamToPDF = async (data: ExamExportData): Promise<void> => {
     didParseCell: (cellData: any) => {
       // Окрашиваем только тело таблицы (не заголовки)
       if (cellData.section === 'head') return;
-      
+
       const row = tableData[cellData.row.index];
-      
+
       // Окрашиваем столбец "Ваш ответ" для неправильных ответов
       if (cellData.column.index === 2 && row.answerDetails && row.answerDetails.length > 0) {
         // Для множественного выбора - красим только неправильные ответы
         if (row.answerDetails.length > 1) {
-          const cellText = cellData.cell.text;
+          const cellText = Array.isArray(cellData.cell.text) 
+            ? cellData.cell.text.join(', ') 
+            : String(cellData.cell.text);
           const parts = cellText.split(', ');
-          
+
           const formattedText = parts.map((text: string, idx: number) => {
             const detail = row.answerDetails[idx];
-            return detail && !detail.isCorrect 
+            return detail && !detail.isCorrect
               ? { text: text, styles: { textColor: COLORS.error } }
               : text;
           });
