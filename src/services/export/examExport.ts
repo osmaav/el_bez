@@ -210,33 +210,50 @@ export const exportExamToPDF = async (data: ExamExportData): Promise<void> => {
     didParseCell: (cellData: any) => {
       // Окрашиваем только тело таблицы (не заголовки)
       if (cellData.section === 'head') return;
-
+      
       const row = tableData[cellData.row.index];
-
+      
       // Окрашиваем столбец "Ваш ответ" для неправильных ответов
       if (cellData.column.index === 2 && row.answerDetails && row.answerDetails.length > 0) {
-        // Для множественного выбора - красим только неправильные ответы
-        if (row.answerDetails.length > 1) {
-          const cellText = Array.isArray(cellData.cell.text) 
-            ? cellData.cell.text.join(', ') 
-            : String(cellData.cell.text);
-          const parts = cellText.split(', ');
-
-          const formattedText = parts.map((text: string, idx: number) => {
-            const detail = row.answerDetails[idx];
-            return detail && !detail.isCorrect
-              ? { text: text, styles: { textColor: COLORS.error } }
-              : text;
-          });
-          cellData.cell.text = formattedText;
-        } else if (!row.isCorrect) {
-          // Одиночный неправильный ответ - красим весь текст
-          cellData.cell.styles.textColor = COLORS.error;
-        }
+        // Сохраняем информацию о деталях ответа в cell data для использования в willDrawCell
+        cellData.cell.answerDetails = row.answerDetails;
       }
     },
-    willDrawCell: () => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    willDrawCell: (data: any) => {
       doc.setFont('Roboto', 'normal');
+      
+      // Для столбца "Ваш ответ" с множественным выбором - рисуем каждый ответ отдельно
+      if (data.section === 'body' && data.column.index === 2 && data.cell.answerDetails) {
+        const details = data.cell.answerDetails;
+        if (details && details.length > 1) {
+          const x = data.cell.x;
+          const y = data.cell.y + data.cell.styles.fontSize;
+          let currentX = x;
+          
+          details.forEach((detail: { text: string; isCorrect: boolean }, idx: number) => {
+            // Устанавливаем цвет для каждого ответа
+            doc.setTextColor(detail.isCorrect ? COLORS.slate[0] : COLORS.error[0]);
+            doc.text(detail.text, currentX, y);
+            
+            // Вычисляем ширину текста для следующего ответа
+            const textWidth = doc.getTextWidth(detail.text);
+            currentX += textWidth + (idx < details.length - 1 ? doc.getTextWidth(', ') : 0);
+            
+            // Рисуем запятую если это не последний ответ
+            if (idx < details.length - 1) {
+              doc.setTextColor(COLORS.slate[0]);
+              doc.text(', ', currentX - doc.getTextWidth(', '), y);
+            }
+          });
+          
+          // Сбрасываем цвет
+          doc.setTextColor(COLORS.slate[0]);
+          
+          // Отменяем стандартную отрисовку ячейки
+          data.cell.text = '';
+        }
+      }
     },
     margin: { left: margin, right: margin }
   });
