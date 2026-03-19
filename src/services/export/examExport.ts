@@ -151,12 +151,16 @@ export const exportExamToPDF = async (data: ExamExportData): Promise<void> => {
     const isAnswered = userAnswer !== undefined;
     const userAnswerText = isAnswered ? getAnswerText(q, userAnswer) : 'Не отвечено';
     const correctAnswerText = getAnswerText(q, q.correct_index);
+    
+    // Проверяем правильность ответа
+    const isCorrect = data.results[q.id] ?? false;
 
     return {
       number: idx + 1,
       question: truncateText(q.text, 300),
       yourAnswer: truncateText(userAnswerText, 200),
-      correctAnswer: truncateText(correctAnswerText, 200)
+      correctAnswer: truncateText(correctAnswerText, 200),
+      isCorrect
     };
   });
 
@@ -181,6 +185,14 @@ export const exportExamToPDF = async (data: ExamExportData): Promise<void> => {
       1: { cellWidth: 60 },
       2: { cellWidth: 60 },
       3: { cellWidth: 60 }
+    },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    didParseCell: (cellData: any) => {
+      const row = tableData[cellData.row.index];
+      // Окрашиваем столбец "Ваш ответ" в красный если ответ неправильный
+      if (cellData.column.index === 2 && !row.isCorrect) {
+        cellData.cell.styles.textColor = COLORS.error;
+      }
     },
     willDrawCell: () => {
       doc.setFont('Roboto', 'normal');
