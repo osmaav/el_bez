@@ -232,7 +232,7 @@ export const exportExamToPDF = async (data: ExamExportData): Promise<void> => {
       // Для столбца "Ваш ответ" с множественным выбором - рисуем каждый ответ отдельно
       if (data.section === 'body' && data.column.index === 2 && data.cell.answerDetails) {
         const details = data.cell.answerDetails;
-        if (details && details.length > 1) {
+        if (details && details.length > 0) {
           const x = data.cell.x;
           const y = data.cell.y + data.cell.styles.fontSize;
           let currentX = x;
@@ -262,7 +262,7 @@ export const exportExamToPDF = async (data: ExamExportData): Promise<void> => {
           // Сбрасываем цвет
           doc.setTextColor(COLORS.slate[0]);
 
-          // Отменяем стандартную отрисовку ячейки (только для множественного выбора)
+          // Отменяем стандартную отрисовку ячейки (для всех случаев с answerDetails)
           data.cell.text = [];
         }
       }
