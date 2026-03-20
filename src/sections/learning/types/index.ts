@@ -31,13 +31,6 @@ export interface LearningProgressBarProps {
 }
 
 export interface LearningQuestionCardProps {
-  quizState: QuizState;
-  showSources: boolean;
-  onAnswerSelect: (questionIndex: number, answerIndex: number | number[]) => void;
-  onToggleSource: (questionIndex: number) => void;
-}
-
-export interface LearningQuestionCardProps {
   question: Question;
   questionIndex: number;
   quizState: QuizState;
@@ -62,4 +55,13 @@ export interface LearningResultsProps {
   onSaveToPDF: () => void;
   onReset: () => void;
   onNextPage: () => void;
+}
+
+export interface QuestionCardProps {
+  question: Question;
+  questionIndex: number;
+  quizState: QuizState;
+  showSources: boolean;
+  onAnswerSelect: (questionIndex: number, answerIndex: number | number[]) => void;
+  onToggleSource: (questionIndex: number) => void;
 }

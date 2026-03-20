@@ -10,19 +10,26 @@ import { LearningQuestionCard } from './LearningQuestionCard';
 import type { LearningQuestionsListProps } from '../types';
 import type { Question } from '@/types';
 
+interface LearningQuestionsListInternalProps {
+  quizState: LearningQuestionsListProps['quizState'];
+  showSources: Record<number, boolean>;
+  onAnswerSelect: LearningQuestionsListProps['onAnswerSelect'];
+  onToggleSource: LearningQuestionsListProps['onToggleSource'];
+}
+
 export function LearningQuestionsList({
   quizState,
   showSources,
   onAnswerSelect,
   onToggleSource,
-}: Omit<LearningQuestionsListProps, 'questions'>) {
+}: LearningQuestionsListInternalProps) {
   return (
     <div className="space-y-6">
       {quizState.currentQuestions.map((question: Question, qIdx: number) => {
         const userAnswer = quizState.userAnswers[qIdx];
         const correctAnswers = Array.isArray(question.correct) ? question.correct : [question.correct];
         const expectedCount = correctAnswers.length;
-        
+
         // Для множественного выбора: isAnswered=true только если выбраны все ответы
         // Для одиночного выбора: isAnswered=true если есть любой ответ
         const isAnswered = userAnswer !== null && (
@@ -39,7 +46,7 @@ export function LearningQuestionsList({
             shuffledAnswers={quizState.shuffledAnswers[qIdx]}
             userAnswer={userAnswer}
             isAnswered={isAnswered}
-            showSources={showSources[qIdx]}
+            showSources={!!showSources[qIdx]}
             onAnswerSelect={onAnswerSelect}
             onToggleSource={onToggleSource}
           />

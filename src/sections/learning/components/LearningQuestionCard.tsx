@@ -11,6 +11,18 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { CheckCircle2, XCircle, BookOpen } from 'lucide-react';
 import { checkAnswer } from '@/utils/answerValidator';
+import type { Question } from '@/types';
+
+interface LearningQuestionCardProps {
+  question: Question;
+  questionIndex: number;
+  shuffledAnswers: number[];
+  userAnswer: number | number[] | null;
+  isAnswered: boolean;
+  showSources: boolean;
+  onAnswerSelect: (questionIndex: number, answerIndex: number | number[]) => void;
+  onToggleSource: (questionIndex: number) => void;
+}
 
 export function LearningQuestionCard({
   question,
@@ -21,7 +33,7 @@ export function LearningQuestionCard({
   showSources,
   onAnswerSelect,
   onToggleSource,
-}: QuestionCardProps) {
+}: LearningQuestionCardProps) {
   // Определяем тип вопроса (одиночный или множественный выбор)
   const correctAnswers = Array.isArray(question.correct) ? question.correct : [question.correct];
   const expectedCount = correctAnswers.length;

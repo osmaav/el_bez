@@ -1,13 +1,13 @@
 /**
  * useLearningProgress — хук для управления прогрессом обучения
- * 
+ *
  * @description Загрузка и сохранение прогресса обучения из Firestore/localStorage
  * @author el-bez Team
  * @version 1.0.0
  */
 
 import { useState, useCallback, useEffect } from 'react';
-import { saveLearningProgress, loadLearningProgress } from '@/services/questionService';
+import { saveLearningProgress, loadLearningProgress, type LearningProgressState } from '@/services/questionService';
 import type { SectionType } from '@/types';
 
 interface UseLearningProgressOptions {
@@ -15,25 +15,11 @@ interface UseLearningProgressOptions {
   currentSection: SectionType;
 }
 
-interface LearningProgressState {
-  [page: number]: {
-    userAnswers: (number | number[] | null)[];
-    shuffledAnswers: number[][];
-    isComplete: boolean;
-    questionIds?: number[];
-  };
-}
-
 interface UseLearningProgressReturn {
   savedStates: LearningProgressState;
   isLoading: boolean;
   error: string | null;
-  saveProgress: (page: number, state: {
-    userAnswers: (number | number[] | null)[];
-    shuffledAnswers: number[][];
-    isComplete: boolean;
-    questionIds?: number[];
-  }) => Promise<void>;
+  saveProgress: (page: number, state: LearningProgressState[number]) => Promise<void>;
   loadProgress: () => Promise<void>;
   clearProgress: () => void;
   isLoaded: boolean;

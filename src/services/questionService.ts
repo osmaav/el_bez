@@ -68,9 +68,10 @@ export interface UserState {
  */
 export interface LearningProgressState {
   [page: number]: {
-    userAnswers: (number | null)[];
+    userAnswers: (number | number[] | null)[];
     shuffledAnswers: number[][];
     isComplete: boolean;
+    questionIds?: number[];
   };
 }
 

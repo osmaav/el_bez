@@ -249,8 +249,11 @@ export function LearningSection() {
             });
 
             const shuffledIdx: number[] = userAnsArray
-              .map(i => quizState.shuffledAnswers[idx]?.[i])
-              .filter((n): n is number => n !== undefined && typeof n === 'number');
+              .map(i => {
+                const shuffled = quizState.shuffledAnswers[idx];
+                return shuffled && shuffled[i] !== undefined ? shuffled[i] : -1;
+              })
+              .filter((n): n is number => n !== -1 && typeof n === 'number');
             sessionTrackerRef.current?.recordAnswer(q.id, q.ticket, shuffledIdx, correctAns, 0);
           }
         });
