@@ -300,7 +300,32 @@ export function TrainerSection() {
 
   // Обработчик выбора ответа — обновляем ТОЛЬКО источник данных
   const handleAnswerSelect = (answerIndex: number) => {
-    if (currentQuestion) {
+    if (!currentQuestion) return;
+    
+    const correctAnswers = Array.isArray(currentQuestion.correct_index) 
+      ? currentQuestion.correct_index 
+      : [currentQuestion.correct_index];
+    const expectedCount = correctAnswers.length;
+    
+    // Проверяем текущий выбранный ответ
+    const currentAnswer = trainerAnswers[currentQuestion.id];
+    const currentAnswers = Array.isArray(currentAnswer) ? currentAnswer : (currentAnswer !== undefined ? [currentAnswer] : []);
+    
+    if (expectedCount > 1) {
+      // Множественный выбор - переключаем ответ
+      const newAnswers = currentAnswers.includes(answerIndex)
+        ? currentAnswers.filter(a => a !== answerIndex)
+        : [...currentAnswers, answerIndex];
+      
+      // Записываем ответ только если выбраны все варианты
+      if (newAnswers.length === expectedCount) {
+        answerTrainerQuestion(newAnswers);
+      } else {
+        // Пока пользователь выбирает - обновляем selectedAnswer
+        setSelectedAnswer(newAnswers);
+      }
+    } else {
+      // Одиночный выбор
       answerTrainerQuestion(answerIndex);
     }
   };
@@ -386,25 +411,6 @@ export function TrainerSection() {
             </CardContent>
           </Card>
         </div>
-
-        {/* Фильтр вопросов - модальное окно */}
-        <FilterModal
-          isOpen={isFilterModalOpen}
-          onClose={() => setIsFilterModalOpen(false)}
-          onApply={(_filteredIds, settings) => {
-            // Обновляем настройки фильтра в AppContext
-            setFilterHiddenQuestionIds(settings.hiddenQuestionIds);
-            setFilterExcludeKnown(settings.excludeKnown);
-            setFilterExcludeWeak(settings.excludeWeak);
-          }}
-          questionStats={statisticsService.getQuestionStats(currentSection)}
-          questions={questions}
-          hiddenQuestionIds={filterHiddenQuestionIds}
-          onHiddenChange={(newHiddenIds) => {
-            setFilterHiddenQuestionIds(newHiddenIds);
-          }}
-          currentSection={currentSection}
-        />
       </>
     );
   }
@@ -845,6 +851,25 @@ export function TrainerSection() {
         status={loadingModal.status}
         progress={loadingModal.progress}
         showProgress={true}
+      />
+
+      {/* FilterModal для фильтрации вопросов */}
+      <FilterModal
+        isOpen={isFilterModalOpen}
+        onClose={() => setIsFilterModalOpen(false)}
+        onApply={(_filteredIds, settings) => {
+          // Обновляем настройки фильтра в AppContext
+          setFilterHiddenQuestionIds(settings.hiddenQuestionIds);
+          setFilterExcludeKnown(settings.excludeKnown);
+          setFilterExcludeWeak(settings.excludeWeak);
+        }}
+        questionStats={statisticsService.getQuestionStats(currentSection)}
+        questions={questions}
+        hiddenQuestionIds={filterHiddenQuestionIds}
+        onHiddenChange={(newHiddenIds) => {
+          setFilterHiddenQuestionIds(newHiddenIds);
+        }}
+        currentSection={currentSection}
       />
     </>
   );
