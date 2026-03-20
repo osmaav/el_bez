@@ -315,8 +315,8 @@ export function TrainerSection() {
     const expectedCount = correctAnswers.length;
     
     // Проверяем текущий выбранный ответ
-    const currentAnswer = trainerAnswers[currentQuestion.id];
-    const currentAnswers = Array.isArray(currentAnswer) ? currentAnswer : (currentAnswer !== undefined ? [currentAnswer] : []);
+    const currentAnswer = selectedAnswer;
+    const currentAnswers = Array.isArray(currentAnswer) ? currentAnswer : (currentAnswer !== null ? [currentAnswer] : []);
     
     if (expectedCount > 1) {
       // Множественный выбор - переключаем ответ
@@ -324,12 +324,14 @@ export function TrainerSection() {
         ? currentAnswers.filter(a => a !== answerIndex)
         : [...currentAnswers, answerIndex];
       
-      // Записываем ответ только если выбраны все варианты
-      if (newAnswers.length === expectedCount) {
-        answerTrainerQuestion(newAnswers);
-      } else {
-        // Пока пользователь выбирает - обновляем selectedAnswer
+      // Разрешаем выбирать только до expectedCount ответов
+      if (newAnswers.length <= expectedCount) {
         setSelectedAnswer(newAnswers);
+        
+        // Записываем ответ только если выбраны все варианты
+        if (newAnswers.length === expectedCount) {
+          answerTrainerQuestion(newAnswers);
+        }
       }
     } else {
       // Одиночный выбор
@@ -757,7 +759,7 @@ export function TrainerSection() {
                         : showIncorrect
                           ? 'border-red-500 bg-red-50'
                           : isSelected
-                            ? 'border-yellow-500 bg-yellow-50'
+                            ? 'border-blue-500 bg-blue-100 text-blue-900'
                             : 'border-slate-200 hover:border-yellow-300 hover:bg-slate-50'
                       }
                     ${hasAnswered ? 'cursor-default' : 'cursor-pointer'}
@@ -771,7 +773,7 @@ export function TrainerSection() {
                           : showIncorrect
                             ? 'bg-red-500 text-white'
                             : isSelected
-                              ? 'bg-yellow-500 text-white'
+                              ? 'bg-blue-500 text-white'
                               : 'bg-slate-200 text-slate-700'
                         }
                     `}>
