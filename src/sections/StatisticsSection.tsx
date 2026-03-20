@@ -164,13 +164,20 @@ export const StatisticsSection: React.FC = () => {
               weakTopics={statisticsService.getWeakTopicsStats()}
               activeTickets={activeTickets}
               onFilterByTicket={(ticket) => {
-                console.log('👁️ [StatisticsSection] Переключение билета:', ticket);
+                console.log('👁️ [StatisticsSection] Переключение билета:', ticket, 'текущие activeTickets:', activeTickets);
                 if (activeTickets.includes(ticket)) {
-                  // Если билет уже активен, сбрасываем фильтр
-                  resetTicketFilter();
+                  // Если билет уже активен - удаляем его из списка
+                  const newTickets = activeTickets.filter(t => t !== ticket);
+                  if (newTickets.length === 0) {
+                    // Если билетов не осталось, сбрасываем фильтр
+                    resetTicketFilter();
+                  } else {
+                    // Иначе применяем фильтр с новыми билетами
+                    filterByTickets(newTickets);
+                  }
                 } else {
-                  // Иначе добавляем билет
-                  filterByTickets([ticket]);
+                  // Если билета нет в фильтре - добавляем его к текущим
+                  filterByTickets([...activeTickets, ticket]);
                 }
               }}
             />

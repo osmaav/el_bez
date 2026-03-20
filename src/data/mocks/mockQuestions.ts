@@ -11,7 +11,7 @@ import type { Question } from '@/types';
  */
 const generateMockQuestions = (_sectionId: string, sectionName: string): Question[] => {
   const questions: Question[] = [];
-  const totalQuestions = 20;
+  const totalQuestions = 30;
 
   for (let i = 1; i <= totalQuestions; i++) {
     const ticket = Math.floor((i - 1) / 10) + 1;
