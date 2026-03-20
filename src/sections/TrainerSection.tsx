@@ -880,6 +880,37 @@ export function TrainerSection() {
         progress={loadingModal.progress}
         showProgress={true}
       />
+
+      {/* ConfirmModal для сброса тренажёра - рендерится всегда */}
+      <ConfirmModal
+        isOpen={showResetConfirm}
+        onClose={() => setShowResetConfirm(false)}
+        onConfirm={confirmResetTrainer}
+        title="Сброс тренажёра"
+        description="Вы уверены, что хотите сбросить текущую тренировку? Все несохранённые ответы будут потеряны."
+        type="warning"
+        confirmLabel="Сбросить"
+        cancelLabel="Отмена"
+      />
+
+      {/* FilterModal для фильтрации вопросов - рендерится всегда */}
+      <FilterModal
+        isOpen={isFilterModalOpen}
+        onClose={() => setIsFilterModalOpen(false)}
+        onApply={(_filteredIds, settings) => {
+          // Обновляем настройки фильтра в AppContext
+          setFilterHiddenQuestionIds(settings.hiddenQuestionIds);
+          setFilterExcludeKnown(settings.excludeKnown);
+          setFilterExcludeWeak(settings.excludeWeak);
+        }}
+        questionStats={statisticsService.getQuestionStats(currentSection)}
+        questions={questions}
+        hiddenQuestionIds={filterHiddenQuestionIds}
+        onHiddenChange={(newHiddenIds) => {
+          setFilterHiddenQuestionIds(newHiddenIds);
+        }}
+        currentSection={currentSection}
+      />
     </>
   );
 }
