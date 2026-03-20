@@ -127,10 +127,9 @@ export const exportLearningToPDF = async (data: LearningExportData): Promise<voi
     let isCorrect = false;
     if (isAnswered && Array.isArray(userAnswerIdx)) {
       const shuffled = data.shuffledAnswers[qIdx] || [];
-      const userIndices = userAnswerIdx
-        .map(idx => shuffled[idx])
-        .filter((n): n is number => n !== undefined)
-        .sort((a, b) => a - b);
+      const mappedIndices = userAnswerIdx.map(idx => shuffled[idx]);
+      const userIndices: number[] = mappedIndices.filter((n): n is number => n != null) as number[];
+      userIndices.sort((a, b) => a - b);
       const correctSorted = [...correctIndices].sort((a, b) => a - b);
       isCorrect = userIndices.length === correctSorted.length &&
                   userIndices.every((val, idx) => val === correctSorted[idx]);

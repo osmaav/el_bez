@@ -271,9 +271,8 @@ export function useQuizState({
       if (Array.isArray(userAnswer)) {
         // userAnswer уже массив индексов shuffledAnswers
         const shuffled = quizState.shuffledAnswers[qIdx] || [];
-        userAnswerIndices = userAnswer
-          .map(idx => shuffled[idx])
-          .filter((n): n is number => n !== undefined && typeof n === 'number');
+        const mapped = userAnswer.map(idx => shuffled[idx]);
+        userAnswerIndices = mapped.filter(n => n != null) as number[];
       } else {
         // Одиночный ответ
         const shuffled = quizState.shuffledAnswers[qIdx] || [];

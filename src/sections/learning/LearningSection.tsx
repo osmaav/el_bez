@@ -196,12 +196,11 @@ export function LearningSection() {
       // Для одиночного выбора записываем сразу
       // Для множественного - когда выбраны все ответы
       if (expectedCount === 1 || isSelectedAll) {
+        const shuffled = quizState.shuffledAnswers[questionIndex] || [];
         // Получаем оригинальные индексы ответов
         const shuffledIndices: number[] = Array.isArray(answerIndex)
-          ? answerIndex
-              .map(idx => quizState.shuffledAnswers[questionIndex]?.[idx])
-              .filter((n): n is number => typeof n === 'number')
-          : [quizState.shuffledAnswers[questionIndex]?.[answerIndex as number]].filter((n): n is number => typeof n === 'number');
+          ? answerIndex.map(idx => shuffled[idx]).filter(n => n != null) as number[]
+          : [shuffled[answerIndex as number]].filter(n => n != null) as number[];
 
         console.log('📝 [LearningSection] Запись ответа:', {
           questionId: question.id,
@@ -249,9 +248,8 @@ export function LearningSection() {
             });
 
             const shuffled = quizState.shuffledAnswers[idx] || [];
-            const shuffledIdx: number[] = userAnsArray
-              .map(i => shuffled[i])
-              .filter((n): n is number => n !== undefined && typeof n === 'number');
+            const mapped = userAnsArray.map(i => shuffled[i]);
+            const shuffledIdx: number[] = mapped.filter(n => n != null) as number[];
             sessionTrackerRef.current?.recordAnswer(q.id, q.ticket, shuffledIdx, correctAns, 0);
           }
         });

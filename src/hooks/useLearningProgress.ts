@@ -160,11 +160,12 @@ export function useLearningProgress(
     if (questions.length === 0) return;
 
     const loadProgress = async () => {
-      let progress: SavedState | null = null;
+      let progress: any | null = null;
 
       if (user?.id) {
         console.log('☁️ [useLearningProgress] Загрузка прогресса из Firestore...');
-        progress = await loadLearningProgress(user.id, currentSection);
+        const loaded = await loadLearningProgress(user.id, currentSection);
+        progress = loaded as any;
       }
 
       if (!progress && !user?.id) {
@@ -305,10 +306,11 @@ export function useLearningProgress(
         // Нормализуем ответ пользователя к массиву ОРИГИНАЛЬНЫХ индексов ответов
         let userOriginalIndices: number[];
         if (Array.isArray(userAnswer)) {
-          userOriginalIndices = userAnswer
-            .map(idx => shuffled[idx])
-            .filter((n): n is number => n !== undefined && typeof n === 'number');
+          const shuffled = quizState.shuffledAnswers[qIdx] || [];
+          const mapped = userAnswer.map(idx => shuffled[idx]);
+          userOriginalIndices = mapped.filter(n => n != null) as number[];
         } else {
+          const shuffled = quizState.shuffledAnswers[qIdx] || [];
           const idx = shuffled[userAnswer];
           if (typeof idx === 'number') {
             userOriginalIndices = [idx];

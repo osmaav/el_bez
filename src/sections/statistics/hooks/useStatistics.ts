@@ -44,7 +44,7 @@ export function useStatistics(): UseStatisticsReturn {
   }, [user]);
 
   // Экспорт статистики
-  const handleExport = useCallback(() => {
+  const handleExport = useCallback((): Promise<void> => {
     const data = statisticsService.export();
     const blob = new Blob([data], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
@@ -56,15 +56,17 @@ export function useStatistics(): UseStatisticsReturn {
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
     sonnerToast.success('Статистика экспортирована');
+    return Promise.resolve();
   }, []);
 
   // Очистка статистики
-  const handleClear = useCallback(() => {
+  const handleClear = useCallback((): Promise<void> => {
     if (confirm('Вы уверены, что хотите очистить всю статистику? Это действие необратимо.')) {
       statisticsService.clear();
       loadStatistics();
       sonnerToast.success('Статистика очищена');
     }
+    return Promise.resolve();
   }, [loadStatistics]);
 
   return {
