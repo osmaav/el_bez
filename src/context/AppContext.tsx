@@ -171,8 +171,8 @@ const SECTIONS: SectionInfo[] = [
     totalTickets: 0
   },
   {
-    id: '1500-2',
-    name: 'ЭБ 1500.2',
+    id: '1500-6',
+    name: 'ЭБ 1500.6',
     description: 'V группа до 1000 В (непромышленный)',
     totalQuestions: 0,
     totalTickets: 0
@@ -410,12 +410,12 @@ const AppProvider = ({ children }: { children: React.ReactNode }) => {
   // Тренажер функции
   const startTrainer = useCallback((questionCount: number = 50, questionsPool?: Question[]) => {
     const pool = questionsPool || questions;
-    
+
     if (pool.length === 0) {
       // console.error('❌ Вопросы ещё не загружены');
       return;
     }
-    
+
     // Случайная выборка из пула вопросов (отфильтрованных или всех)
     const shuffled = [...pool].sort(() => Math.random() - 0.5);
     const selected = shuffled.slice(0, Math.min(questionCount, shuffled.length));
@@ -440,10 +440,10 @@ const AppProvider = ({ children }: { children: React.ReactNode }) => {
 
     // Записываем ответ в SessionTracker
     if (sessionTrackerRef.current) {
-      const correctAnswers = Array.isArray(currentQuestion.correct_index) 
-        ? currentQuestion.correct_index 
+      const correctAnswers = Array.isArray(currentQuestion.correct_index)
+        ? currentQuestion.correct_index
         : [currentQuestion.correct_index];
-      
+
       sessionTrackerRef.current.recordAnswer(
         currentQuestion.id,
         currentQuestion.ticket,
@@ -468,7 +468,7 @@ const AppProvider = ({ children }: { children: React.ReactNode }) => {
 
   const finishTrainer = useCallback(() => {
     setIsTrainerFinished(true);
-    
+
     // Завершаем сессию и сохраняем статистику
     if (sessionTrackerRef.current) {
       sessionTrackerRef.current.finish();
@@ -481,7 +481,7 @@ const AppProvider = ({ children }: { children: React.ReactNode }) => {
     setTrainerCurrentIndex(0);
     setTrainerAnswers({});
     setIsTrainerFinished(false);
-    
+
     // Отменяем сессию
     if (sessionTrackerRef.current) {
       sessionTrackerRef.current.cancel();
@@ -495,7 +495,7 @@ const AppProvider = ({ children }: { children: React.ReactNode }) => {
     setExamAnswers({});
     setExamResults({});
     setIsExamFinished(false);
-    
+
     // Инициализируем SessionTracker для экзамена
     sessionTrackerRef.current = new SessionTracker(currentSection, 'exam');
   }, [currentSection]);
@@ -516,7 +516,7 @@ const AppProvider = ({ children }: { children: React.ReactNode }) => {
       const userAnswer = examAnswers[q.id];
       const correctAnswers = Array.isArray(q.correct_index) ? q.correct_index : [q.correct_index];
       const userAnswers = Array.isArray(userAnswer) ? userAnswer : [userAnswer];
-      
+
       results[q.id] = checkAnswer(userAnswers, correctAnswers);
 
       // Записываем ответ в SessionTracker
@@ -546,7 +546,7 @@ const AppProvider = ({ children }: { children: React.ReactNode }) => {
     setExamAnswers({});
     setExamResults({});
     setIsExamFinished(false);
-    
+
     // Отменяем сессию
     if (sessionTrackerRef.current) {
       sessionTrackerRef.current.cancel();

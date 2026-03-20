@@ -63,7 +63,7 @@ export const mockQuestionsData: Record<string, Question[]> = {
   '1497-6': [],
   '1498-6': [],
   '1499-6': [],
-  '1500-2': [],
+  '1500-6': [],
   '1501-2': [],
 };
 

@@ -170,48 +170,48 @@ export function TrainerSection() {
     success('Тренажёр сброшен', 'Все ответы очищены');
   };
 
-  // Автоответ на все вопросы — проходит по вопросам последовательно
+  // Автоответ на все вопросы — отладка (скрыто)
   const handleAutoAnswer = useCallback(() => {
-    console.log('🤖 [TrainerSection] Автоответ на все вопросы...');
+    // console.log('🤖 [TrainerSection] Автоответ на все вопросы...');
     setIsAutoAnswering(true);
     setAutoAnswerCurrentIndex(trainerCurrentIndex);
   }, [trainerCurrentIndex]);
 
-  // Выбор ответа в режиме автоответа
+  // Выбор ответа в режиме автоответа (отладка, скрыто)
   useEffect(() => {
     if (!isAutoAnswering) return;
-    
+
     const currentQ = trainerQuestions[autoAnswerCurrentIndex];
     if (!currentQ) return;
-    
+
     // Проверяем что ещё не отвечали на этот вопрос
     if (trainerAnswers[currentQ.id] !== undefined) return;
-    
+
     const correctAnswers = Array.isArray(currentQ.correct_index)
       ? currentQ.correct_index
       : [currentQ.correct_index];
     const expectedCount = correctAnswers.length;
-    
+
     // Для множественного выбора выбираем первые expectedCount вариантов
     // Для одиночного - случайный ответ
     const answerIndex = expectedCount > 1
       ? Array.from({ length: expectedCount }, (_, idx) => idx)
       : Math.floor(Math.random() * currentQ.options.length);
-    
-    console.log(`📝 [TrainerSection] Вопрос ${autoAnswerCurrentIndex + 1}/${trainerQuestions.length}: ответ ${answerIndex}`);
-    
+
+    // console.log(`📝 [TrainerSection] Вопрос ${autoAnswerCurrentIndex + 1}/${trainerQuestions.length}: ответ ${answerIndex}`);
+
     // Отвечаем на вопрос
     answerTrainerQuestion(answerIndex);
   }, [isAutoAnswering, autoAnswerCurrentIndex, trainerQuestions, trainerAnswers, answerTrainerQuestion]);
 
-  // Обработка перехода к следующему вопросу в режиме автоответа
+  // Обработка перехода к следующему вопросу в режиме автоответа (отладка, скрыто)
   useEffect(() => {
     if (!isAutoAnswering) return;
-    
+
     // Проверяем что ответ записан для текущего вопроса
     const currentQ = trainerQuestions[autoAnswerCurrentIndex];
     if (!currentQ || trainerAnswers[currentQ.id] === undefined) return;
-    
+
     // Ждём 500мс для визуального эффекта
     const timer = setTimeout(() => {
       if (autoAnswerCurrentIndex < trainerQuestions.length - 1) {
@@ -224,21 +224,21 @@ export function TrainerSection() {
           finishTrainer();
           setShowResults(true);
           setIsAutoAnswering(false);
-          console.log('✅ [TrainerSection] Автоответ завершён');
+          // console.log('✅ [TrainerSection] Автоответ завершён');
         }, 200);
       }
     }, 500);
-    
+
     return () => clearTimeout(timer);
   }, [isAutoAnswering, autoAnswerCurrentIndex, trainerQuestions, trainerAnswers, nextTrainerQuestion, finishTrainer]);
 
-  // Включаем кнопку автоответа
+  // Включаем кнопку автоответа (отладка, скрыто)
   useEffect(() => {
     // Не показываем кнопку во время автоответа или после завершения
     if (isAutoAnswering || isTrainerFinished || showResults) {
       return;
     }
-  
+
     // Проверяем что вопросы загружены
     if (!trainerQuestions || trainerQuestions.length === 0) {
       return;
@@ -247,19 +247,19 @@ export function TrainerSection() {
     // Проверяем есть ли не отвеченные вопросы
     const hasUnanswered = trainerQuestions.some(q => trainerAnswers[q.id] === undefined);
 
-    console.log('👁️ [TrainerSection] AutoAnswer check:', {
-      hasUnanswered,
-      totalQuestions: trainerQuestions.length,
-      answeredCount: trainerQuestions.filter(q => trainerAnswers[q.id] !== undefined).length,
-    });
+    // console.log('👁️ [TrainerSection] AutoAnswer check:', {
+    //   hasUnanswered,
+    //   totalQuestions: trainerQuestions.length,
+    //   answeredCount: trainerQuestions.filter(q => trainerAnswers[q.id] !== undefined).length,
+    // });
 
     if (hasUnanswered) {
-      console.log('👁️ [TrainerSection] Dispatching enableAutoAnswer event');
+      // console.log('👁️ [TrainerSection] Dispatching enableAutoAnswer event');
       window.dispatchEvent(new CustomEvent('enableAutoAnswer', {
         detail: { page: 'trainer', handler: handleAutoAnswer },
       }));
     } else {
-      console.log('👁️ [TrainerSection] Dispatching disableAutoAnswer event');
+      // console.log('👁️ [TrainerSection] Dispatching disableAutoAnswer event');
       window.dispatchEvent(new CustomEvent('disableAutoAnswer', {
         detail: { page: 'trainer' },
       }));

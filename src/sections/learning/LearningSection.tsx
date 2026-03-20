@@ -410,14 +410,14 @@ export function LearningSection() {
     }
   }, [currentSection, currentPage, displayTotalPages, stats, quizState, sections, loading, updateToast, success, toastError]);
 
-  // Автоматический ответ на все вопросы
+  // Автоматический ответ на все вопросы (отладка, скрыто)
   const handleAutoAnswer = useCallback(async () => {
-    console.log('🤖 [LearningSection] Автоответ на все вопросы...');
+    // console.log('🤖 [LearningSection] Автоответ на все вопросы...');
 
     // Создаём SessionTracker если его нет
     if (!sessionTrackerRef.current) {
       sessionTrackerRef.current = new SessionTracker(currentSection, 'learning');
-      console.log('📊 [LearningSection] SessionTracker создан для автоответа');
+      // console.log('📊 [LearningSection] SessionTracker создан для автоответа');
     }
 
     // Проходим по всем вопросам на текущей странице
@@ -440,42 +440,42 @@ export function LearningSection() {
 
     // Завершаем сессию если все вопросы отвечены
     if (unansweredIndices.length > 0 && sessionTrackerRef.current) {
-      console.log('✅ [LearningSection] Автоответ завершён, завершение сессии...');
-      
+      // console.log('✅ [LearningSection] Автоответ завершён, завершение сессии...');
+
       // Ждём немного чтобы React обновил состояние
       await new Promise(resolve => setTimeout(resolve, 200));
-      
+
       // Завершаем сессию вручную
       sessionTrackerRef.current.finish();
       sessionTrackerRef.current = null;
-      console.log('✅ [LearningSection] Сессия завершена');
+      // console.log('✅ [LearningSection] Сессия завершена');
     } else {
-      console.log('✅ [LearningSection] Автоответ завершён');
+      // console.log('✅ [LearningSection] Автоответ завершён');
     }
   }, [quizState.currentQuestions, quizState.userAnswers, handleAnswerWithTracking, currentSection]);
 
-  // Включаем кнопку автоответа
+  // Включаем кнопку автоответа (отладка, скрыто)
   useEffect(() => {
     // Проверяем есть ли не отвеченные вопросы
     const hasUnanswered = quizState.userAnswers.some(a => a === null);
-    
-    console.log('👁️ [LearningSection] AutoAnswer check:', {
-      hasUnanswered,
-      currentPage,
-    });
-    
+
+    // console.log('👁️ [LearningSection] AutoAnswer check:', {
+    //   hasUnanswered,
+    //   currentPage,
+    // });
+
     if (hasUnanswered) {
-      console.log('👁️ [LearningSection] Dispatching enableAutoAnswer event');
+      // console.log('👁️ [LearningSection] Dispatching enableAutoAnswer event');
       window.dispatchEvent(new CustomEvent('enableAutoAnswer', {
         detail: { page: 'learning', handler: handleAutoAnswer },
       }));
     } else {
-      console.log('👁️ [LearningSection] Dispatching disableAutoAnswer event');
+      // console.log('👁️ [LearningSection] Dispatching disableAutoAnswer event');
       window.dispatchEvent(new CustomEvent('disableAutoAnswer', {
         detail: { page: 'learning' },
       }));
     }
-    
+
     return () => {
       window.dispatchEvent(new CustomEvent('disableAutoAnswer', {
         detail: { page: 'learning' },
