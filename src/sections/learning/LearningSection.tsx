@@ -183,7 +183,10 @@ export function LearningSection() {
     
     if (sessionTrackerRef.current && question) {
       // Для множественного выбора записываем ответ когда выбраны все варианты
-      const correctAnswers = Array.isArray(question.correct) ? question.correct : [question.correct];
+      const correctAns = question.correct;
+      const correctAnswers: number[] = Array.isArray(correctAns)
+        ? correctAns.flatMap(n => typeof n === 'number' ? [n] : [])
+        : [correctAns].flatMap(n => typeof n === 'number' ? [n] : []);
       const expectedCount = correctAnswers.length;
       const isSelectedAll = Array.isArray(answerIndex) && answerIndex.length >= expectedCount;
 
@@ -237,9 +240,10 @@ export function LearningSection() {
           const q = quizState.currentQuestions[idx];
           if (!q) return;
 
-          const correctAns: number[] = Array.isArray(q.correct)
-            ? q.correct.filter((n): n is number => typeof n === 'number')
-            : [q.correct].filter((n): n is number => typeof n === 'number');
+          const correctAnsArr = q.correct;
+          const correctAns: number[] = Array.isArray(correctAnsArr)
+            ? correctAnsArr.flatMap(n => typeof n === 'number' ? [n] : [])
+            : [correctAnsArr].flatMap(n => typeof n === 'number' ? [n] : []);
           const expCount = correctAns.length;
           const userAnsArray = Array.isArray(userAnswer) ? userAnswer : [userAnswer];
 
@@ -429,7 +433,10 @@ export function LearningSection() {
     quizState.currentQuestions.forEach((question, qIdx) => {
       if (quizState.userAnswers[qIdx] === null) {
         unansweredIndices.push(qIdx);
-        const correctAnswers = Array.isArray(question.correct) ? question.correct : [question.correct];
+        const correctAns = question.correct;
+        const correctAnswers: number[] = Array.isArray(correctAns)
+          ? correctAns.flatMap(n => typeof n === 'number' ? [n] : [])
+          : [correctAns].flatMap(n => typeof n === 'number' ? [n] : []);
         const expectedCount = correctAnswers.length;
 
         // Для множественного выбора выбираем первые expectedCount вариантов

@@ -113,9 +113,10 @@ export const exportLearningToPDF = async (data: LearningExportData): Promise<voi
     const isAnswered = userAnswerIdx !== null && (Array.isArray(userAnswerIdx) ? userAnswerIdx.length > 0 : true);
     
     // Получаем индексы правильных ответов
-    const correctIndices: number[] = Array.isArray(q.correct) 
-      ? q.correct.filter((n): n is number => typeof n === 'number')
-      : [q.correct].filter((n): n is number => typeof n === 'number');
+    const correctAns = q.correct;
+    const correctIndices: number[] = Array.isArray(correctAns)
+      ? correctAns.flatMap(n => typeof n === 'number' ? [n] : [])
+      : [correctAns].flatMap(n => typeof n === 'number' ? [n] : []);
 
     // Получаем текст ответа пользователя
     const userAnswerText = getAnswerText(q, userAnswerIdx);

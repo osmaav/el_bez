@@ -300,9 +300,10 @@ export function useLearningProgress(
         answered++;
 
         const question = quizState.currentQuestions[qIdx];
-        const correctAnswers: number[] = Array.isArray(question.correct)
-          ? question.correct.filter((n): n is number => typeof n === 'number')
-          : [question.correct].filter((n): n is number => typeof n === 'number');
+        const correctAns = question.correct;
+        const correctAnswers: number[] = Array.isArray(correctAns)
+          ? correctAns.flatMap(n => typeof n === 'number' ? [n] : [])
+          : [correctAns].flatMap(n => typeof n === 'number' ? [n] : []);
 
         // Нормализуем ответ пользователя к массиву ОРИГИНАЛЬНЫХ индексов ответов
         let userOriginalIndices: number[];

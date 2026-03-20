@@ -20,8 +20,8 @@ interface UseStatisticsReturn {
   activeTab: StatisticsTab;
   setActiveTab: (tab: StatisticsTab) => void;
   refreshStatistics: () => Promise<void>;
-  handleExport: () => Promise<void>;
-  handleClear: () => Promise<void>;
+  handleExport: () => void;
+  handleClear: () => void;
 }
 
 export function useStatistics(): UseStatisticsReturn {
@@ -31,7 +31,7 @@ export function useStatistics(): UseStatisticsReturn {
   const [activeTab, setActiveTab] = useState<StatisticsTab>('overview');
 
   // Загрузка статистики
-  const loadStatistics = useCallback(() => {
+  const loadStatistics = useCallback(async () => {
     const userId = user?.id || 'anonymous';
     let stats = statisticsService.load(userId);
 
@@ -44,7 +44,7 @@ export function useStatistics(): UseStatisticsReturn {
   }, [user]);
 
   // Экспорт статистики
-  const handleExport = useCallback(async (): Promise<void> => {
+  const handleExport = useCallback(() => {
     const data = statisticsService.export();
     const blob = new Blob([data], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
@@ -59,7 +59,7 @@ export function useStatistics(): UseStatisticsReturn {
   }, []);
 
   // Очистка статистики
-  const handleClear = useCallback(async (): Promise<void> => {
+  const handleClear = useCallback(() => {
     if (confirm('Вы уверены, что хотите очистить всю статистику? Это действие необратимо.')) {
       statisticsService.clear();
       loadStatistics();

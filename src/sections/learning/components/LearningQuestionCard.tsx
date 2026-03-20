@@ -35,7 +35,10 @@ export function LearningQuestionCard({
   onToggleSource,
 }: LearningQuestionCardProps) {
   // Определяем тип вопроса (одиночный или множественный выбор)
-  const correctAnswers = Array.isArray(question.correct) ? question.correct : [question.correct];
+  const correctAns = question.correct;
+  const correctAnswers: number[] = Array.isArray(correctAns)
+    ? correctAns.flatMap(n => typeof n === 'number' ? [n] : [])
+    : [correctAns].flatMap(n => typeof n === 'number' ? [n] : []);
   const expectedCount = correctAnswers.length;
 
   // Нормализуем userAnswer к массиву
@@ -57,8 +60,10 @@ export function LearningQuestionCard({
     }
 
     // Ответ дан - показываем правильные/неправильные
-    if (typeof originalIndex === 'number' && correctAnswers.includes(originalIndex)) {
-      return 'bg-green-100 border-green-500 text-green-900';
+    if (typeof originalIndex === 'number') {
+      if (correctAnswers.includes(originalIndex)) {
+        return 'bg-green-100 border-green-500 text-green-900';
+      }
     }
 
     if (userAnswersArray.includes(shuffledIndex)) {
