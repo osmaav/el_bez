@@ -1,7 +1,7 @@
 {
   "name": "el_bez",
   "private": true,
-  "version": "2026.03.12.00",
+  "version": "2026.03.20.00",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -11,7 +11,15 @@
     "lint:fix": "eslint . --fix",
     "build": "npm run lint && npm run test:run && tsc -b && vite build",
     "preview": "vite preview",
-    "generate-pdf-font": "node scripts/generate-pdf-font.cjs"
+    "generate-pdf-font": "node scripts/generate-pdf-font.cjs",
+    "db:backup": "node scripts/backup-firestore.cjs",
+    "db:restore": "node scripts/restore-firestore.cjs",
+    "db:migrate": "node scripts/migrate-sections-step-by-step.cjs",
+    "db:migrate:auto": "node scripts/migrate-all-sections-auto.cjs",
+    "db:check": "node scripts/check-firestore-status.cjs",
+    "db:verify": "node scripts/verify-section-before-upload.cjs",
+    "db:fix:correct": "node scripts/fix-correct-field.cjs",
+    "db:fix:sessions": "node scripts/fix-user-sessions.cjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",

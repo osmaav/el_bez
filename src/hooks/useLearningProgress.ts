@@ -11,6 +11,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/useToast';
 import { saveLearningProgress, loadLearningProgress } from '@/services/questionService';
 import { SessionTracker } from '@/services/statisticsService';
+import { checkAnswer } from '@/utils/answerValidator';
 import type { Question, SectionType } from '@/types';
 
 // ============================================================================
@@ -291,12 +292,31 @@ export function useLearningProgress(
       let correct = 0;
       let answered = 0;
 
-      quizState.userAnswers.forEach((userAnswerIdx, qIdx) => {
-        if (userAnswerIdx === null) return;
+      quizState.userAnswers.forEach((userAnswer, qIdx) => {
+        if (userAnswer === null) return;
         answered++;
-        const originalAnswerIndex = quizState.shuffledAnswers[qIdx][userAnswerIdx];
-        const correctOriginalIndex = quizState.currentQuestions[qIdx].correct;
-        if (originalAnswerIndex === correctOriginalIndex) {
+
+        const question = quizState.currentQuestions[qIdx];
+        const correctAnswers: number[] = Array.isArray(question.correct) 
+          ? question.correct.filter((n): n is number => typeof n === 'number')
+          : [question.correct].filter((n): n is number => typeof n === 'number');
+        const shuffled = quizState.shuffledAnswers[qIdx] || [];
+
+        // Нормализуем ответ пользователя к массиву ОРИГИНАЛЬНЫХ индексов ответов
+        let userOriginalIndices: number[];
+        if (Array.isArray(userAnswer)) {
+          userOriginalIndices = userAnswer.map(idx => shuffled[idx]).filter((n): n is number => typeof n === 'number');
+        } else {
+          const idx = shuffled[userAnswer];
+          if (typeof idx === 'number') {
+            userOriginalIndices = [idx];
+          } else {
+            userOriginalIndices = [userAnswer];
+          }
+        }
+
+        // Проверяем правильность через checkAnswer
+        if (checkAnswer(userOriginalIndices, correctAnswers)) {
           correct++;
         }
       });
@@ -305,7 +325,11 @@ export function useLearningProgress(
       const remaining = quizState.currentQuestions.length - answered;
       setStats({ correct, incorrect, remaining });
     }
-  }, [quizState]);
+  }, [
+    quizState.userAnswers,
+    quizState.shuffledAnswers,
+    quizState.currentQuestions
+  ]);
 
   // ============================================================================
   // Save Progress

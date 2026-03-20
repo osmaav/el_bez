@@ -4,7 +4,7 @@ declare module '@/data/questions.json' {
     ticket: number;
     question: string;
     answers: string[];
-    correct: number;
+    correct: number[];
     link: string;
   }
 

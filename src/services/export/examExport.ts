@@ -27,7 +27,7 @@ export const exportExamToPDF = async (data: ExamExportData): Promise<void> => {
   await loadCyrillicFont(doc);
 
   const pageWidth = doc.internal.pageSize.getWidth();
-  const margin = 14;
+  const margin = 10;
 
   // Цвет заголовка в зависимости от результата
   const headerColor = data.stats.passed ? COLORS.success : COLORS.error;
@@ -47,7 +47,7 @@ export const exportExamToPDF = async (data: ExamExportData): Promise<void> => {
   );
 
   doc.setFont('Roboto');
-  doc.setFontSize(10);
+  doc.setFontSize(12);
   doc.text(`Билет №${data.ticketId}`, pageWidth / 2, 19, { align: 'center' });
 
   // Информация о пользователе справа в заголовке
@@ -80,18 +80,18 @@ export const exportExamToPDF = async (data: ExamExportData): Promise<void> => {
   doc.setTextColor(255, 255, 255);
   doc.setFontSize(9);
   doc.text(`${data.sectionInfo.name} — ${data.sectionInfo.description}`, margin, 32);
-  doc.text(formatDate(data.timestamp), pageWidth - margin, 32, { align: 'right' });
+  doc.text(formatDate(data.timestamp), pageWidth - margin + 5, 32, { align: 'right' });
 
   // Результат
-  const resultY = 42;
+  const resultY = 35;
   doc.setFillColor(COLORS.light[0], COLORS.light[1], COLORS.light[2]);
-  doc.roundedRect(margin, resultY, pageWidth - 2 * margin, 35, 3, 3, 'F');
+  doc.roundedRect(margin, resultY + 5, pageWidth - 2 * margin, 23, 3, 3, 'F');
 
   // Процент
   doc.setTextColor(headerColor[0], headerColor[1], headerColor[2]);
   doc.setFont('Roboto');
   doc.setFontSize(16);
-  doc.text(`${data.stats.percentage}%`, pageWidth / 2, resultY + 18, { align: 'center' });
+  doc.text(`${data.stats.percentage}%`, pageWidth / 2, resultY + 15, { align: 'center' });
 
   doc.setTextColor(COLORS.slate[0], COLORS.slate[1], COLORS.slate[2]);
   doc.setFont('Roboto');
@@ -101,18 +101,18 @@ export const exportExamToPDF = async (data: ExamExportData): Promise<void> => {
       ? 'Поздравляем! Успешная сдача (≥80%)'
       : 'Требуется повторная подготовка',
     pageWidth / 2,
-    resultY + 28,
+    resultY + 23,
     { align: 'center' }
   );
 
   // Статистика
-  const statsY = resultY + 32;
+  const statsY = resultY + 30;
   const statsData = [
-    { label: 'Всего вопросов', value: data.stats.total.toString() },
-    { label: 'Правильных ответов', value: data.stats.correct.toString(), color: COLORS.success },
-    { label: 'Неправильных ответов', value: (data.stats.total - data.stats.correct).toString(), color: COLORS.error },
-    { label: 'Необходимый процент', value: '80%' },
-    { label: 'Ваш результат', value: `${data.stats.percentage}%`, color: headerColor },
+    { label: 'Всего вопросов:', value: data.stats.total.toString() },
+    { label: 'Правильных ответов:', value: data.stats.correct.toString(), color: COLORS.success },
+    { label: 'Неправильных ответов:', value: (data.stats.total - data.stats.correct).toString(), color: COLORS.error },
+    { label: 'Необходимый процент:', value: '80%' },
+    { label: 'Ваш результат:', value: `${data.stats.percentage}%`, color: headerColor },
   ];
 
   autoTable(doc, {
@@ -121,8 +121,8 @@ export const exportExamToPDF = async (data: ExamExportData): Promise<void> => {
     theme: 'plain',
     styles: { fontSize: 10, font: 'Roboto', lineWidth: 0 },
     columnStyles: {
-      0: { fontStyle: 'bold', cellWidth: 70 },
-      1: { cellWidth: 40, halign: 'right' }
+      0: { cellWidth: 45 },
+      1: { cellWidth: 20, halign: 'left' }
     },
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     didParseCell: (cellData: any) => {
@@ -134,29 +134,40 @@ export const exportExamToPDF = async (data: ExamExportData): Promise<void> => {
     willDrawCell: () => {
       doc.setFont('Roboto', 'normal');
     },
-    margin: { left: margin, right: margin + 10 }
+    margin: { left: margin }
   });
 
   // Детальный разбор
   doc.setFont('Roboto', 'normal');
   const tableStartY = doc.lastAutoTable.finalY + 3;
 
-  doc.setTextColor(COLORS.slate[0], COLORS.slate[1], COLORS.slate[2]);
+  doc.setTextColor(COLORS.slate[0]);
   doc.setFont('Roboto');
-  doc.setFontSize(11);
-  doc.text('Разбор вопросов:', margin, tableStartY);
+  doc.setFontSize(12);
+  doc.text('Разбор вопросов:', pageWidth / 2, tableStartY, { align: 'center' });
 
   const tableData = data.questions.map((q, idx) => {
     const userAnswer = data.answers[q.id];
     const isAnswered = userAnswer !== undefined;
-    const userAnswerText = isAnswered ? getAnswerText(q, userAnswer) : 'Не отвечено';
+    
+    // Формируем текст ответа
+    let userAnswerText = 'Не отвечено';
+    if (isAnswered) {
+      const userAnswers = Array.isArray(userAnswer) ? userAnswer : [userAnswer];
+      userAnswerText = userAnswers.map(idx => q.options[idx] || `Вариант ${String.fromCharCode(1040 + idx)}`).join(', ');
+    }
+
     const correctAnswerText = getAnswerText(q, q.correct_index);
+
+    // Проверяем правильность ответа
+    const isCorrect = data.results[q.id] ?? false;
 
     return {
       number: idx + 1,
       question: truncateText(q.text, 300),
       yourAnswer: truncateText(userAnswerText, 200),
-      correctAnswer: truncateText(correctAnswerText, 200)
+      correctAnswer: truncateText(correctAnswerText, 200),
+      isCorrect
     };
   });
 
@@ -173,7 +184,9 @@ export const exportExamToPDF = async (data: ExamExportData): Promise<void> => {
     headStyles: {
       fillColor: COLORS.primary as unknown as [number, number, number],
       font: 'Roboto',
-      halign: 'center'
+      halign: 'center',
+      fontSize: 12,
+      textColor: 'white'
     },
     styles: { fontSize: 8, cellPadding: 2, font: 'Roboto', lineWidth: 0 },
     columnStyles: {
@@ -181,6 +194,17 @@ export const exportExamToPDF = async (data: ExamExportData): Promise<void> => {
       1: { cellWidth: 60 },
       2: { cellWidth: 60 },
       3: { cellWidth: 60 }
+    },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    didParseCell: (cellData: any) => {
+      // Окрашиваем только тело таблицы (не заголовки)
+      if (cellData.section === 'head') return;
+      
+      const row = tableData[cellData.row.index];
+      // Окрашиваем неверные ответы красным
+      if (cellData.column.index === 2 && !row.isCorrect) {
+        cellData.cell.styles.textColor = COLORS.error;
+      }
     },
     willDrawCell: () => {
       doc.setFont('Roboto', 'normal');

@@ -31,7 +31,7 @@ describe('testHelpers', () => {
       expect(typeof question.ticket).toBe('number');
       expect(typeof question.text).toBe('string');
       expect(Array.isArray(question.options)).toBe(true);
-      expect(typeof question.correct_index).toBe('number');
+      expect(Array.isArray(question.correct_index)).toBe(true);
     });
 
     it('должен создавать вопрос с массивом из 4 вариантов ответов', () => {
@@ -46,13 +46,13 @@ describe('testHelpers', () => {
         id: 999,
         ticket: 10,
         text: 'Кастомный вопрос',
-        correct_index: 3,
+        correct_index: [3],
       });
 
       expect(question.id).toBe(999);
       expect(question.ticket).toBe(10);
       expect(question.text).toBe('Кастомный вопрос');
-      expect(question.correct_index).toBe(3);
+      expect(question.correct_index).toEqual([3]);
     });
 
     it('должен сохранять поля по умолчанию при частичном переопределении', () => {
@@ -62,7 +62,7 @@ describe('testHelpers', () => {
 
       expect(question.id).toBe(999);
       expect(question.ticket).toBe(1); // значение по умолчанию
-      expect(question.correct_index).toBe(0); // значение по умолчанию
+      expect(question.correct_index).toEqual([0]); // значение по умолчанию
     });
 
     it('не должен содержать лишних полей', () => {
@@ -83,7 +83,7 @@ describe('testHelpers', () => {
       // Если этот тест компилируется и проходит, значит типы корректны
       expect(question.id).toBe(1);
       expect(question.ticket).toBe(1);
-      expect(question.correct_index).toBe(0);
+      expect(question.correct_index).toEqual([0]);
     });
   });
 
@@ -143,7 +143,7 @@ describe('testHelpers', () => {
       expect(questions.every(q => typeof q.ticket === 'number')).toBe(true);
       expect(questions.every(q => typeof q.text === 'string')).toBe(true);
       expect(questions.every(q => Array.isArray(q.options))).toBe(true);
-      expect(questions.every(q => typeof q.correct_index === 'number')).toBe(true);
+      expect(questions.every(q => Array.isArray(q.correct_index))).toBe(true);
     });
   });
 
@@ -219,15 +219,16 @@ describe('testHelpers', () => {
       // Проверяем что вопросы можно использовать в тестах
       expect(questions).toHaveLength(10);
       expect(questions.every(q => q.options.length === 4)).toBe(true);
-      expect(questions.every(q => q.correct_index >= 0 && q.correct_index < 4)).toBe(true);
+      expect(questions.every(q => Array.isArray(q.correct_index) && q.correct_index[0] >= 0 && q.correct_index[0] < 4)).toBe(true);
     });
 
     it('должен создавать вопросы с корректными correct_index', () => {
       const questions = createMockQuestions(20);
 
       questions.forEach(q => {
-        expect(q.correct_index).toBeGreaterThanOrEqual(0);
-        expect(q.correct_index).toBeLessThan(q.options.length);
+        expect(Array.isArray(q.correct_index)).toBe(true);
+        expect(q.correct_index[0]).toBeGreaterThanOrEqual(0);
+        expect(q.correct_index[0]).toBeLessThan(q.options.length);
       });
     });
 

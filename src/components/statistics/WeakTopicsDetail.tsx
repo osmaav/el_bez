@@ -11,7 +11,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
-import { AlertCircle, TrendingUp, Target, BookOpen, ChevronRight } from 'lucide-react';
+import { AlertCircle, TrendingUp, Target, BookOpen, Eye, EyeOff } from 'lucide-react';
 import type { SectionType } from '@/types';
 
 interface WeakTopic {
@@ -26,11 +26,14 @@ interface WeakTopic {
 interface WeakTopicsDetailProps {
   weakTopics: WeakTopic[];
   onFilterByTicket?: (ticket: number) => void;
+  /** Список активных билетов в фильтре */
+  activeTickets?: number[];
 }
 
-export const WeakTopicsDetail: React.FC<WeakTopicsDetailProps> = ({ 
-  weakTopics, 
-  onFilterByTicket 
+export const WeakTopicsDetail: React.FC<WeakTopicsDetailProps> = ({
+  weakTopics,
+  onFilterByTicket,
+  activeTickets = [],
 }) => {
   if (!weakTopics || weakTopics.length === 0) {
     return (
@@ -119,10 +122,20 @@ export const WeakTopicsDetail: React.FC<WeakTopicsDetailProps> = ({
                     variant="ghost"
                     size="sm"
                     onClick={() => onFilterByTicket(topic.ticket)}
-                    className="h-6 text-xs hover:bg-blue-50 dark:hover:bg-blue-950/20"
+                    className={`h-6 text-xs hover:bg-blue-50 dark:hover:bg-blue-950/20 ${
+                      activeTickets.includes(topic.ticket)
+                        ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300'
+                        : ''
+                    }`}
                   >
-                    Исключить
-                    <ChevronRight className="w-3 h-3 ml-1" />
+                    <span className={activeTickets.includes(topic.ticket) ? 'line-through' : ''}>
+                      Включить в фильтре
+                    </span>
+                    {activeTickets.includes(topic.ticket) ? (
+                      <EyeOff className="w-3 h-3 ml-1" data-testid="eye-off-icon" />
+                    ) : (
+                      <Eye className="w-3 h-3 ml-1" data-testid="eye-icon" />
+                    )}
                   </Button>
                 )}
               </div>

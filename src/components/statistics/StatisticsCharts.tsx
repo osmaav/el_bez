@@ -517,4 +517,3 @@ export const SessionsBarChart: React.FC<SessionsBarChartProps> = ({ sessions }) 
 // Экспорт ActivityCalendar
 export { ActivityCalendar } from './ActivityCalendar';
 export { WeakTopicsDetail } from './WeakTopicsDetail';
-export { QuestionFilter } from './QuestionFilter';

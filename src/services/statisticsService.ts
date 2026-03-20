@@ -21,7 +21,7 @@ export const statisticsService = {
     const now = Date.now();
     const stats: UserStatistics = {
       userId,
-      sections: {},
+      sections: {} as Record<SectionType, SectionStats | undefined>,
       sessions: [],
       totalSessions: 0,
       totalQuestionsAnswered: 0,
@@ -431,17 +431,27 @@ export class SessionTracker {
   recordAnswer(
     questionId: number,
     ticket: number,
-    userAnswer: number,
-    correctAnswer: number,
+    userAnswer: number | number[],
+    correctAnswer: number | number[],
     timeSpent: number
   ): void {
     if (!this.session) return;
+
+    // Нормализуем ответы к массивам для сравнения
+    const userAnswersArray = Array.isArray(userAnswer) ? userAnswer : [userAnswer];
+    const correctAnswersArray = Array.isArray(correctAnswer) ? correctAnswer : [correctAnswer];
+
+    // Сравниваем массивы (порядок не важен)
+    const sortedUser = [...userAnswersArray].sort((a, b) => a - b);
+    const sortedCorrect = [...correctAnswersArray].sort((a, b) => a - b);
+    const isCorrect = sortedUser.length === sortedCorrect.length &&
+                      sortedUser.every((val, idx) => val === sortedCorrect[idx]);
 
     const attempt: QuestionAttempt = {
       questionId,
       ticket,
       section: this.section,
-      isCorrect: userAnswer === correctAnswer,
+      isCorrect,
       userAnswer,
       correctAnswer,
       timestamp: Date.now(),
@@ -452,7 +462,7 @@ export class SessionTracker {
     this.session.questions = this.questions;
     this.session.totalQuestions++;
 
-    if (attempt.isCorrect) {
+    if (isCorrect) {
       this.session.correctAnswers++;
     } else {
       this.session.incorrectAnswers++;

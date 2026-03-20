@@ -39,7 +39,8 @@ export function useQuizNavigation({
       const savedPage = localStorage.getItem(storageKey);
       if (savedPage) {
         const page = parseInt(savedPage, 10);
-        if (page > 0 && page <= totalPages) {
+        // Проверяем что страница валидна (минимум 1)
+        if (page >= 1) {
           console.log('📄 [useQuizNavigation] Загружена сохранённая страница:', page);
           return page;
         }
@@ -47,6 +48,16 @@ export function useQuizNavigation({
     }
     return initialPage;
   });
+
+  // Корректировка currentPage если totalPages изменился и текущая страница выходит за границы
+  useEffect(() => {
+    if (totalPages > 0 && currentPage > totalPages) {
+      // Если сохранённая страница больше чем доступно, переходим на последнюю
+      const newPage = Math.max(1, totalPages);
+      console.log(`📄 [useQuizNavigation] Корректировка страницы: ${currentPage} → ${newPage} (totalPages=${totalPages})`);
+      setCurrentPage(newPage);
+    }
+  }, [totalPages, currentPage]);
 
   // Вызов колбэка при загрузке страницы
   useEffect(() => {

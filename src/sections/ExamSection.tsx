@@ -1,10 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useApp } from '@/hooks/useApp';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/useToast';
 import { exportExamToPDF } from '@/services/export';
 import { LoadingModal } from '@/components/ui/loading-modal';
-import { ConfirmModal } from '@/components/ui/confirm-modal';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
@@ -44,9 +43,10 @@ export function ExamSection() {
 
   const currentSectionInfo = sections.find(s => s.id === currentSection);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-  const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
+  const [selectedAnswer, setSelectedAnswer] = useState<number | number[] | null>(null);
   const [showConfirmFinish, setShowConfirmFinish] = useState(false);
-  const [showResetConfirm, setShowResetConfirm] = useState(false);
+  const [isAutoAnswering, setIsAutoAnswering] = useState(false);
+  const [autoAnswerCurrentIndex, setAutoAnswerCurrentIndex] = useState<number>(0);
   const [loadingModal, setLoadingModal] = useState<{
     isOpen: boolean;
     status: 'loading' | 'success' | 'error';
@@ -88,16 +88,120 @@ export function ExamSection() {
     }, 800);
   };
 
-  // Обёртка для resetExam с ConfirmModal
-  const handleResetExam = () => {
-    setShowResetConfirm(true);
-  };
-
   const confirmResetExam = () => {
-    setShowResetConfirm(false);
     resetExam();
     success('Экзамен сброшен', 'Все ответы очищены');
   };
+
+  // Автоответ на все вопросы — отладка (скрыто)
+  const handleAutoAnswer = useCallback(() => {
+    // console.log('🤖 [ExamSection] Автоответ на все вопросы...');
+    setIsAutoAnswering(true);
+    setAutoAnswerCurrentIndex(0);
+  }, []);
+
+  // Выбор ответа в режиме автоответа (отладка, скрыто)
+  useEffect(() => {
+    if (!isAutoAnswering) return;
+
+    const ticket = tickets.find(t => t.id === currentTicketId);
+    if (!ticket) return;
+
+    const currentQ = ticket.questions[autoAnswerCurrentIndex];
+    if (!currentQ) return;
+
+    // Проверяем что ещё не отвечали на этот вопрос
+    if (examAnswers[currentQ.id] !== undefined) return;
+
+    const correctAnswers = Array.isArray(currentQ.correct_index)
+      ? currentQ.correct_index
+      : [currentQ.correct_index];
+    const expectedCount = correctAnswers.length;
+
+    // Для множественного выбора выбираем первые expectedCount вариантов
+    // Для одиночного - случайный ответ
+    const answerIndex = expectedCount > 1
+      ? Array.from({ length: expectedCount }, (_, idx) => idx)
+      : Math.floor(Math.random() * currentQ.options.length);
+
+    // console.log(`📝 [ExamSection] Вопрос ${autoAnswerCurrentIndex + 1}/${ticket.questions.length}: ответ ${answerIndex}`);
+
+    // Отвечаем на вопрос
+    answerExamQuestion(currentQ.id, answerIndex);
+  }, [isAutoAnswering, autoAnswerCurrentIndex, tickets, currentTicketId, examAnswers, answerExamQuestion]);
+
+  // Обработка перехода к следующему вопросу в режиме автоответа (отладка, скрыто)
+  useEffect(() => {
+    if (!isAutoAnswering) return;
+
+    const ticket = tickets.find(t => t.id === currentTicketId);
+    if (!ticket) return;
+
+    const currentQ = ticket.questions[autoAnswerCurrentIndex];
+    if (!currentQ || examAnswers[currentQ.id] === undefined) return;
+
+    // Ждём 500мс для визуального эффекта
+    const timer = setTimeout(() => {
+      if (autoAnswerCurrentIndex < ticket.questions.length - 1) {
+        // Переходим к следующему вопросу
+        setCurrentQuestionIndex(prev => prev + 1);
+        setAutoAnswerCurrentIndex(prev => prev + 1);
+      } else {
+        // Все вопросы отвечены, завершаем
+        setTimeout(() => {
+          finishExam();
+          setIsAutoAnswering(false);
+          // console.log('✅ [ExamSection] Автоответ завершён');
+        }, 200);
+      }
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [isAutoAnswering, autoAnswerCurrentIndex, tickets, currentTicketId, examAnswers, finishExam]);
+
+  // Включаем кнопку автоответа (отладка, скрыто)
+  useEffect(() => {
+    // Не показываем кнопку во время автоответа или после завершения
+    if (isAutoAnswering || isExamFinished) {
+      return;
+    }
+
+    // Проверяем что билет выбран
+    if (!currentTicketId || !tickets || tickets.length === 0) {
+      return;
+    }
+
+    const ticket = tickets.find(t => t.id === currentTicketId);
+    if (!ticket || ticket.questions.length === 0) {
+      return;
+    }
+
+    // Проверяем есть ли не отвеченные вопросы
+    const hasUnanswered = ticket.questions.some(q => examAnswers[q.id] === undefined);
+
+    // console.log('👁️ [ExamSection] AutoAnswer check:', {
+    //   hasUnanswered,
+    //   totalQuestions: ticket.questions.length,
+    //   answeredCount: ticket.questions.filter(q => examAnswers[q.id] !== undefined).length
+    // });
+
+    if (hasUnanswered) {
+      // console.log('👁️ [ExamSection] Dispatching enableAutoAnswer event');
+      window.dispatchEvent(new CustomEvent('enableAutoAnswer', {
+        detail: { page: 'exam', handler: handleAutoAnswer },
+      }));
+    } else {
+      // console.log('👁️ [ExamSection] Dispatching disableAutoAnswer event');
+      window.dispatchEvent(new CustomEvent('disableAutoAnswer', {
+        detail: { page: 'exam' },
+      }));
+    }
+    return () => {
+      window.dispatchEvent(new CustomEvent('disableAutoAnswer', {
+        detail: { page: 'exam' },
+      }));
+    };
+  }, [handleAutoAnswer, currentTicketId, tickets, examAnswers, isAutoAnswering, isExamFinished]);
 
   // Экспорт результатов в PDF
   const handleExportToPDF = async () => {
@@ -267,6 +371,19 @@ export function ExamSection() {
               {tickets.find(t => t.id === currentTicketId)?.questions.map((q, idx) => {
                 const isCorrect = examResults[q.id];
                 const userAnswer = examAnswers[q.id];
+                const correctAnswers = Array.isArray(q.correct_index) ? q.correct_index : [q.correct_index];
+                
+                // Получаем текст ответа пользователя
+                const getUserAnswerText = () => {
+                  if (userAnswer === undefined) return 'Не отвечено';
+                  const answers = Array.isArray(userAnswer) ? userAnswer : [userAnswer];
+                  return answers.map(idx => q.options[idx]).join(', ');
+                };
+                
+                // Получаем текст правильного ответа
+                const getCorrectAnswerText = () => {
+                  return correctAnswers.map(idx => q.options[idx]).join(', ');
+                };
 
                 return (
                   <div
@@ -285,14 +402,12 @@ export function ExamSection() {
                           {idx + 1}. {q.text}
                         </p>
                         <div className="space-y-1 text-sm">
-                          {userAnswer !== undefined && (
-                            <p className={isCorrect ? 'text-green-700' : 'text-red-700'}>
-                              <span className="font-medium">Ваш ответ:</span> {q.options[userAnswer]}
-                            </p>
-                          )}
+                          <p className={isCorrect ? 'text-green-700' : 'text-red-700'}>
+                            <span className="font-medium">Ваш ответ:</span> {getUserAnswerText()}
+                          </p>
                           {!isCorrect && (
                             <p className="text-green-700">
-                              <span className="font-medium">Правильный ответ:</span> {q.options[q.correct_index]}
+                              <span className="font-medium">Правильный ответ:</span> {getCorrectAnswerText()}
                             </p>
                           )}
                         </div>
@@ -316,7 +431,7 @@ export function ExamSection() {
           </Button>
           <Button
             size="lg"
-            onClick={handleResetExam}
+            onClick={confirmResetExam}
             className="bg-yellow-500 hover:bg-yellow-600"
           >
             <RotateCcw className="w-5 h-5 mr-2" />
@@ -412,15 +527,36 @@ export function ExamSection() {
 
             <div className="space-y-3">
               {currentQuestion.options.map((option, idx) => {
-                const isSelected = selectedAnswer === idx;
+                // Проверяем, выбран ли этот ответ (поддержка множественного выбора)
+                const isSelected = Array.isArray(selectedAnswer)
+                  ? selectedAnswer.includes(idx)
+                  : selectedAnswer === idx;
+
+                const handleClick = () => {
+                  const correctAnswers = Array.isArray(currentQuestion.correct_index)
+                    ? currentQuestion.correct_index
+                    : [currentQuestion.correct_index];
+                  const expectedCount = correctAnswers.length;
+                  
+                  if (expectedCount > 1) {
+                    // Множественный выбор - переключаем ответ
+                    const currentAnswers = Array.isArray(selectedAnswer) ? selectedAnswer : [];
+                    const newAnswers = currentAnswers.includes(idx)
+                      ? currentAnswers.filter(a => a !== idx)
+                      : [...currentAnswers, idx];
+                    setSelectedAnswer(newAnswers);
+                    answerExamQuestion(currentQuestion.id, newAnswers);
+                  } else {
+                    // Одиночный выбор
+                    setSelectedAnswer(idx);
+                    answerExamQuestion(currentQuestion.id, idx);
+                  }
+                };
 
                 return (
                   <button
                     key={idx}
-                    onClick={() => {
-                      setSelectedAnswer(idx);
-                      answerExamQuestion(currentQuestion.id, idx);
-                    }}
+                    onClick={handleClick}
                     className={`
                     w-full p-4 text-left rounded-lg border-2 transition-all
                     ${isSelected
@@ -532,18 +668,6 @@ export function ExamSection() {
           </div>
         )}
       </div>
-
-      {/* ConfirmModal для сброса экзамена */}
-      <ConfirmModal
-        isOpen={showResetConfirm}
-        onClose={() => setShowResetConfirm(false)}
-        onConfirm={confirmResetExam}
-        title="Сброс экзамена"
-        description="Вы уверены, что хотите сбросить текущий экзамен? Все ответы будут потеряны."
-        type="warning"
-        confirmLabel="Сбросить"
-        cancelLabel="Отмена"
-      />
 
       {/* LoadingModal для запуска экзамена */}
       <LoadingModal

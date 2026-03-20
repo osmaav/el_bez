@@ -1,7 +1,7 @@
 import { useApp } from '@/hooks/useApp';
 import { useAuth } from '@/hooks/useAuth';
 import type { PageType, SectionType } from '@/types';
-import { BookOpen, GraduationCap, Dumbbell, School, ChevronDown, LogOut, LogIn, BarChart3, UserCircle } from 'lucide-react';
+import { BookOpen, GraduationCap, Dumbbell, School, ChevronDown, LogOut, LogIn, BarChart3, UserCircle, Factory, User } from 'lucide-react';
 import { useState, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { LoginModal } from '@/components/LoginModal';
@@ -17,8 +17,61 @@ const navItems: { id: PageType; label: string; icon: React.ElementType }[] = [
   { id: 'statistics', label: 'Статистика', icon: BarChart3 },
 ];
 
+// Группы разделов
+interface SectionGroup {
+  title: string;
+  icon: React.ElementType;
+  sections: SectionInfo[];
+}
+
+interface SectionInfo {
+  id: SectionType;
+  name: string;
+  description: string;
+  totalQuestions: number;
+  totalTickets: number;
+  isActive: boolean; // true если есть вопросы
+}
+
+// Промышленные разделы (от низкой группы к высокой)
+const INDUSTRIAL_SECTIONS: SectionInfo[] = [
+  { id: '1254-19', name: 'ЭБ 1254.19', description: 'II группа до 1000 В', totalQuestions: 99, totalTickets: 10, isActive: true },
+  { id: '1255-19', name: 'ЭБ 1255.19', description: 'II группа до и выше 1000 В', totalQuestions: 103, totalTickets: 12, isActive: true },
+  { id: '1256-19', name: 'ЭБ 1256.19', description: 'III группа до 1000 В', totalQuestions: 250, totalTickets: 25, isActive: true },
+  { id: '1257-20', name: 'ЭБ 1257.20', description: 'III группа до и выше 1000 В', totalQuestions: 360, totalTickets: 36, isActive: true },
+  { id: '1258-20', name: 'ЭБ 1258.20', description: 'IV группа до 1000 В', totalQuestions: 310, totalTickets: 31, isActive: true },
+  { id: '1259-21', name: 'ЭБ 1259.21', description: 'IV группа до и выше 1000 В', totalQuestions: 310, totalTickets: 31, isActive: true },
+  { id: '1547-6', name: 'ЭБ 1547.6', description: 'V группа до 1000 В', totalQuestions: 331, totalTickets: 34, isActive: true },
+  { id: '1260-23', name: 'ЭБ 1260.23', description: 'V группа до и выше 1000 В', totalQuestions: 407, totalTickets: 42, isActive: true },
+];
+
+// Непромышленные разделы (от низкой группы к высокой)
+const NON_INDUSTRIAL_SECTIONS: SectionInfo[] = [
+  { id: '1494-2', name: 'ЭБ 1494.2', description: 'II группа до 1000 В', totalQuestions: 0, totalTickets: 0, isActive: false },
+  { id: '1495-2', name: 'ЭБ 1495.2', description: 'II группа до и выше 1000 В', totalQuestions: 0, totalTickets: 0, isActive: false },
+  { id: '1496-2', name: 'ЭБ 1496.2', description: 'III группа до 1000 В', totalQuestions: 0, totalTickets: 0, isActive: false },
+  { id: '1497-6', name: 'ЭБ 1497.6', description: 'III группа до и выше 1000 В', totalQuestions: 0, totalTickets: 0, isActive: false },
+  { id: '1498-6', name: 'ЭБ 1498.6', description: 'IV группа до 1000 В', totalQuestions: 0, totalTickets: 0, isActive: false },
+  { id: '1499-6', name: 'ЭБ 1499.6', description: 'IV группа до и выше 1000 В', totalQuestions: 0, totalTickets: 0, isActive: false },
+  { id: '1500-6', name: 'ЭБ 1500.6', description: 'V группа до 1000 В', totalQuestions: 0, totalTickets: 0, isActive: false },
+  { id: '1501-2', name: 'ЭБ 1501.2', description: 'V группа до и выше 1000 В', totalQuestions: 0, totalTickets: 0, isActive: false },
+];
+
+const SECTION_GROUPS: SectionGroup[] = [
+  {
+    title: 'Промышленные',
+    icon: Factory,
+    sections: INDUSTRIAL_SECTIONS,
+  },
+  {
+    title: 'Непромышленные',
+    icon: User,
+    sections: NON_INDUSTRIAL_SECTIONS,
+  },
+];
+
 export function Navigation() {
-  const { currentPage, setCurrentPage, currentSection, setCurrentSection, sections } = useApp();
+  const { currentPage, setCurrentPage, currentSection, setCurrentSection } = useApp();
   const { user, logout } = useAuth();
   const [showSectionMenu, setShowSectionMenu] = useState(false);
   const [showLoginModal, setShowLoginModal] = useState(false);
@@ -28,6 +81,15 @@ export function Navigation() {
     // Инициализация при первом рендере
     return 'ontouchstart' in window || navigator.maxTouchPoints > 0;
   });
+
+  // Получение информации о разделе из групп (должно быть объявлено раньше чем используется)
+  const getSectionInfo = useCallback((sectionId: SectionType): SectionInfo | undefined => {
+    for (const group of SECTION_GROUPS) {
+      const section = group.sections.find(s => s.id === sectionId);
+      if (section) return section;
+    }
+    return undefined;
+  }, []);
 
   const handlePageChange = useCallback((page: PageType) => {
     setCurrentPage(page);
@@ -49,11 +111,13 @@ export function Navigation() {
     setShowLoginModal(true);
   };
 
-  const currentSectionInfo = sections.find((s: { id: SectionType }) => s.id === currentSection);
+  // Получение информации о текущем разделе из групп
+  const currentSectionInfo = getSectionInfo(currentSection);
 
   // Короткие названия для разделов
   const getShortSectionName = (sectionId: SectionType) => {
-    return sectionId === '1256-19' ? 'III' : 'IV';
+    const group = sectionId.split('-')[0];
+    return `ЭБ ${group}`;
   };
 
   // Описания для подсказок
@@ -119,25 +183,64 @@ export function Navigation() {
               )}
 
               {showSectionMenu && (
-                <div className="absolute left-0 mt-1 w-64 bg-white rounded-lg shadow-lg overflow-hidden z-50">
-                  <div className="py-1">
-                    {sections.map((section: { id: SectionType; name: string; description: string; totalQuestions: number; totalTickets: number }) => (
-                      <button
-                        key={section.id}
-                        onClick={() => handleSectionChange(section.id)}
-                        className={`
-                          w-full text-left px-4 py-3 text-sm transition-colors
-                          ${currentSection === section.id
-                            ? 'bg-yellow-50 text-yellow-700 font-medium'
-                            : 'text-slate-700 hover:bg-slate-50'
-                          }
-                        `}
-                      >
-                        <div className="font-medium">{section.name}</div>
-                        <div className="text-xs text-slate-500 mt-0.5">
-                          {section.description} • {section.totalQuestions} вопросов • {section.totalTickets} билетов
+                <div className="absolute left-0 mt-1 w-80 bg-white rounded-xl shadow-2xl overflow-hidden z-50 border border-slate-200">
+                  <div className="max-h-[80vh] overflow-y-auto">
+                    {SECTION_GROUPS.map((group, groupIndex) => (
+                      <div key={group.title} className={groupIndex > 0 ? 'border-t border-slate-100' : ''}>
+                        {/* Заголовок группы */}
+                        <div className="flex items-center gap-2 px-4 py-2.5 bg-slate-50 border-b border-slate-100">
+                          <group.icon className="w-4 h-4 text-slate-500" />
+                          <span className="text-xs font-semibold text-slate-600 uppercase tracking-wide">
+                            {group.title}
+                          </span>
                         </div>
-                      </button>
+
+                        {/* Список разделов */}
+                        <div className="py-1">
+                          {group.sections.map((section) => {
+                            const isSelected = currentSection === section.id;
+                            const isInactive = !section.isActive;
+
+                            return (
+                              <button
+                                key={section.id}
+                                onClick={() => !isInactive && handleSectionChange(section.id)}
+                                disabled={isInactive}
+                                className={`
+                                  w-full text-left px-4 py-3 transition-all duration-200
+                                  ${isSelected
+                                    ? 'bg-blue-50 border-l-4 border-blue-500 pl-3'
+                                    : 'border-l-4 border-transparent pl-4'
+                                  }
+                                  ${isInactive
+                                    ? 'bg-slate-50 text-slate-400 cursor-not-allowed hover:bg-slate-100'
+                                    : 'text-slate-700 hover:bg-blue-50 hover:text-blue-700 cursor-pointer'
+                                  }
+                                `}
+                              >
+                                <div className="flex items-center justify-between">
+                                  <span className={`font-medium text-sm ${isSelected ? 'text-blue-700' : ''}`}>
+                                    {section.name}
+                                  </span>
+                                  {isInactive && (
+                                    <span className="text-xs px-2 py-0.5 bg-slate-200 text-slate-500 rounded-full">
+                                      Скоро
+                                    </span>
+                                  )}
+                                </div>
+                                <div className={`text-xs mt-1 ${isSelected ? 'text-blue-600' : 'text-slate-500'}`}>
+                                  {section.description}
+                                  {!isInactive && (
+                                    <span className="ml-2 text-slate-400">
+                                      • {section.totalQuestions} вопр. • {section.totalTickets} билет.
+                                    </span>
+                                  )}
+                                </div>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
                     ))}
                   </div>
                 </div>

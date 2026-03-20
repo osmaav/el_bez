@@ -15,7 +15,7 @@ export const createMockQuestion = (overrides?: Partial<Question>): Question => (
   ticket: 1,
   text: 'Тестовый вопрос?',
   options: ['Вариант 1', 'Вариант 2', 'Вариант 3', 'Вариант 4'],
-  correct_index: 0,
+  correct_index: [0],
   ...overrides,
 });
 
@@ -36,7 +36,7 @@ export const createMockQuestions = (count: number): Question[] => {
  * Актуальное количество вопросов по разделам (из Firebase на 2026.03.13)
  * Эти данные должны обновляться при изменении количества вопросов в Firebase
  */
-export const QUESTIONS_BY_SECTION: Record<SectionType, number> = {
+export const QUESTIONS_BY_SECTION: Partial<Record<SectionType, number>> = {
   '1256-19': 250,  // III группа до 1000 В
   '1258-20': 310,  // IV группа до 1000 В
 };

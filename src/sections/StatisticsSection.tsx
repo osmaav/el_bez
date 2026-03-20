@@ -20,10 +20,12 @@ import {
   BookOpen,
   AlertCircle,
   TrendingUp,
+  Eye,
 } from 'lucide-react';
 
 // Импорт хуков
 import { useStatistics } from './statistics/hooks';
+import { useTicketFilter } from '@/hooks/useTicketFilter';
 
 // Импорт компонентов
 import { StatisticsHeader, StatisticsControls } from './statistics/components';
@@ -37,6 +39,8 @@ export const StatisticsSection: React.FC = () => {
     handleExport,
     handleClear,
   } = useStatistics();
+
+  const { filterByTickets, resetTicketFilter, isFilterActive, activeTickets } = useTicketFilter();
 
   // Обновляем статистику при монтировании
   React.useEffect(() => {
@@ -158,14 +162,46 @@ export const StatisticsSection: React.FC = () => {
             />
             <WeakTopicsDetail
               weakTopics={statisticsService.getWeakTopicsStats()}
+              activeTickets={activeTickets}
               onFilterByTicket={(ticket) => {
-                console.log('Filter by ticket:', ticket);
-                // TODO: Интеграция с фильтром вопросов
+                console.log('👁️ [StatisticsSection] Переключение билета:', ticket, 'текущие activeTickets:', activeTickets);
+                if (activeTickets.includes(ticket)) {
+                  // Если билет уже активен - удаляем его из списка
+                  const newTickets = activeTickets.filter(t => t !== ticket);
+                  if (newTickets.length === 0) {
+                    // Если билетов не осталось, сбрасываем фильтр
+                    resetTicketFilter();
+                  } else {
+                    // Иначе применяем фильтр с новыми билетами
+                    filterByTickets(newTickets);
+                  }
+                } else {
+                  // Если билета нет в фильтре - добавляем его к текущим
+                  filterByTickets([...activeTickets, ticket]);
+                }
               }}
             />
+            {isFilterActive && (
+              <div className="lg:col-span-2">
+                <div className="p-4 bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Eye className="w-4 h-4 text-blue-600" />
+                      <span className="text-sm text-blue-700 dark:text-blue-300">
+                        Фильтр активен: показаны только выбранные билеты
+                      </span>
+                    </div>
+                    <button
+                      onClick={resetTicketFilter}
+                      className="text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-200"
+                    >
+                      Сбросить фильтр
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
-
-          <SessionsBarChart sessions={statistics.sessions} />
         </TabsContent>
 
         {/* Раздел 1256-19 */}
@@ -207,13 +243,19 @@ export const StatisticsSection: React.FC = () => {
 
           <WeakTopicsDetail
             weakTopics={statisticsService.getWeakTopicsStats('1256-19')}
+            activeTickets={activeTickets}
             onFilterByTicket={(ticket) => {
-              console.log('Filter by ticket:', ticket);
+              console.log('👁️ [StatisticsSection:1256-19] Переключение билета:', ticket);
+              if (activeTickets.includes(ticket)) {
+                resetTicketFilter();
+              } else {
+                filterByTickets([ticket]);
+              }
             }}
           />
 
           <AttemptHistory
-            sessions={statistics.sessions.filter(s => s.section === '1256-19')}
+            sessions={statistics.sessions.filter((s) => s.section === '1256-19')}
           />
         </TabsContent>
 
@@ -256,13 +298,19 @@ export const StatisticsSection: React.FC = () => {
 
           <WeakTopicsDetail
             weakTopics={statisticsService.getWeakTopicsStats('1258-20')}
+            activeTickets={activeTickets}
             onFilterByTicket={(ticket) => {
-              console.log('Filter by ticket:', ticket);
+              console.log('👁️ [StatisticsSection:1258-20] Переключение билета:', ticket);
+              if (activeTickets.includes(ticket)) {
+                resetTicketFilter();
+              } else {
+                filterByTickets([ticket]);
+              }
             }}
           />
 
           <AttemptHistory
-            sessions={statistics.sessions.filter(s => s.section === '1258-20')}
+            sessions={statistics.sessions.filter((s) => s.section === '1258-20')}
           />
         </TabsContent>
       </Tabs>

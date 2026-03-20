@@ -8,7 +8,11 @@
 
 import { Button } from '@/components/ui/button';
 import { Download, RotateCcw } from 'lucide-react';
-import type { StatisticsControlsProps } from '../types';
+
+interface StatisticsControlsProps {
+  onExport: () => void;
+  onClear: () => void;
+}
 
 export function StatisticsControls({
   onExport,

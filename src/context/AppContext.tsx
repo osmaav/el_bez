@@ -3,6 +3,7 @@ import type { Question, Ticket, TestStats, PageType, SectionType, SectionInfo } 
 import { loadQuestionsForSection, saveUserState } from '@/services/questionService';
 import { AuthContext } from '@/context/AuthContext';
 import { SessionTracker } from '@/services/statisticsService';
+import { checkAnswer } from '@/utils/answerValidator';
 
 export interface AppContextType {
   // Навигация
@@ -31,11 +32,11 @@ export interface AppContextType {
   // Тренажер
   trainerQuestions: Question[];
   trainerCurrentIndex: number;
-  trainerAnswers: Record<number, number>;
+  trainerAnswers: Record<number, number | number[]>;
   trainerStats: TestStats;
   isTrainerFinished: boolean;
   startTrainer: (questionCount?: number, questionsPool?: Question[]) => void;
-  answerTrainerQuestion: (answerIndex: number) => void;
+  answerTrainerQuestion: (answerIndex: number | number[]) => void;
   nextTrainerQuestion: () => void;
   prevTrainerQuestion: () => void;
   finishTrainer: () => void;
@@ -44,11 +45,11 @@ export interface AppContextType {
   // Экзамен
   tickets: Ticket[];
   currentTicketId: number | null;
-  examAnswers: Record<number, number>;
+  examAnswers: Record<number, number | number[]>;
   examResults: Record<number, boolean>;
   isExamFinished: boolean;
   startExam: (ticketId: number) => void;
-  answerExamQuestion: (questionId: number, answerIndex: number) => void;
+  answerExamQuestion: (questionId: number, answerIndex: number | number[]) => void;
   finishExam: () => void;
   resetExam: () => void;
   getExamStats: () => { correct: number; total: number; percentage: number };
@@ -69,19 +70,119 @@ const questionsCache: Map<SectionType, Question[]> = new Map();
 
 // Информация о разделах
 const SECTIONS: SectionInfo[] = [
+  // Промышленные разделы
+  {
+    id: '1254-19',
+    name: 'ЭБ 1254.19',
+    description: 'II группа до 1000 В',
+    totalQuestions: 20,
+    totalTickets: 2
+  },
+  {
+    id: '1255-19',
+    name: 'ЭБ 1255.19',
+    description: 'II группа до и выше 1000 В',
+    totalQuestions: 20,
+    totalTickets: 2
+  },
   {
     id: '1256-19',
     name: 'ЭБ 1256.19',
     description: 'III группа до 1000 В',
-    totalQuestions: 250,
-    totalTickets: 25
+    totalQuestions: 20,
+    totalTickets: 2
+  },
+  {
+    id: '1257-20',
+    name: 'ЭБ 1257.20',
+    description: 'III группа до и выше 1000 В',
+    totalQuestions: 20,
+    totalTickets: 2
   },
   {
     id: '1258-20',
     name: 'ЭБ 1258.20',
     description: 'IV группа до 1000 В',
-    totalQuestions: 310,  // Исправлено с 304 на 310
-    totalTickets: 31
+    totalQuestions: 20,
+    totalTickets: 2
+  },
+  {
+    id: '1259-21',
+    name: 'ЭБ 1259.21',
+    description: 'IV группа до и выше 1000 В',
+    totalQuestions: 20,
+    totalTickets: 2
+  },
+  {
+    id: '1547-6',
+    name: 'ЭБ 1547.6',
+    description: 'V группа до 1000 В',
+    totalQuestions: 20,
+    totalTickets: 2
+  },
+  {
+    id: '1260-23',
+    name: 'ЭБ 1260.23',
+    description: 'V группа до и выше 1000 В',
+    totalQuestions: 20,
+    totalTickets: 2
+  },
+  // Непромышленные разделы (будут добавлены позже)
+  {
+    id: '1494-2',
+    name: 'ЭБ 1494.2',
+    description: 'II группа до 1000 В (непромышленный)',
+    totalQuestions: 0,
+    totalTickets: 0
+  },
+  {
+    id: '1495-2',
+    name: 'ЭБ 1495.2',
+    description: 'II группа до и выше 1000 В (непромышленный)',
+    totalQuestions: 0,
+    totalTickets: 0
+  },
+  {
+    id: '1496-2',
+    name: 'ЭБ 1496.2',
+    description: 'III группа до 1000 В (непромышленный)',
+    totalQuestions: 0,
+    totalTickets: 0
+  },
+  {
+    id: '1497-6',
+    name: 'ЭБ 1497.6',
+    description: 'III группа до и выше 1000 В (непромышленный)',
+    totalQuestions: 0,
+    totalTickets: 0
+  },
+  {
+    id: '1498-6',
+    name: 'ЭБ 1498.6',
+    description: 'IV группа до 1000 В (непромышленный)',
+    totalQuestions: 0,
+    totalTickets: 0
+  },
+  {
+    id: '1499-6',
+    name: 'ЭБ 1499.6',
+    description: 'IV группа до и выше 1000 В (непромышленный)',
+    totalQuestions: 0,
+    totalTickets: 0
+  },
+  {
+    id: '1500-6',
+    name: 'ЭБ 1500.6',
+    description: 'V группа до 1000 В (непромышленный)',
+    totalQuestions: 0,
+    totalTickets: 0
+  },
+  {
+    id: '1501-2',
+    name: 'ЭБ 1501.2',
+    description: 'V группа до и выше 1000 В (непромышленный)',
+    totalQuestions: 0,
+    totalTickets: 0
   }
 ];
 
@@ -108,7 +209,8 @@ const AppProvider = ({ children }: { children: React.ReactNode }) => {
   const [currentSection, setCurrentSectionState] = useState<SectionType>(() => {
     if (typeof window !== 'undefined') {
       const savedSection = localStorage.getItem(STORAGE_KEY_SECTION) as SectionType | null;
-      if (savedSection && ['1256-19', '1258-20'].includes(savedSection)) {
+      const validSections = ['1254-19', '1255-19', '1256-19', '1257-20', '1258-20', '1259-21', '1547-6', '1260-23', '1494-2', '1495-2', '1496-2', '1497-6', '1498-6', '1499-6', '1500-2', '1501-2'];
+      if (savedSection && validSections.includes(savedSection)) {
         return savedSection;
       }
     }
@@ -211,13 +313,13 @@ const AppProvider = ({ children }: { children: React.ReactNode }) => {
   // Тренажер состояние
   const [trainerQuestions, setTrainerQuestions] = useState<Question[]>([]);
   const [trainerCurrentIndex, setTrainerCurrentIndex] = useState(0);
-  const [trainerAnswers, setTrainerAnswers] = useState<Record<number, number>>({});
+  const [trainerAnswers, setTrainerAnswers] = useState<Record<number, number | number[]>>({});
   const [isTrainerFinished, setIsTrainerFinished] = useState(false);
 
   // Экзамен состояние
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [currentTicketId, setCurrentTicketId] = useState<number | null>(null);
-  const [examAnswers, setExamAnswers] = useState<Record<number, number>>({});
+  const [examAnswers, setExamAnswers] = useState<Record<number, number | number[]>>({});
   const [examResults, setExamResults] = useState<Record<number, boolean>>({});
   const [isExamFinished, setIsExamFinished] = useState(false);
 
@@ -308,12 +410,12 @@ const AppProvider = ({ children }: { children: React.ReactNode }) => {
   // Тренажер функции
   const startTrainer = useCallback((questionCount: number = 50, questionsPool?: Question[]) => {
     const pool = questionsPool || questions;
-    
+
     if (pool.length === 0) {
       // console.error('❌ Вопросы ещё не загружены');
       return;
     }
-    
+
     // Случайная выборка из пула вопросов (отфильтрованных или всех)
     const shuffled = [...pool].sort(() => Math.random() - 0.5);
     const selected = shuffled.slice(0, Math.min(questionCount, shuffled.length));
@@ -327,7 +429,7 @@ const AppProvider = ({ children }: { children: React.ReactNode }) => {
     sessionTrackerRef.current = new SessionTracker(currentSection, 'trainer');
   }, [questions, currentSection]);
 
-  const answerTrainerQuestion = useCallback((answerIndex: number) => {
+  const answerTrainerQuestion = useCallback((answerIndex: number | number[]) => {
     const currentQuestion = trainerQuestions[trainerCurrentIndex];
     if (!currentQuestion) return;
 
@@ -335,14 +437,18 @@ const AppProvider = ({ children }: { children: React.ReactNode }) => {
       ...prev,
       [currentQuestion.id]: answerIndex
     }));
-    
+
     // Записываем ответ в SessionTracker
     if (sessionTrackerRef.current) {
+      const correctAnswers = Array.isArray(currentQuestion.correct_index)
+        ? currentQuestion.correct_index
+        : [currentQuestion.correct_index];
+
       sessionTrackerRef.current.recordAnswer(
         currentQuestion.id,
         currentQuestion.ticket,
         answerIndex,
-        currentQuestion.correct_index,
+        correctAnswers,
         0 // Время будет рассчитано позже
       );
     }
@@ -362,7 +468,7 @@ const AppProvider = ({ children }: { children: React.ReactNode }) => {
 
   const finishTrainer = useCallback(() => {
     setIsTrainerFinished(true);
-    
+
     // Завершаем сессию и сохраняем статистику
     if (sessionTrackerRef.current) {
       sessionTrackerRef.current.finish();
@@ -375,7 +481,7 @@ const AppProvider = ({ children }: { children: React.ReactNode }) => {
     setTrainerCurrentIndex(0);
     setTrainerAnswers({});
     setIsTrainerFinished(false);
-    
+
     // Отменяем сессию
     if (sessionTrackerRef.current) {
       sessionTrackerRef.current.cancel();
@@ -389,12 +495,12 @@ const AppProvider = ({ children }: { children: React.ReactNode }) => {
     setExamAnswers({});
     setExamResults({});
     setIsExamFinished(false);
-    
+
     // Инициализируем SessionTracker для экзамена
     sessionTrackerRef.current = new SessionTracker(currentSection, 'exam');
   }, [currentSection]);
 
-  const answerExamQuestion = useCallback((questionId: number, answerIndex: number) => {
+  const answerExamQuestion = useCallback((questionId: number, answerIndex: number | number[]) => {
     setExamAnswers(prev => ({
       ...prev,
       [questionId]: answerIndex
@@ -408,15 +514,18 @@ const AppProvider = ({ children }: { children: React.ReactNode }) => {
     const results: Record<number, boolean> = {};
     ticket.questions.forEach(q => {
       const userAnswer = examAnswers[q.id];
-      results[q.id] = userAnswer === q.correct_index;
-      
+      const correctAnswers = Array.isArray(q.correct_index) ? q.correct_index : [q.correct_index];
+      const userAnswers = Array.isArray(userAnswer) ? userAnswer : [userAnswer];
+
+      results[q.id] = checkAnswer(userAnswers, correctAnswers);
+
       // Записываем ответ в SessionTracker
       if (sessionTrackerRef.current) {
         sessionTrackerRef.current.recordAnswer(
           q.id,
           q.ticket,
           userAnswer,
-          q.correct_index,
+          correctAnswers,
           0
         );
       }
@@ -424,7 +533,7 @@ const AppProvider = ({ children }: { children: React.ReactNode }) => {
 
     setExamResults(results);
     setIsExamFinished(true);
-    
+
     // Завершаем сессию и сохраняем статистику
     if (sessionTrackerRef.current) {
       sessionTrackerRef.current.finish();
@@ -437,7 +546,7 @@ const AppProvider = ({ children }: { children: React.ReactNode }) => {
     setExamAnswers({});
     setExamResults({});
     setIsExamFinished(false);
-    
+
     // Отменяем сессию
     if (sessionTrackerRef.current) {
       sessionTrackerRef.current.cancel();
@@ -466,11 +575,17 @@ const AppProvider = ({ children }: { children: React.ReactNode }) => {
     total: trainerQuestions.length,
     correct: Object.entries(trainerAnswers).filter(([qId, ans]) => {
       const q = trainerQuestions.find(q => q.id === Number(qId));
-      return q && ans === q.correct_index;
+      if (!q) return false;
+      const correctAnswers = Array.isArray(q.correct_index) ? q.correct_index : [q.correct_index];
+      const userAnswers = Array.isArray(ans) ? ans : [ans];
+      return checkAnswer(userAnswers, correctAnswers);
     }).length,
     incorrect: Object.entries(trainerAnswers).filter(([qId, ans]) => {
       const q = trainerQuestions.find(q => q.id === Number(qId));
-      return q && ans !== q.correct_index;
+      if (!q) return false;
+      const correctAnswers = Array.isArray(q.correct_index) ? q.correct_index : [q.correct_index];
+      const userAnswers = Array.isArray(ans) ? ans : [ans];
+      return !checkAnswer(userAnswers, correctAnswers);
     }).length,
     remaining: trainerQuestions.length - Object.keys(trainerAnswers).length
   };

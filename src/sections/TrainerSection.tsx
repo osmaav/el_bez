@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect, useCallback } from 'react';
 import { useApp } from '@/hooks/useApp';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/useToast';
@@ -58,15 +58,24 @@ export function TrainerSection() {
   const { success, error: toastError, loading, updateToast } = useToast();
 
   const currentSectionInfo = sections.find(s => s.id === currentSection);
-
-  // ✅ selectedAnswer вычисляется из trainerAnswers — не нужно состояние
   const currentQuestion = trainerQuestions[trainerCurrentIndex];
-  const selectedAnswer = currentQuestion 
-    ? trainerAnswers[currentQuestion.id] ?? null 
-    : null;
-  
+
   const [showResults, setShowResults] = useState(false);
   const [showResetConfirm, setShowResetConfirm] = useState(false);
+  const [isAutoAnswering, setIsAutoAnswering] = useState(false);
+  const [autoAnswerCurrentIndex, setAutoAnswerCurrentIndex] = useState<number>(0);
+  const [selectedAnswer, setSelectedAnswer] = useState<number | number[] | null>(null);
+  
+  // Синхронизация selectedAnswer при изменении текущего вопроса
+  useEffect(() => {
+    if (currentQuestion) {
+      const answer = trainerAnswers[currentQuestion.id];
+      setSelectedAnswer(answer !== undefined ? answer : null);
+    } else {
+      setSelectedAnswer(null);
+    }
+  }, [currentQuestion, trainerAnswers]);
+  
   const [loadingModal, setLoadingModal] = useState<{
     isOpen: boolean;
     status: 'loading' | 'success' | 'error';
@@ -161,6 +170,107 @@ export function TrainerSection() {
     success('Тренажёр сброшен', 'Все ответы очищены');
   };
 
+  // Автоответ на все вопросы — отладка (скрыто)
+  const handleAutoAnswer = useCallback(() => {
+    // console.log('🤖 [TrainerSection] Автоответ на все вопросы...');
+    setIsAutoAnswering(true);
+    setAutoAnswerCurrentIndex(trainerCurrentIndex);
+  }, [trainerCurrentIndex]);
+
+  // Выбор ответа в режиме автоответа (отладка, скрыто)
+  useEffect(() => {
+    if (!isAutoAnswering) return;
+
+    const currentQ = trainerQuestions[autoAnswerCurrentIndex];
+    if (!currentQ) return;
+
+    // Проверяем что ещё не отвечали на этот вопрос
+    if (trainerAnswers[currentQ.id] !== undefined) return;
+
+    const correctAnswers = Array.isArray(currentQ.correct_index)
+      ? currentQ.correct_index
+      : [currentQ.correct_index];
+    const expectedCount = correctAnswers.length;
+
+    // Для множественного выбора выбираем первые expectedCount вариантов
+    // Для одиночного - случайный ответ
+    const answerIndex = expectedCount > 1
+      ? Array.from({ length: expectedCount }, (_, idx) => idx)
+      : Math.floor(Math.random() * currentQ.options.length);
+
+    // console.log(`📝 [TrainerSection] Вопрос ${autoAnswerCurrentIndex + 1}/${trainerQuestions.length}: ответ ${answerIndex}`);
+
+    // Отвечаем на вопрос
+    answerTrainerQuestion(answerIndex);
+  }, [isAutoAnswering, autoAnswerCurrentIndex, trainerQuestions, trainerAnswers, answerTrainerQuestion]);
+
+  // Обработка перехода к следующему вопросу в режиме автоответа (отладка, скрыто)
+  useEffect(() => {
+    if (!isAutoAnswering) return;
+
+    // Проверяем что ответ записан для текущего вопроса
+    const currentQ = trainerQuestions[autoAnswerCurrentIndex];
+    if (!currentQ || trainerAnswers[currentQ.id] === undefined) return;
+
+    // Ждём 500мс для визуального эффекта
+    const timer = setTimeout(() => {
+      if (autoAnswerCurrentIndex < trainerQuestions.length - 1) {
+        // Переходим к следующему вопросу
+        nextTrainerQuestion();
+        setAutoAnswerCurrentIndex(prev => prev + 1);
+      } else {
+        // Все вопросы отвечены, завершаем
+        setTimeout(() => {
+          finishTrainer();
+          setShowResults(true);
+          setIsAutoAnswering(false);
+          // console.log('✅ [TrainerSection] Автоответ завершён');
+        }, 200);
+      }
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [isAutoAnswering, autoAnswerCurrentIndex, trainerQuestions, trainerAnswers, nextTrainerQuestion, finishTrainer]);
+
+  // Включаем кнопку автоответа (отладка, скрыто)
+  useEffect(() => {
+    // Не показываем кнопку во время автоответа или после завершения
+    if (isAutoAnswering || isTrainerFinished || showResults) {
+      return;
+    }
+
+    // Проверяем что вопросы загружены
+    if (!trainerQuestions || trainerQuestions.length === 0) {
+      return;
+    }
+
+    // Проверяем есть ли не отвеченные вопросы
+    const hasUnanswered = trainerQuestions.some(q => trainerAnswers[q.id] === undefined);
+
+    // console.log('👁️ [TrainerSection] AutoAnswer check:', {
+    //   hasUnanswered,
+    //   totalQuestions: trainerQuestions.length,
+    //   answeredCount: trainerQuestions.filter(q => trainerAnswers[q.id] !== undefined).length,
+    // });
+
+    if (hasUnanswered) {
+      // console.log('👁️ [TrainerSection] Dispatching enableAutoAnswer event');
+      window.dispatchEvent(new CustomEvent('enableAutoAnswer', {
+        detail: { page: 'trainer', handler: handleAutoAnswer },
+      }));
+    } else {
+      // console.log('👁️ [TrainerSection] Dispatching disableAutoAnswer event');
+      window.dispatchEvent(new CustomEvent('disableAutoAnswer', {
+        detail: { page: 'trainer' },
+      }));
+    }
+    return () => {
+      window.dispatchEvent(new CustomEvent('disableAutoAnswer', {
+        detail: { page: 'trainer' },
+      }));
+    };
+  }, [handleAutoAnswer, trainerQuestions, trainerAnswers, isAutoAnswering, isTrainerFinished, showResults]);
+
   // Экспорт результатов в PDF
   const handleExportToPDF = async () => {
     const loadingId = loading('Генерация PDF', 'Пожалуйста, подождите...');
@@ -197,7 +307,34 @@ export function TrainerSection() {
 
   // Обработчик выбора ответа — обновляем ТОЛЬКО источник данных
   const handleAnswerSelect = (answerIndex: number) => {
-    if (currentQuestion) {
+    if (!currentQuestion) return;
+    
+    const correctAnswers = Array.isArray(currentQuestion.correct_index) 
+      ? currentQuestion.correct_index 
+      : [currentQuestion.correct_index];
+    const expectedCount = correctAnswers.length;
+    
+    // Проверяем текущий выбранный ответ
+    const currentAnswer = selectedAnswer;
+    const currentAnswers = Array.isArray(currentAnswer) ? currentAnswer : (currentAnswer !== null ? [currentAnswer] : []);
+    
+    if (expectedCount > 1) {
+      // Множественный выбор - переключаем ответ
+      const newAnswers = currentAnswers.includes(answerIndex)
+        ? currentAnswers.filter(a => a !== answerIndex)
+        : [...currentAnswers, answerIndex];
+      
+      // Разрешаем выбирать только до expectedCount ответов
+      if (newAnswers.length <= expectedCount) {
+        setSelectedAnswer(newAnswers);
+        
+        // Записываем ответ только если выбраны все варианты
+        if (newAnswers.length === expectedCount) {
+          answerTrainerQuestion(newAnswers);
+        }
+      }
+    } else {
+      // Одиночный выбор
       answerTrainerQuestion(answerIndex);
     }
   };
@@ -283,25 +420,6 @@ export function TrainerSection() {
             </CardContent>
           </Card>
         </div>
-
-        {/* Фильтр вопросов - модальное окно */}
-        <FilterModal
-          isOpen={isFilterModalOpen}
-          onClose={() => setIsFilterModalOpen(false)}
-          onApply={(_filteredIds, settings) => {
-            // Обновляем настройки фильтра в AppContext
-            setFilterHiddenQuestionIds(settings.hiddenQuestionIds);
-            setFilterExcludeKnown(settings.excludeKnown);
-            setFilterExcludeWeak(settings.excludeWeak);
-          }}
-          questionStats={statisticsService.getQuestionStats(currentSection)}
-          questions={questions}
-          hiddenQuestionIds={filterHiddenQuestionIds}
-          onHiddenChange={(newHiddenIds) => {
-            setFilterHiddenQuestionIds(newHiddenIds);
-          }}
-          currentSection={currentSection}
-        />
       </>
     );
   }
@@ -309,8 +427,26 @@ export function TrainerSection() {
   // Экран результатов
   if (isTrainerFinished || showResults) {
     const answeredQuestions = trainerQuestions.filter(q => trainerAnswers[q.id] !== undefined);
-    const correctAnswers = answeredQuestions.filter(q => trainerAnswers[q.id] === q.correct_index);
-    const incorrectAnswers = answeredQuestions.filter(q => trainerAnswers[q.id] !== q.correct_index);
+    const correctAnswers = answeredQuestions.filter(q => {
+      const userAnswer = trainerAnswers[q.id];
+      const correctAnswer = q.correct_index;
+      // Для множественного выбора сравниваем массивы
+      if (Array.isArray(userAnswer)) {
+        return userAnswer.length === correctAnswer.length && 
+               userAnswer.every((idx, i) => idx === correctAnswer[i]);
+      }
+      // Для одиночного выбора
+      return userAnswer === correctAnswer[0];
+    });
+    const incorrectAnswers = answeredQuestions.filter(q => {
+      const userAnswer = trainerAnswers[q.id];
+      const correctAnswer = q.correct_index;
+      if (Array.isArray(userAnswer)) {
+        return userAnswer.length !== correctAnswer.length || 
+               !userAnswer.every((idx, i) => idx === correctAnswer[i]);
+      }
+      return userAnswer !== correctAnswer[0];
+    });
     const percentage = answeredQuestions.length > 0
       ? Math.round((correctAnswers.length / answeredQuestions.length) * 100)
       : 0;
@@ -416,7 +552,11 @@ export function TrainerSection() {
             <div className="space-y-4 max-h-[500px] overflow-y-auto">
               {trainerQuestions.map((q, idx) => {
                 const userAnswer = trainerAnswers[q.id];
-                const isCorrect = userAnswer === q.correct_index;
+                // Проверяем правильность ответа с учётом множественного выбора
+                const isCorrect = Array.isArray(userAnswer)
+                  ? userAnswer.length === q.correct_index.length && 
+                    userAnswer.every((idx, i) => idx === q.correct_index[i])
+                  : userAnswer === q.correct_index[0];
                 const isAnswered = userAnswer !== undefined;
 
                 return (
@@ -443,11 +583,15 @@ export function TrainerSection() {
                         {isAnswered && (
                           <div className="space-y-1 text-sm">
                             <p className={isCorrect ? 'text-green-700' : 'text-red-700'}>
-                              <span className="font-medium">Ваш ответ:</span> {q.options[userAnswer]}
+                              <span className="font-medium">Ваш ответ:</span> {
+                                Array.isArray(userAnswer)
+                                  ? userAnswer.map(i => q.options[i]).join(', ')
+                                  : q.options[userAnswer]
+                              }
                             </p>
                             {!isCorrect && (
                               <p className="text-green-700">
-                                <span className="font-medium">Правильный ответ:</span> {q.options[q.correct_index]}
+                                <span className="font-medium">Правильный ответ:</span> {q.correct_index.map(i => q.options[i]).join(', ')}
                               </p>
                             )}
                           </div>
@@ -489,6 +633,37 @@ export function TrainerSection() {
             Фильтр
           </Button>
         </div>
+
+        {/* ConfirmModal для сброса тренажёра */}
+        <ConfirmModal
+          isOpen={showResetConfirm}
+          onClose={() => setShowResetConfirm(false)}
+          onConfirm={confirmResetTrainer}
+          title="Сброс тренажёра"
+          description="Вы уверены, что хотите сбросить текущую тренировку? Все несохранённые ответы будут потеряны."
+          type="warning"
+          confirmLabel="Сбросить"
+          cancelLabel="Отмена"
+        />
+
+        {/* FilterModal для фильтрации вопросов */}
+        <FilterModal
+          isOpen={isFilterModalOpen}
+          onClose={() => setIsFilterModalOpen(false)}
+          onApply={(_filteredIds, settings) => {
+            // Обновляем настройки фильтра в AppContext
+            setFilterHiddenQuestionIds(settings.hiddenQuestionIds);
+            setFilterExcludeKnown(settings.excludeKnown);
+            setFilterExcludeWeak(settings.excludeWeak);
+          }}
+          questionStats={statisticsService.getQuestionStats(currentSection)}
+          questions={questions}
+          hiddenQuestionIds={filterHiddenQuestionIds}
+          onHiddenChange={(newHiddenIds) => {
+            setFilterHiddenQuestionIds(newHiddenIds);
+          }}
+          currentSection={currentSection}
+        />
       </div>
     );
   }
@@ -567,15 +742,23 @@ export function TrainerSection() {
               </Badge>
               {hasAnswered && (
                 <Badge
-                  className={trainerAnswers[currentQuestion.id] === currentQuestion.correct_index
-                    ? 'bg-green-500'
-                    : 'bg-red-500'
-                  }
+                  className={(() => {
+                    const userAnswer = trainerAnswers[currentQuestion.id];
+                    const isCorrect = Array.isArray(userAnswer)
+                      ? userAnswer.length === currentQuestion.correct_index.length && 
+                        userAnswer.every((idx, i) => idx === currentQuestion.correct_index[i])
+                      : userAnswer === currentQuestion.correct_index[0];
+                    return isCorrect ? 'bg-green-500' : 'bg-red-500';
+                  })()}
                 >
-                  {trainerAnswers[currentQuestion.id] === currentQuestion.correct_index
-                    ? 'Правильно'
-                    : 'Неправильно'
-                  }
+                  {(() => {
+                    const userAnswer = trainerAnswers[currentQuestion.id];
+                    const isCorrect = Array.isArray(userAnswer)
+                      ? userAnswer.length === currentQuestion.correct_index.length && 
+                        userAnswer.every((idx, i) => idx === currentQuestion.correct_index[i])
+                      : userAnswer === currentQuestion.correct_index[0];
+                    return isCorrect ? 'Правильно' : 'Неправильно';
+                  })()}
                 </Badge>
               )}
             </div>
@@ -588,8 +771,10 @@ export function TrainerSection() {
 
             <div className="space-y-2">
               {currentQuestion.options.map((option, idx) => {
-                const isSelected = selectedAnswer === idx;
-                const isCorrect = idx === currentQuestion.correct_index;
+                const isSelected = Array.isArray(selectedAnswer)
+                  ? selectedAnswer.includes(idx)
+                  : selectedAnswer === idx;
+                const isCorrect = currentQuestion.correct_index.includes(idx);
                 const showCorrect = hasAnswered && isCorrect;
                 const showIncorrect = hasAnswered && isSelected && !isCorrect;
 
@@ -605,7 +790,7 @@ export function TrainerSection() {
                         : showIncorrect
                           ? 'border-red-500 bg-red-50'
                           : isSelected
-                            ? 'border-yellow-500 bg-yellow-50'
+                            ? 'border-blue-500 bg-blue-100 text-blue-900'
                             : 'border-slate-200 hover:border-yellow-300 hover:bg-slate-50'
                       }
                     ${hasAnswered ? 'cursor-default' : 'cursor-pointer'}
@@ -619,7 +804,7 @@ export function TrainerSection() {
                           : showIncorrect
                             ? 'bg-red-500 text-white'
                             : isSelected
-                              ? 'bg-yellow-500 text-white'
+                              ? 'bg-blue-500 text-white'
                               : 'bg-slate-200 text-slate-700'
                         }
                     `}>
@@ -683,18 +868,6 @@ export function TrainerSection() {
           </div>
         </div>
       </div>
-
-      {/* ConfirmModal для сброса тренажёра */}
-      <ConfirmModal
-        isOpen={showResetConfirm}
-        onClose={() => setShowResetConfirm(false)}
-        onConfirm={confirmResetTrainer}
-        title="Сброс тренажёра"
-        description="Вы уверены, что хотите сбросить текущую тренировку? Все несохранённые ответы будут потеряны."
-        type="warning"
-        confirmLabel="Сбросить"
-        cancelLabel="Отмена"
-      />
 
       {/* LoadingModal для запуска тренажёра */}
       <LoadingModal
