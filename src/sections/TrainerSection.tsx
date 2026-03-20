@@ -633,6 +633,37 @@ export function TrainerSection() {
             Фильтр
           </Button>
         </div>
+
+        {/* ConfirmModal для сброса тренажёра */}
+        <ConfirmModal
+          isOpen={showResetConfirm}
+          onClose={() => setShowResetConfirm(false)}
+          onConfirm={confirmResetTrainer}
+          title="Сброс тренажёра"
+          description="Вы уверены, что хотите сбросить текущую тренировку? Все несохранённые ответы будут потеряны."
+          type="warning"
+          confirmLabel="Сбросить"
+          cancelLabel="Отмена"
+        />
+
+        {/* FilterModal для фильтрации вопросов */}
+        <FilterModal
+          isOpen={isFilterModalOpen}
+          onClose={() => setIsFilterModalOpen(false)}
+          onApply={(_filteredIds, settings) => {
+            // Обновляем настройки фильтра в AppContext
+            setFilterHiddenQuestionIds(settings.hiddenQuestionIds);
+            setFilterExcludeKnown(settings.excludeKnown);
+            setFilterExcludeWeak(settings.excludeWeak);
+          }}
+          questionStats={statisticsService.getQuestionStats(currentSection)}
+          questions={questions}
+          hiddenQuestionIds={filterHiddenQuestionIds}
+          onHiddenChange={(newHiddenIds) => {
+            setFilterHiddenQuestionIds(newHiddenIds);
+          }}
+          currentSection={currentSection}
+        />
       </div>
     );
   }
@@ -838,18 +869,6 @@ export function TrainerSection() {
         </div>
       </div>
 
-      {/* ConfirmModal для сброса тренажёра */}
-      <ConfirmModal
-        isOpen={showResetConfirm}
-        onClose={() => setShowResetConfirm(false)}
-        onConfirm={confirmResetTrainer}
-        title="Сброс тренажёра"
-        description="Вы уверены, что хотите сбросить текущую тренировку? Все несохранённые ответы будут потеряны."
-        type="warning"
-        confirmLabel="Сбросить"
-        cancelLabel="Отмена"
-      />
-
       {/* LoadingModal для запуска тренажёра */}
       <LoadingModal
         isOpen={loadingModal.isOpen}
@@ -860,25 +879,6 @@ export function TrainerSection() {
         status={loadingModal.status}
         progress={loadingModal.progress}
         showProgress={true}
-      />
-
-      {/* FilterModal для фильтрации вопросов */}
-      <FilterModal
-        isOpen={isFilterModalOpen}
-        onClose={() => setIsFilterModalOpen(false)}
-        onApply={(_filteredIds, settings) => {
-          // Обновляем настройки фильтра в AppContext
-          setFilterHiddenQuestionIds(settings.hiddenQuestionIds);
-          setFilterExcludeKnown(settings.excludeKnown);
-          setFilterExcludeWeak(settings.excludeWeak);
-        }}
-        questionStats={statisticsService.getQuestionStats(currentSection)}
-        questions={questions}
-        hiddenQuestionIds={filterHiddenQuestionIds}
-        onHiddenChange={(newHiddenIds) => {
-          setFilterHiddenQuestionIds(newHiddenIds);
-        }}
-        currentSection={currentSection}
       />
     </>
   );
