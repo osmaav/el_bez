@@ -197,6 +197,9 @@ export const exportExamToPDF = async (data: ExamExportData): Promise<void> => {
     },
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     didParseCell: (cellData: any) => {
+      // Окрашиваем только тело таблицы (не заголовки)
+      if (cellData.section === 'head') return;
+      
       const row = tableData[cellData.row.index];
       // Окрашиваем неверные ответы красным
       if (cellData.column.index === 2 && !row.isCorrect) {
