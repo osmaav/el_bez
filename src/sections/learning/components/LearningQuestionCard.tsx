@@ -90,7 +90,10 @@ export function LearningQuestionCard({
 
   // Проверка правильности ответа (только если выбраны все ответы)
   const isCorrect = isAnswered && isAllAnswersSelected && checkAnswer(
-    userAnswersArray.map(idx => shuffledAnswers[idx]).filter((n): n is number => n !== null && n !== undefined),
+    userAnswersArray.flatMap(idx => {
+      const val = shuffledAnswers[idx];
+      return val != null ? [val] : [];
+    }),
     correctAnswers
   );
 

@@ -199,8 +199,11 @@ export function LearningSection() {
         const shuffledArr = quizState.shuffledAnswers[questionIndex] || [];
         // Получаем оригинальные индексы ответов
         const shuffledIndices: number[] = Array.isArray(answerIndex)
-          ? answerIndex.map(idx => shuffledArr[idx]).filter((n): n is number => n !== null && n !== undefined)
-          : [shuffledArr[answerIndex as number]].filter((n): n is number => n !== null && n !== undefined);
+          ? answerIndex.flatMap(idx => {
+              const val = shuffledArr[idx];
+              return val != null ? [val] : [];
+            })
+          : [shuffledArr[answerIndex as number]].flatMap(val => val != null ? [val] : []);
 
         console.log('📝 [LearningSection] Запись ответа:', {
           questionId: question.id,
@@ -248,8 +251,10 @@ export function LearningSection() {
             });
 
             const shuffledArr = quizState.shuffledAnswers[idx] || [];
-            const mapped = userAnsArray.map(i => shuffledArr[i]);
-            const shuffledIdx: number[] = mapped.filter((n): n is number => n !== null && n !== undefined);
+            const shuffledIdx: number[] = userAnsArray.flatMap(i => {
+              const val = shuffledArr[i];
+              return val != null ? [val] : [];
+            });
             sessionTrackerRef.current?.recordAnswer(q.id, q.ticket, shuffledIdx, correctAns, 0);
           }
         });

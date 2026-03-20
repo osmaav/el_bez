@@ -270,8 +270,11 @@ export function useQuizState({
       let userAnswerIndices: number[];
       if (Array.isArray(userAnswer)) {
         const shuffledArr = quizState.shuffledAnswers[qIdx] || [];
-        const mapped = userAnswer.map(idx => shuffledArr[idx]);
-        userAnswerIndices = mapped.filter((n): n is number => n !== null && n !== undefined);
+        userAnswerIndices = userAnswer
+          .flatMap(idx => {
+            const val = shuffledArr[idx];
+            return val != null ? [val] : [];
+          });
       } else {
         const shuffled = quizState.shuffledAnswers[qIdx] || [];
         const idx = shuffled[userAnswer];
