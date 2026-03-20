@@ -251,7 +251,7 @@ export function LearningSection() {
             const shuffled = quizState.shuffledAnswers[idx] || [];
             const shuffledIdx: number[] = userAnsArray
               .map(i => shuffled[i])
-              .filter((n): n is number => n !== undefined);
+              .filter((n): n is number => n !== undefined && typeof n === 'number');
             sessionTrackerRef.current?.recordAnswer(q.id, q.ticket, shuffledIdx, correctAns, 0);
           }
         });

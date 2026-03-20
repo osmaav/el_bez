@@ -126,15 +126,17 @@ export const exportLearningToPDF = async (data: LearningExportData): Promise<voi
     // Проверяем правильность
     let isCorrect = false;
     if (isAnswered && Array.isArray(userAnswerIdx)) {
+      const shuffled = data.shuffledAnswers[qIdx] || [];
       const userIndices = userAnswerIdx
-        .map(idx => data.shuffledAnswers[qIdx]?.[idx])
-        .filter((n): n is number => typeof n === 'number')
+        .map(idx => shuffled[idx])
+        .filter((n): n is number => n !== undefined)
         .sort((a, b) => a - b);
       const correctSorted = [...correctIndices].sort((a, b) => a - b);
       isCorrect = userIndices.length === correctSorted.length &&
                   userIndices.every((val, idx) => val === correctSorted[idx]);
     } else if (isAnswered && typeof userAnswerIdx === 'number') {
-      const userOriginalIdx = data.shuffledAnswers[qIdx]?.[userAnswerIdx];
+      const shuffled = data.shuffledAnswers[qIdx] || [];
+      const userOriginalIdx = shuffled[userAnswerIdx];
       if (typeof userOriginalIdx === 'number') {
         isCorrect = correctIndices.includes(userOriginalIdx);
       }

@@ -148,7 +148,8 @@ export function useLearningProgress({
       let progress: LearningProgressState | null = null;
 
       if (userId) {
-        progress = await loadLearningProgress(userId, currentSection) as LearningProgressState | null;
+        const loaded = await loadLearningProgress(userId, currentSection);
+        progress = loaded as LearningProgressState | null;
       }
 
       if (!progress) {
@@ -156,7 +157,7 @@ export function useLearningProgress({
       }
 
       if (progress) {
-        setSavedStates(progress);
+        setSavedStates(progress as typeof savedStates);
       }
     } catch (err) {
       console.error('❌ [useLearningProgress] Ошибка загрузки:', err);

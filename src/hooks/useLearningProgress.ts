@@ -307,7 +307,7 @@ export function useLearningProgress(
         if (Array.isArray(userAnswer)) {
           userOriginalIndices = userAnswer
             .map(idx => shuffled[idx])
-            .filter((n): n is number => n !== undefined);
+            .filter((n): n is number => n !== undefined && typeof n === 'number');
         } else {
           const idx = shuffled[userAnswer];
           if (typeof idx === 'number') {

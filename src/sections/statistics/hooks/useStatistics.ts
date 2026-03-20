@@ -73,8 +73,8 @@ export function useStatistics(): UseStatisticsReturn {
     activeTab,
     setActiveTab,
     refreshStatistics: loadStatistics,
-    handleExport: () => Promise.resolve(handleExport()),
-    handleClear: () => Promise.resolve(handleClear()),
+    handleExport,
+    handleClear,
   };
 }
 

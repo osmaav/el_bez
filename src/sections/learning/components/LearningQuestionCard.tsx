@@ -92,7 +92,7 @@ export function LearningQuestionCard({
   const isCorrect = isAnswered && isAllAnswersSelected && checkAnswer(
     userAnswersArray
       .map(idx => shuffledAnswers[idx])
-      .filter((n): n is number => n !== undefined),
+      .filter((n): n is number => n !== undefined && typeof n === 'number'),
     correctAnswers
   );
 
