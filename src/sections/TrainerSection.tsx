@@ -58,17 +58,24 @@ export function TrainerSection() {
   const { success, error: toastError, loading, updateToast } = useToast();
 
   const currentSectionInfo = sections.find(s => s.id === currentSection);
-
-  // ✅ selectedAnswer вычисляется из trainerAnswers — не нужно состояние
   const currentQuestion = trainerQuestions[trainerCurrentIndex];
-  const selectedAnswer = currentQuestion
-    ? trainerAnswers[currentQuestion.id] ?? null
-    : null;
 
   const [showResults, setShowResults] = useState(false);
   const [showResetConfirm, setShowResetConfirm] = useState(false);
   const [isAutoAnswering, setIsAutoAnswering] = useState(false);
   const [autoAnswerCurrentIndex, setAutoAnswerCurrentIndex] = useState<number>(0);
+  const [selectedAnswer, setSelectedAnswer] = useState<number | number[] | null>(null);
+  
+  // Синхронизация selectedAnswer при изменении текущего вопроса
+  useEffect(() => {
+    if (currentQuestion) {
+      const answer = trainerAnswers[currentQuestion.id];
+      setSelectedAnswer(answer !== undefined ? answer : null);
+    } else {
+      setSelectedAnswer(null);
+    }
+  }, [currentQuestion, trainerAnswers]);
+  
   const [loadingModal, setLoadingModal] = useState<{
     isOpen: boolean;
     status: 'loading' | 'success' | 'error';
