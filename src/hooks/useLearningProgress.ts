@@ -305,7 +305,9 @@ export function useLearningProgress(
         // Нормализуем ответ пользователя к массиву ОРИГИНАЛЬНЫХ индексов ответов
         let userOriginalIndices: number[];
         if (Array.isArray(userAnswer)) {
-          userOriginalIndices = userAnswer.map(idx => shuffled[idx]).filter((n): n is number => typeof n === 'number');
+          userOriginalIndices = userAnswer
+            .map(idx => shuffled[idx])
+            .filter((n): n is number => n !== undefined);
         } else {
           const idx = shuffled[userAnswer];
           if (typeof idx === 'number') {

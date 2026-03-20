@@ -248,12 +248,10 @@ export function LearningSection() {
               correctAns,
             });
 
+            const shuffled = quizState.shuffledAnswers[idx] || [];
             const shuffledIdx: number[] = userAnsArray
-              .map(i => {
-                const shuffled = quizState.shuffledAnswers[idx];
-                return shuffled && shuffled[i] !== undefined ? shuffled[i] : -1;
-              })
-              .filter((n): n is number => n !== -1 && typeof n === 'number');
+              .map(i => shuffled[i])
+              .filter((n): n is number => n !== undefined);
             sessionTrackerRef.current?.recordAnswer(q.id, q.ticket, shuffledIdx, correctAns, 0);
           }
         });

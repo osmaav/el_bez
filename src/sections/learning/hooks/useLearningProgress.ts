@@ -109,11 +109,7 @@ export function useLearningProgress({
   // Сохранение прогресса
   const saveProgress = useCallback(async (
     page: number,
-    state: {
-      userAnswers: (number | null)[];
-      shuffledAnswers: number[][];
-      isComplete: boolean;
-    }
+    state: LearningProgressState[number]
   ) => {
     try {
       // Используем функциональное обновление для актуального состояния

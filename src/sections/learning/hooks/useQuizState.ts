@@ -270,12 +270,14 @@ export function useQuizState({
       let userAnswerIndices: number[];
       if (Array.isArray(userAnswer)) {
         // userAnswer уже массив индексов shuffledAnswers
+        const shuffled = quizState.shuffledAnswers[qIdx] || [];
         userAnswerIndices = userAnswer
-          .map(idx => quizState.shuffledAnswers[qIdx]?.[idx])
-          .filter((n): n is number => typeof n === 'number');
+          .map(idx => shuffled[idx])
+          .filter((n): n is number => n !== undefined && typeof n === 'number');
       } else {
         // Одиночный ответ
-        const idx = quizState.shuffledAnswers[qIdx]?.[userAnswer];
+        const shuffled = quizState.shuffledAnswers[qIdx] || [];
+        const idx = shuffled[userAnswer];
         userAnswerIndices = [typeof idx === 'number' ? idx : userAnswer];
       }
 
