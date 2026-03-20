@@ -65,7 +65,7 @@ export function TrainerSection() {
   const [isAutoAnswering, setIsAutoAnswering] = useState(false);
   const [autoAnswerCurrentIndex, setAutoAnswerCurrentIndex] = useState<number>(0);
   const [selectedAnswer, setSelectedAnswer] = useState<number | number[] | null>(null);
-  
+
   // Синхронизация selectedAnswer при изменении текущего вопроса
   useEffect(() => {
     if (currentQuestion) {
@@ -75,7 +75,7 @@ export function TrainerSection() {
       setSelectedAnswer(null);
     }
   }, [currentQuestion, trainerAnswers]);
-  
+
   const [loadingModal, setLoadingModal] = useState<{
     isOpen: boolean;
     status: 'loading' | 'success' | 'error';
@@ -89,7 +89,7 @@ export function TrainerSection() {
     title: '',
     description: ''
   });
-  
+
   // Состояния для фильтра вопросов - используем фильтр из AppContext
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
 
@@ -120,7 +120,7 @@ export function TrainerSection() {
     const filteredQuestions = filteredIds.length > 0
       ? questions.filter(q => filteredIds.includes(q.id))
       : questions;
-    
+
     const availableQuestions = filteredQuestions.length;
     const actualCount = Math.min(questionCount, availableQuestions);
 
@@ -308,26 +308,26 @@ export function TrainerSection() {
   // Обработчик выбора ответа — обновляем ТОЛЬКО источник данных
   const handleAnswerSelect = (answerIndex: number) => {
     if (!currentQuestion) return;
-    
-    const correctAnswers = Array.isArray(currentQuestion.correct_index) 
-      ? currentQuestion.correct_index 
+
+    const correctAnswers = Array.isArray(currentQuestion.correct_index)
+      ? currentQuestion.correct_index
       : [currentQuestion.correct_index];
     const expectedCount = correctAnswers.length;
-    
+
     // Проверяем текущий выбранный ответ
     const currentAnswer = selectedAnswer;
     const currentAnswers = Array.isArray(currentAnswer) ? currentAnswer : (currentAnswer !== null ? [currentAnswer] : []);
-    
+
     if (expectedCount > 1) {
       // Множественный выбор - переключаем ответ
       const newAnswers = currentAnswers.includes(answerIndex)
         ? currentAnswers.filter(a => a !== answerIndex)
         : [...currentAnswers, answerIndex];
-      
+
       // Разрешаем выбирать только до expectedCount ответов
       if (newAnswers.length <= expectedCount) {
         setSelectedAnswer(newAnswers);
-        
+
         // Записываем ответ только если выбраны все варианты
         if (newAnswers.length === expectedCount) {
           answerTrainerQuestion(newAnswers);
@@ -382,8 +382,8 @@ export function TrainerSection() {
                 <Button
                   variant={hasActiveFilters ? 'default' : 'outline'}
                   onClick={() => setIsFilterModalOpen(true)}
-                  className={hasActiveFilters 
-                    ? 'bg-blue-600 hover:bg-blue-700 text-white' 
+                  className={hasActiveFilters
+                    ? 'bg-blue-600 hover:bg-blue-700 text-white'
                     : 'text-slate-700 hover:text-slate-900'
                   }
                 >
@@ -419,6 +419,28 @@ export function TrainerSection() {
               </div>
             </CardContent>
           </Card>
+
+          {/* FilterModal для фильтрации вопросов - рендерится всегда */}
+          <FilterModal
+            isOpen={isFilterModalOpen}
+            onClose={() => setIsFilterModalOpen(false)}
+            onApply={(_filteredIds, settings) => {
+              // Обновляем настройки фильтра в AppContext
+              setFilterHiddenQuestionIds(settings.hiddenQuestionIds);
+              setFilterExcludeKnown(settings.excludeKnown);
+              setFilterExcludeWeak(settings.excludeWeak);
+            }}
+            questionStats={statisticsService.getQuestionStats(currentSection)}
+            questions={questions}
+            hiddenQuestionIds={filterHiddenQuestionIds}
+            onHiddenChange={(newHiddenIds) => {
+              setFilterHiddenQuestionIds(newHiddenIds);
+            }}
+            currentSection={currentSection}
+          />
+
+
+
         </div>
       </>
     );
@@ -432,8 +454,8 @@ export function TrainerSection() {
       const correctAnswer = q.correct_index;
       // Для множественного выбора сравниваем массивы
       if (Array.isArray(userAnswer)) {
-        return userAnswer.length === correctAnswer.length && 
-               userAnswer.every((idx, i) => idx === correctAnswer[i]);
+        return userAnswer.length === correctAnswer.length &&
+          userAnswer.every((idx, i) => idx === correctAnswer[i]);
       }
       // Для одиночного выбора
       return userAnswer === correctAnswer[0];
@@ -442,8 +464,8 @@ export function TrainerSection() {
       const userAnswer = trainerAnswers[q.id];
       const correctAnswer = q.correct_index;
       if (Array.isArray(userAnswer)) {
-        return userAnswer.length !== correctAnswer.length || 
-               !userAnswer.every((idx, i) => idx === correctAnswer[i]);
+        return userAnswer.length !== correctAnswer.length ||
+          !userAnswer.every((idx, i) => idx === correctAnswer[i]);
       }
       return userAnswer !== correctAnswer[0];
     });
@@ -554,8 +576,8 @@ export function TrainerSection() {
                 const userAnswer = trainerAnswers[q.id];
                 // Проверяем правильность ответа с учётом множественного выбора
                 const isCorrect = Array.isArray(userAnswer)
-                  ? userAnswer.length === q.correct_index.length && 
-                    userAnswer.every((idx, i) => idx === q.correct_index[i])
+                  ? userAnswer.length === q.correct_index.length &&
+                  userAnswer.every((idx, i) => idx === q.correct_index[i])
                   : userAnswer === q.correct_index[0];
                 const isAnswered = userAnswer !== undefined;
 
@@ -634,7 +656,7 @@ export function TrainerSection() {
           </Button>
         </div>
 
-        {/* ConfirmModal для сброса тренажёра */}
+        confirmmodal для сброса тренажёра
         <ConfirmModal
           isOpen={showResetConfirm}
           onClose={() => setShowResetConfirm(false)}
@@ -646,7 +668,7 @@ export function TrainerSection() {
           cancelLabel="Отмена"
         />
 
-        {/* FilterModal для фильтрации вопросов */}
+        FilterModal для фильтрации вопросов
         <FilterModal
           isOpen={isFilterModalOpen}
           onClose={() => setIsFilterModalOpen(false)}
@@ -745,8 +767,8 @@ export function TrainerSection() {
                   className={(() => {
                     const userAnswer = trainerAnswers[currentQuestion.id];
                     const isCorrect = Array.isArray(userAnswer)
-                      ? userAnswer.length === currentQuestion.correct_index.length && 
-                        userAnswer.every((idx, i) => idx === currentQuestion.correct_index[i])
+                      ? userAnswer.length === currentQuestion.correct_index.length &&
+                      userAnswer.every((idx, i) => idx === currentQuestion.correct_index[i])
                       : userAnswer === currentQuestion.correct_index[0];
                     return isCorrect ? 'bg-green-500' : 'bg-red-500';
                   })()}
@@ -754,8 +776,8 @@ export function TrainerSection() {
                   {(() => {
                     const userAnswer = trainerAnswers[currentQuestion.id];
                     const isCorrect = Array.isArray(userAnswer)
-                      ? userAnswer.length === currentQuestion.correct_index.length && 
-                        userAnswer.every((idx, i) => idx === currentQuestion.correct_index[i])
+                      ? userAnswer.length === currentQuestion.correct_index.length &&
+                      userAnswer.every((idx, i) => idx === currentQuestion.correct_index[i])
                       : userAnswer === currentQuestion.correct_index[0];
                     return isCorrect ? 'Правильно' : 'Неправильно';
                   })()}
@@ -879,37 +901,6 @@ export function TrainerSection() {
         status={loadingModal.status}
         progress={loadingModal.progress}
         showProgress={true}
-      />
-
-      {/* ConfirmModal для сброса тренажёра - рендерится всегда */}
-      <ConfirmModal
-        isOpen={showResetConfirm}
-        onClose={() => setShowResetConfirm(false)}
-        onConfirm={confirmResetTrainer}
-        title="Сброс тренажёра"
-        description="Вы уверены, что хотите сбросить текущую тренировку? Все несохранённые ответы будут потеряны."
-        type="warning"
-        confirmLabel="Сбросить"
-        cancelLabel="Отмена"
-      />
-
-      {/* FilterModal для фильтрации вопросов - рендерится всегда */}
-      <FilterModal
-        isOpen={isFilterModalOpen}
-        onClose={() => setIsFilterModalOpen(false)}
-        onApply={(_filteredIds, settings) => {
-          // Обновляем настройки фильтра в AppContext
-          setFilterHiddenQuestionIds(settings.hiddenQuestionIds);
-          setFilterExcludeKnown(settings.excludeKnown);
-          setFilterExcludeWeak(settings.excludeWeak);
-        }}
-        questionStats={statisticsService.getQuestionStats(currentSection)}
-        questions={questions}
-        hiddenQuestionIds={filterHiddenQuestionIds}
-        onHiddenChange={(newHiddenIds) => {
-          setFilterHiddenQuestionIds(newHiddenIds);
-        }}
-        currentSection={currentSection}
       />
     </>
   );
