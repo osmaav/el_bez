@@ -160,12 +160,14 @@ export function useLearningProgress(
     if (questions.length === 0) return;
 
     const loadProgress = async () => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       let progress: any | null = null;
 
       if (user?.id) {
         console.log('☁️ [useLearningProgress] Загрузка прогресса из Firestore...');
-        const loaded = await loadLearningProgress(user.id, currentSection);
-        progress = loaded as any;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const loaded: any = await loadLearningProgress(user.id, currentSection);
+        progress = loaded;
       }
 
       if (!progress && !user?.id) {
@@ -298,16 +300,14 @@ export function useLearningProgress(
         answered++;
 
         const question = quizState.currentQuestions[qIdx];
-        const correctAnswers: number[] = Array.isArray(question.correct) 
+        const correctAnswers: number[] = Array.isArray(question.correct)
           ? question.correct.filter((n): n is number => typeof n === 'number')
           : [question.correct].filter((n): n is number => typeof n === 'number');
-        const shuffled = quizState.shuffledAnswers[qIdx] || [];
 
         // Нормализуем ответ пользователя к массиву ОРИГИНАЛЬНЫХ индексов ответов
         let userOriginalIndices: number[];
         if (Array.isArray(userAnswer)) {
-          const shuffled = quizState.shuffledAnswers[qIdx] || [];
-          const mapped = userAnswer.map(idx => shuffled[idx]);
+          const mapped = userAnswer.map(idx => (quizState.shuffledAnswers[qIdx] || [])[idx]);
           userOriginalIndices = mapped.filter(n => n != null) as number[];
         } else {
           const shuffled = quizState.shuffledAnswers[qIdx] || [];
