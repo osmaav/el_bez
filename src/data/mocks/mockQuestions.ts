@@ -1,7 +1,7 @@
 /**
  * Mock Questions Data
  * Генерирует тестовые данные для разработки и тестирования
- * 20 вопросов для каждой категории с поддержкой множественных ответов
+ * 50 вопросов для каждой категории с поддержкой множественных ответов
  */
 
 import type { Question } from '@/types';
@@ -11,10 +11,10 @@ import type { Question } from '@/types';
  */
 const generateMockQuestions = (_sectionId: string, sectionName: string): Question[] => {
   const questions: Question[] = [];
-  const totalQuestions = 30;
+  const totalQuestions = 50;
 
   for (let i = 1; i <= totalQuestions; i++) {
-    const ticket = Math.floor((i - 1) / 10) + 1;
+    const ticket = Math.floor((i - 1) / 10) + 1; // 10 вопросов на билет (1-10: билет 1, 11-20: билет 2, и т.д.)
     const hasMultipleAnswers = i % 5 === 0; // Каждый 5-й вопрос с несколькими ответами
 
     questions.push({
