@@ -307,8 +307,9 @@ export function useLearningProgress(
         // Нормализуем ответ пользователя к массиву ОРИГИНАЛЬНЫХ индексов ответов
         let userOriginalIndices: number[];
         if (Array.isArray(userAnswer)) {
-          const mapped = userAnswer.map(idx => (quizState.shuffledAnswers[qIdx] || [])[idx]);
-          userOriginalIndices = mapped.filter(n => n != null) as number[];
+          const shuffledArr = quizState.shuffledAnswers[qIdx] || [];
+          const mapped = userAnswer.map(idx => shuffledArr[idx]);
+          userOriginalIndices = mapped.filter((n): n is number => n !== null && n !== undefined);
         } else {
           const shuffled = quizState.shuffledAnswers[qIdx] || [];
           const idx = shuffled[userAnswer];

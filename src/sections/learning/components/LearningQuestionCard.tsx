@@ -57,7 +57,7 @@ export function LearningQuestionCard({
     }
 
     // Ответ дан - показываем правильные/неправильные
-    if (typeof originalIndex === 'number' && correctAnswers.includes(originalIndex as number)) {
+    if (typeof originalIndex === 'number' && correctAnswers.includes(originalIndex)) {
       return 'bg-green-100 border-green-500 text-green-900';
     }
 
@@ -90,7 +90,7 @@ export function LearningQuestionCard({
 
   // Проверка правильности ответа (только если выбраны все ответы)
   const isCorrect = isAnswered && isAllAnswersSelected && checkAnswer(
-    userAnswersArray.map(idx => shuffledAnswers[idx]).filter(n => n != null) as number[],
+    userAnswersArray.map(idx => shuffledAnswers[idx]).filter((n): n is number => n !== null && n !== undefined),
     correctAnswers
   );
 

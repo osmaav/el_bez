@@ -269,12 +269,10 @@ export function useQuizState({
       // Нормализуем ответ пользователя к массиву индексов в shuffledAnswers
       let userAnswerIndices: number[];
       if (Array.isArray(userAnswer)) {
-        // userAnswer уже массив индексов shuffledAnswers
-        const shuffled = quizState.shuffledAnswers[qIdx] || [];
-        const mapped = userAnswer.map(idx => shuffled[idx]);
-        userAnswerIndices = mapped.filter(n => n != null) as number[];
+        const shuffledArr = quizState.shuffledAnswers[qIdx] || [];
+        const mapped = userAnswer.map(idx => shuffledArr[idx]);
+        userAnswerIndices = mapped.filter((n): n is number => n !== null && n !== undefined);
       } else {
-        // Одиночный ответ
         const shuffled = quizState.shuffledAnswers[qIdx] || [];
         const idx = shuffled[userAnswer];
         userAnswerIndices = [typeof idx === 'number' ? idx : userAnswer];

@@ -196,11 +196,11 @@ export function LearningSection() {
       // Для одиночного выбора записываем сразу
       // Для множественного - когда выбраны все ответы
       if (expectedCount === 1 || isSelectedAll) {
-        const shuffled = quizState.shuffledAnswers[questionIndex] || [];
+        const shuffledArr = quizState.shuffledAnswers[questionIndex] || [];
         // Получаем оригинальные индексы ответов
         const shuffledIndices: number[] = Array.isArray(answerIndex)
-          ? answerIndex.map(idx => shuffled[idx]).filter(n => n != null) as number[]
-          : [shuffled[answerIndex as number]].filter(n => n != null) as number[];
+          ? answerIndex.map(idx => shuffledArr[idx]).filter((n): n is number => n !== null && n !== undefined)
+          : [shuffledArr[answerIndex as number]].filter((n): n is number => n !== null && n !== undefined);
 
         console.log('📝 [LearningSection] Запись ответа:', {
           questionId: question.id,
@@ -247,9 +247,9 @@ export function LearningSection() {
               correctAns,
             });
 
-            const shuffled = quizState.shuffledAnswers[idx] || [];
-            const mapped = userAnsArray.map(i => shuffled[i]);
-            const shuffledIdx: number[] = mapped.filter(n => n != null) as number[];
+            const shuffledArr = quizState.shuffledAnswers[idx] || [];
+            const mapped = userAnsArray.map(i => shuffledArr[i]);
+            const shuffledIdx: number[] = mapped.filter((n): n is number => n !== null && n !== undefined);
             sessionTrackerRef.current?.recordAnswer(q.id, q.ticket, shuffledIdx, correctAns, 0);
           }
         });
