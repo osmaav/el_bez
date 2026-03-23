@@ -35,14 +35,14 @@ interface SectionInfo {
 
 // Промышленные разделы (от низкой группы к высокой)
 const INDUSTRIAL_SECTIONS: SectionInfo[] = [
-  { id: '1254-19', name: 'ЭБ 1254.19', description: 'II группа до 1000 В', totalQuestions: 99, totalTickets: 10, isActive: true },
-  { id: '1255-19', name: 'ЭБ 1255.19', description: 'II группа до и выше 1000 В', totalQuestions: 103, totalTickets: 12, isActive: true },
+  { id: '1254-19', name: 'ЭБ 1254.19', description: 'II группа до 1000 В', totalQuestions: 100, totalTickets: 10, isActive: true },
+  { id: '1255-19', name: 'ЭБ 1255.19', description: 'II группа до и выше 1000 В', totalQuestions: 120, totalTickets: 12, isActive: true },
   { id: '1256-19', name: 'ЭБ 1256.19', description: 'III группа до 1000 В', totalQuestions: 250, totalTickets: 25, isActive: true },
   { id: '1257-20', name: 'ЭБ 1257.20', description: 'III группа до и выше 1000 В', totalQuestions: 360, totalTickets: 36, isActive: true },
   { id: '1258-20', name: 'ЭБ 1258.20', description: 'IV группа до 1000 В', totalQuestions: 310, totalTickets: 31, isActive: true },
   { id: '1259-21', name: 'ЭБ 1259.21', description: 'IV группа до и выше 1000 В', totalQuestions: 310, totalTickets: 31, isActive: true },
-  { id: '1547-6', name: 'ЭБ 1547.6', description: 'V группа до 1000 В', totalQuestions: 331, totalTickets: 34, isActive: true },
-  { id: '1260-23', name: 'ЭБ 1260.23', description: 'V группа до и выше 1000 В', totalQuestions: 407, totalTickets: 42, isActive: true },
+  { id: '1547-6', name: 'ЭБ 1547.6', description: 'V группа до 1000 В', totalQuestions: 340, totalTickets: 34, isActive: true },
+  { id: '1260-23', name: 'ЭБ 1260.23', description: 'V группа до и выше 1000 В', totalQuestions: 420, totalTickets: 42, isActive: true },
 ];
 
 // Непромышленные разделы (от низкой группы к высокой)

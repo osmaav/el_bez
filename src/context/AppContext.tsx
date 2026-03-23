@@ -75,59 +75,59 @@ const SECTIONS: SectionInfo[] = [
     id: '1254-19',
     name: 'ЭБ 1254.19',
     description: 'II группа до 1000 В',
-    totalQuestions: 20,
-    totalTickets: 2
+    totalQuestions: 100,
+    totalTickets: 10
   },
   {
     id: '1255-19',
     name: 'ЭБ 1255.19',
     description: 'II группа до и выше 1000 В',
-    totalQuestions: 20,
-    totalTickets: 2
+    totalQuestions: 120,
+    totalTickets: 12
   },
   {
     id: '1256-19',
     name: 'ЭБ 1256.19',
     description: 'III группа до 1000 В',
-    totalQuestions: 20,
-    totalTickets: 2
+    totalQuestions: 250,
+    totalTickets: 25
   },
   {
     id: '1257-20',
     name: 'ЭБ 1257.20',
     description: 'III группа до и выше 1000 В',
-    totalQuestions: 20,
-    totalTickets: 2
+    totalQuestions: 360,
+    totalTickets: 36
   },
   {
     id: '1258-20',
     name: 'ЭБ 1258.20',
     description: 'IV группа до 1000 В',
-    totalQuestions: 20,
-    totalTickets: 2
+    totalQuestions: 310,
+    totalTickets: 31
   },
   {
     id: '1259-21',
     name: 'ЭБ 1259.21',
     description: 'IV группа до и выше 1000 В',
-    totalQuestions: 20,
-    totalTickets: 2
+    totalQuestions: 310,
+    totalTickets: 31
   },
   {
     id: '1547-6',
     name: 'ЭБ 1547.6',
     description: 'V группа до 1000 В',
-    totalQuestions: 20,
-    totalTickets: 2
+    totalQuestions: 340,
+    totalTickets: 34
   },
   {
     id: '1260-23',
     name: 'ЭБ 1260.23',
     description: 'V группа до и выше 1000 В',
-    totalQuestions: 20,
-    totalTickets: 2
+    totalQuestions: 420,
+    totalTickets: 42
   },
-  // Непромышленные разделы (будут добавлены позже)
+  // Непромышленные разделы
   {
     id: '1494-2',
     name: 'ЭБ 1494.2',
@@ -139,65 +139,65 @@ const SECTIONS: SectionInfo[] = [
     id: '1495-2',
     name: 'ЭБ 1495.2',
     description: 'II группа до и выше 1000 В (непромышленный)',
-    totalQuestions: 0,
-    totalTickets: 0
+    totalQuestions: 60,
+    totalTickets: 6
   },
   {
     id: '1496-2',
     name: 'ЭБ 1496.2',
     description: 'III группа до 1000 В (непромышленный)',
-    totalQuestions: 0,
-    totalTickets: 0
+    totalQuestions: 90,
+    totalTickets: 9
   },
   {
     id: '1497-6',
     name: 'ЭБ 1497.6',
     description: 'III группа до и выше 1000 В (непромышленный)',
-    totalQuestions: 0,
-    totalTickets: 0
+    totalQuestions: 80,
+    totalTickets: 8
   },
   {
     id: '1498-6',
     name: 'ЭБ 1498.6',
     description: 'IV группа до 1000 В (непромышленный)',
-    totalQuestions: 0,
-    totalTickets: 0
+    totalQuestions: 100,
+    totalTickets: 10
   },
   {
     id: '1499-6',
     name: 'ЭБ 1499.6',
     description: 'IV группа до и выше 1000 В (непромышленный)',
-    totalQuestions: 0,
-    totalTickets: 0
+    totalQuestions: 100,
+    totalTickets: 10
   },
   {
     id: '1500-6',
     name: 'ЭБ 1500.6',
     description: 'V группа до 1000 В (непромышленный)',
-    totalQuestions: 0,
-    totalTickets: 0
+    totalQuestions: 120,
+    totalTickets: 12
   },
   {
     id: '1501-2',
     name: 'ЭБ 1501.2',
     description: 'V группа до и выше 1000 В (непромышленный)',
-    totalQuestions: 0,
-    totalTickets: 0
+    totalQuestions: 120,
+    totalTickets: 12
   },
   // Электротехнические лаборатории
   {
     id: '1364-9',
     name: 'ЭБ 1364.9',
     description: 'III группа до и выше 1000 В (ЭТЛ)',
-    totalQuestions: 200,
-    totalTickets: 20
+    totalQuestions: 290,
+    totalTickets: 29
   },
   {
     id: '1365-11',
     name: 'ЭБ 1365.11',
     description: 'IV группа до и выше 1000 В (ЭТЛ)',
-    totalQuestions: 350,
-    totalTickets: 35
+    totalQuestions: 410,
+    totalTickets: 41
   },
   {
     id: '1366-15',
