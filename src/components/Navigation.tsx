@@ -1,7 +1,7 @@
 import { useApp } from '@/hooks/useApp';
 import { useAuth } from '@/hooks/useAuth';
 import type { PageType, SectionType } from '@/types';
-import { BookOpen, GraduationCap, Dumbbell, School, ChevronDown, LogOut, LogIn, BarChart3, UserCircle, Factory, User, FlaskConical } from 'lucide-react';
+import { BookOpen, GraduationCap, Dumbbell, School, ChevronDown, LogOut, LogIn, BarChart3, UserCircle, Factory, User, Gauge } from 'lucide-react';
 import { useState, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { LoginModal } from '@/components/LoginModal';
@@ -48,13 +48,13 @@ const INDUSTRIAL_SECTIONS: SectionInfo[] = [
 // Непромышленные разделы (от низкой группы к высокой)
 const NON_INDUSTRIAL_SECTIONS: SectionInfo[] = [
   { id: '1494-2', name: 'ЭБ 1494.2', description: 'II группа до 1000 В', totalQuestions: 0, totalTickets: 0, isActive: false },
-  { id: '1495-2', name: 'ЭБ 1495.2', description: 'II группа до и выше 1000 В', totalQuestions: 0, totalTickets: 0, isActive: false },
-  { id: '1496-2', name: 'ЭБ 1496.2', description: 'III группа до 1000 В', totalQuestions: 0, totalTickets: 0, isActive: false },
-  { id: '1497-6', name: 'ЭБ 1497.6', description: 'III группа до и выше 1000 В', totalQuestions: 0, totalTickets: 0, isActive: false },
-  { id: '1498-6', name: 'ЭБ 1498.6', description: 'IV группа до 1000 В', totalQuestions: 0, totalTickets: 0, isActive: false },
-  { id: '1499-6', name: 'ЭБ 1499.6', description: 'IV группа до и выше 1000 В', totalQuestions: 0, totalTickets: 0, isActive: false },
-  { id: '1500-6', name: 'ЭБ 1500.6', description: 'V группа до 1000 В', totalQuestions: 0, totalTickets: 0, isActive: false },
-  { id: '1501-2', name: 'ЭБ 1501.2', description: 'V группа до и выше 1000 В', totalQuestions: 0, totalTickets: 0, isActive: false },
+  { id: '1495-2', name: 'ЭБ 1495.2', description: 'II группа до и выше 1000 В', totalQuestions: 60, totalTickets: 6, isActive: true },
+  { id: '1496-2', name: 'ЭБ 1496.2', description: 'III группа до 1000 В', totalQuestions: 90, totalTickets: 9, isActive: true },
+  { id: '1497-6', name: 'ЭБ 1497.6', description: 'III группа до и выше 1000 В', totalQuestions: 80, totalTickets: 8, isActive: true },
+  { id: '1498-6', name: 'ЭБ 1498.6', description: 'IV группа до 1000 В', totalQuestions: 100, totalTickets: 10, isActive: true },
+  { id: '1499-6', name: 'ЭБ 1499.6', description: 'IV группа до и выше 1000 В', totalQuestions: 100, totalTickets: 10, isActive: true },
+  { id: '1500-6', name: 'ЭБ 1500.6', description: 'V группа до 1000 В', totalQuestions: 120, totalTickets: 12, isActive: true },
+  { id: '1501-2', name: 'ЭБ 1501.2', description: 'V группа до и выше 1000 В', totalQuestions: 120, totalTickets: 12, isActive: true },
 ];
 
 // Электротехнические лаборатории (от низкой группы к высокой)
@@ -77,7 +77,7 @@ const SECTION_GROUPS: SectionGroup[] = [
   },
   {
     title: 'ЭЛ.ТЕХ. ЛАБОРАТОРИИ',
-    icon: FlaskConical,
+    icon: Gauge,
     sections: LABORATORY_SECTIONS,
   },
 ];
@@ -197,14 +197,12 @@ export function Navigation() {
               {showSectionMenu && (
                 <div className="absolute left-0 mt-1 w-80 bg-white rounded-xl shadow-2xl overflow-hidden z-50 border border-slate-200">
                   <div className="max-h-[80vh] overflow-y-auto">
-                    {SECTION_GROUPS.map((group, groupIndex) => {
-                      const isLaboratoryGroup = group.title === 'ЭЛ.ТЕХ. ЛАБОРАТОРИИ';
-                      return (
+                    {SECTION_GROUPS.map((group, groupIndex) => (
                       <div key={group.title} className={groupIndex > 0 ? 'border-t border-slate-100' : ''}>
                         {/* Заголовок группы */}
-                        <div className={`flex items-center gap-2 px-4 py-2.5 border-b ${isLaboratoryGroup ? 'bg-blue-50 border-blue-100' : 'bg-slate-50 border-slate-100'}`}>
-                          <group.icon className={`w-4 h-4 ${isLaboratoryGroup ? 'text-blue-600' : 'text-slate-500'}`} />
-                          <span className={`text-xs font-semibold uppercase tracking-wide ${isLaboratoryGroup ? 'text-blue-700' : 'text-slate-600'}`}>
+                        <div className="flex items-center gap-2 px-4 py-2.5 bg-blue-50 border-b border-blue-100">
+                          <group.icon className="w-4 h-4 text-blue-600" />
+                          <span className="text-xs font-semibold text-blue-700 uppercase tracking-wide">
                             {group.title}
                           </span>
                         </div>
