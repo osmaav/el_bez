@@ -66,14 +66,14 @@ const LABORATORY_SECTIONS: SectionInfo[] = [
 
 const SECTION_GROUPS: SectionGroup[] = [
   {
-    title: 'Промышленные',
-    icon: Factory,
-    sections: INDUSTRIAL_SECTIONS,
-  },
-  {
     title: 'Непромышленные',
     icon: User,
     sections: NON_INDUSTRIAL_SECTIONS,
+  },
+  {
+    title: 'Промышленные',
+    icon: Factory,
+    sections: INDUSTRIAL_SECTIONS,
   },
   {
     title: 'ЭЛ.ТЕХ. ЛАБОРАТОРИИ',
