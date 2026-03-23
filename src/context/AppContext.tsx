@@ -183,6 +183,28 @@ const SECTIONS: SectionInfo[] = [
     description: 'V группа до и выше 1000 В (непромышленный)',
     totalQuestions: 0,
     totalTickets: 0
+  },
+  // Электротехнические лаборатории
+  {
+    id: '1364-9',
+    name: 'ЭБ 1364.9',
+    description: 'III группа до и выше 1000 В (ЭТЛ)',
+    totalQuestions: 200,
+    totalTickets: 20
+  },
+  {
+    id: '1365-11',
+    name: 'ЭБ 1365.11',
+    description: 'IV группа до и выше 1000 В (ЭТЛ)',
+    totalQuestions: 350,
+    totalTickets: 35
+  },
+  {
+    id: '1366-15',
+    name: 'ЭБ 1366.15',
+    description: 'V группа до и выше 1000 В (ЭТЛ)',
+    totalQuestions: 450,
+    totalTickets: 45
   }
 ];
 

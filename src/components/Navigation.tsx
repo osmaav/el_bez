@@ -1,7 +1,7 @@
 import { useApp } from '@/hooks/useApp';
 import { useAuth } from '@/hooks/useAuth';
 import type { PageType, SectionType } from '@/types';
-import { BookOpen, GraduationCap, Dumbbell, School, ChevronDown, LogOut, LogIn, BarChart3, UserCircle, Factory, User } from 'lucide-react';
+import { BookOpen, GraduationCap, Dumbbell, School, ChevronDown, LogOut, LogIn, BarChart3, UserCircle, Factory, User, FlaskConical } from 'lucide-react';
 import { useState, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { LoginModal } from '@/components/LoginModal';
@@ -57,6 +57,13 @@ const NON_INDUSTRIAL_SECTIONS: SectionInfo[] = [
   { id: '1501-2', name: 'ЭБ 1501.2', description: 'V группа до и выше 1000 В', totalQuestions: 0, totalTickets: 0, isActive: false },
 ];
 
+// Электротехнические лаборатории (от низкой группы к высокой)
+const LABORATORY_SECTIONS: SectionInfo[] = [
+  { id: '1364-9', name: 'ЭБ 1364.9', description: 'III группа до и выше 1000 В', totalQuestions: 200, totalTickets: 20, isActive: true },
+  { id: '1365-11', name: 'ЭБ 1365.11', description: 'IV группа до и выше 1000 В', totalQuestions: 350, totalTickets: 35, isActive: true },
+  { id: '1366-15', name: 'ЭБ 1366.15', description: 'V группа до и выше 1000 В', totalQuestions: 450, totalTickets: 45, isActive: true },
+];
+
 const SECTION_GROUPS: SectionGroup[] = [
   {
     title: 'Промышленные',
@@ -67,6 +74,11 @@ const SECTION_GROUPS: SectionGroup[] = [
     title: 'Непромышленные',
     icon: User,
     sections: NON_INDUSTRIAL_SECTIONS,
+  },
+  {
+    title: 'ЭЛ.ТЕХ. ЛАБОРАТОРИИ',
+    icon: FlaskConical,
+    sections: LABORATORY_SECTIONS,
   },
 ];
 
@@ -185,12 +197,14 @@ export function Navigation() {
               {showSectionMenu && (
                 <div className="absolute left-0 mt-1 w-80 bg-white rounded-xl shadow-2xl overflow-hidden z-50 border border-slate-200">
                   <div className="max-h-[80vh] overflow-y-auto">
-                    {SECTION_GROUPS.map((group, groupIndex) => (
+                    {SECTION_GROUPS.map((group, groupIndex) => {
+                      const isLaboratoryGroup = group.title === 'ЭЛ.ТЕХ. ЛАБОРАТОРИИ';
+                      return (
                       <div key={group.title} className={groupIndex > 0 ? 'border-t border-slate-100' : ''}>
                         {/* Заголовок группы */}
-                        <div className="flex items-center gap-2 px-4 py-2.5 bg-slate-50 border-b border-slate-100">
-                          <group.icon className="w-4 h-4 text-slate-500" />
-                          <span className="text-xs font-semibold text-slate-600 uppercase tracking-wide">
+                        <div className={`flex items-center gap-2 px-4 py-2.5 border-b ${isLaboratoryGroup ? 'bg-blue-50 border-blue-100' : 'bg-slate-50 border-slate-100'}`}>
+                          <group.icon className={`w-4 h-4 ${isLaboratoryGroup ? 'text-blue-600' : 'text-slate-500'}`} />
+                          <span className={`text-xs font-semibold uppercase tracking-wide ${isLaboratoryGroup ? 'text-blue-700' : 'text-slate-600'}`}>
                             {group.title}
                           </span>
                         </div>
@@ -241,7 +255,8 @@ export function Navigation() {
                           })}
                         </div>
                       </div>
-                    ))}
+                    );
+                  })}
                   </div>
                 </div>
               )}
