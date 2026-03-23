@@ -242,12 +242,12 @@ export function Navigation() {
                                 </div>
                                 <div className={`text-xs mt-1 ${isSelected ? 'text-blue-600' : 'text-slate-500'}`}>
                                   {section.description}
-                                  {!isInactive && (
-                                    <span className="ml-2 text-slate-400">
-                                      • {section.totalQuestions} вопр. • {section.totalTickets} билет.
-                                    </span>
-                                  )}
                                 </div>
+                                {!isInactive && (
+                                  <div className="text-xs text-slate-400 mt-0.5">
+                                    {section.totalQuestions} вопр. • {section.totalTickets} билет.
+                                  </div>
+                                )}
                               </button>
                             );
                           })}
