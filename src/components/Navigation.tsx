@@ -245,7 +245,7 @@ export function Navigation() {
                                 </div>
                                 {!isInactive && (
                                   <div className="text-xs text-slate-400 mt-0.5">
-                                    {section.totalQuestions} вопр. • {section.totalTickets} билет.
+                                    Вопросов: {section.totalQuestions} • Билетов: {section.totalTickets}
                                   </div>
                                 )}
                               </button>

@@ -1,0 +1,263 @@
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Электробезопасность: Теория</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        html { scroll-behavior: smooth; }
+        /* Custom scrollbar for webkit */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #f1f5f9; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        .prose h3 { color: #0f172a; font-weight: 600; margin-top: 1.5em; margin-bottom: 0.5em; }
+        .prose p { color: #334155; line-height: 1.6; margin-bottom: 1em; }
+        .prose ul { list-style-type: disc; padding-left: 1.5em; color: #334155; margin-bottom: 1em; }
+        .prose li { margin-bottom: 0.5em; }
+        .anchor-offset { scroll-margin-top: 2rem; }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-900 min-h-screen flex flex-col">
+
+    <!-- Навигация (упрощенная для контекста) -->
+    <nav class="bg-slate-900 text-white shadow-lg sticky top-0 z-50">
+       <div>НАВИГАЦИЯ</div>
+    </nav>
+
+    <main class="flex-grow">
+        <div class="max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
+            
+            <!-- Заголовок страницы -->
+            <div class="mb-8 border-b border-slate-200 pb-4">
+                <h2 class="text-3xl font-bold text-slate-900">Теоретические материалы</h2>
+                <p class="text-slate-600 mt-2 text-lg">Нормативно-правовое регулирование и организация аттестации персонала</p>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                
+                <!-- Левая колонка: Навигация -->
+                <div class="lg:col-span-3">
+                    <div class="bg-white rounded-xl shadow-sm border border-slate-200 sticky top-24 overflow-hidden">
+                        <div class="p-4 bg-slate-50 border-b border-slate-200">
+                            <h3 class="font-semibold text-slate-700">Содержание</h3>
+                        </div>
+                        <nav class="p-2 space-y-1">
+                            <a href="#intro" class="block px-3 py-2 text-sm font-medium text-slate-700 rounded-md hover:bg-slate-100 hover:text-yellow-600 transition-colors">Введение и область применения</a>
+                            <a href="#consumers" class="block px-3 py-2 text-sm font-medium text-slate-700 rounded-md hover:bg-slate-100 hover:text-yellow-600 transition-colors">Промышленные и непромышленные</a>
+                            <a href="#personnel" class="block px-3 py-2 text-sm font-medium text-slate-700 rounded-md hover:bg-slate-100 hover:text-yellow-600 transition-colors">Категории и группы персонала</a>
+                            <a href="#attestation" class="block px-3 py-2 text-sm font-medium text-slate-700 rounded-md hover:bg-slate-100 hover:text-yellow-600 transition-colors">Особенности аттестации</a>
+                            <a href="#norms" class="block px-3 py-2 text-sm font-medium text-slate-700 rounded-md hover:bg-slate-100 hover:text-yellow-600 transition-colors">Нормативная база</a>
+                        </nav>
+                    </div>
+                </div>
+
+                <!-- Правая колонка: Контент -->
+                <div class="lg:col-span-9 space-y-8">
+
+                    <!-- Блок 1: Введение -->
+                    <section id="intro" class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 anchor-offset scroll-mt-24">
+                        <div class="flex items-center space-x-3 mb-4">
+                            <div class="p-2 bg-blue-100 rounded-lg">
+                                <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                            </div>
+                            <h3 class="text-xl font-bold text-slate-900">Область применения правил</h3>
+                        </div>
+                        <div class="prose max-w-none">
+                            <p>
+                                Согласно <strong>Приказу Минтруда России от 15.12.2020 № 903н</strong> «Об утверждении Правил по охране труда при эксплуатации электроустановок» (ПОТ ЭЭ), требования распространяются на всех работодателей (юридических и физических лиц) и весь персонал, занятый обслуживанием электроустановок.
+                            </p>
+                            <div class="bg-blue-50 border-l-4 border-blue-500 p-4 my-4">
+                                <p class="font-medium text-blue-800 mb-1">Ключевой принцип:</p>
+                                <p class="text-sm text-blue-700">Технические требования к безопасности (заземление, допуски, расстояния) едины для всех организаций, независимо от формы собственности и вида деятельности.</p>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Блок 2: Промышленные vs Непромышленные -->
+                    <section id="consumers" class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 anchor-offset scroll-mt-24">
+                        <div class="flex items-center space-x-3 mb-4">
+                            <div class="p-2 bg-purple-100 rounded-lg">
+                                <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
+                            </div>
+                            <h3 class="text-xl font-bold text-slate-900">Промышленные и непромышленные потребители</h3>
+                        </div>
+                        <div class="prose max-w-none">
+                            <p>
+                                В нормативных документах по электробезопасности (Приказ 903н, Приказ 1070) <strong>отсутствует</strong> прямое техническое разделение потребителей на «промышленные» и «непромышленные». Это разделение является <strong>административной практикой Ростехнадзора</strong>, используемой для определения формы аттестации.
+                            </p>
+                            
+                            <div class="grid md:grid-cols-2 gap-4 my-6">
+                                <div class="border border-slate-200 rounded-lg p-4 bg-slate-50">
+                                    <h4 class="font-bold text-slate-800 mb-2 flex items-center">
+                                        <span class="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
+                                        Непромышленные потребители
+                                    </h4>
+                                    <ul class="text-sm space-y-2 text-slate-600 list-none pl-0">
+                                        <li>• Организации, где электроустановки не являются основным производством (офисы, школы, ЖКХ).</li>
+                                        <li>• Обычно отсутствуют ОПО (Опасные Производственные Объекты).</li>
+                                        <li>• <strong>Аттестация:</strong> Преимущественно во внутренних комиссиях организации (для групп II-IV).</li>
+                                    </ul>
+                                </div>
+                                <div class="border border-slate-200 rounded-lg p-4 bg-slate-50">
+                                    <h4 class="font-bold text-slate-800 mb-2 flex items-center">
+                                        <span class="w-2 h-2 bg-red-500 rounded-full mr-2"></span>
+                                        Промышленные потребители
+                                    </h4>
+                                    <ul class="text-sm space-y-2 text-slate-600 list-none pl-0">
+                                        <li>• Заводы, фабрики, объекты энергетики, добычи.</li>
+                                        <li>• Часто имеют ОПО, сложные схемы РУ, собственную генерацию.</li>
+                                        <li>• <strong>Аттестация:</strong> Часто требуется участие инспектора Ростехнадзора или аттестация непосредственно в органе надзора (особенно для V группы и ответственных).</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            
+                            <p class="text-sm text-slate-500 italic">
+                                * Различие касается места сдачи экзамена и состава комиссии, но не содержания самих Правил (ПОТ ЭЭ, ПТЭЭП), которые едины для всех.
+                            </p>
+                        </div>
+                    </section>
+
+                    <!-- Блок 3: Персонал -->
+                    <section id="personnel" class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 anchor-offset scroll-mt-24">
+                        <div class="flex items-center space-x-3 mb-4">
+                            <div class="p-2 bg-yellow-100 rounded-lg">
+                                <svg class="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+                            </div>
+                            <h3 class="text-xl font-bold text-slate-900">Категории и группы персонала</h3>
+                        </div>
+                        <div class="prose max-w-none">
+                            <p>Персонал делится на три основные категории (п. 2.3 Приказа 903н):</p>
+                            <ol class="list-decimal pl-5 space-y-3 mb-6">
+                                <li>
+                                    <strong>Электротехнический:</strong> Административно-технический, оперативно-ремонтный, ремонтный, оперативный персонал.
+                                </li>
+                                <li>
+                                    <strong>Электротехнологический:</strong> Персонал, у которого в управляемом им технологическом процессе основной составляющей является электроэнергия (электропечи, сварка, электролиз).
+                                </li>
+                                <li>
+                                    <strong>Неэлектротехнический:</strong> Персонал, не подпадающий под определения выше (офисные работники, уборщики), которому может присваиваться I группа.
+                                </li>
+                            </ol>
+
+                            <h4 class="font-semibold text-slate-800 mt-6 mb-2">Группы по электробезопасности (Приложение 1 к Приказу 903н)</h4>
+                            <div class="overflow-x-auto">
+                                <table class="min-w-full divide-y divide-slate-200 text-sm">
+                                    <thead class="bg-slate-50">
+                                        <tr>
+                                            <th class="px-4 py-3 text-left font-medium text-slate-500 uppercase tracking-wider">Группа</th>
+                                            <th class="px-4 py-3 text-left font-medium text-slate-500 uppercase tracking-wider">Кому присваивается</th>
+                                            <th class="px-4 py-3 text-left font-medium text-slate-500 uppercase tracking-wider">Мин. стаж (ВУЗ/СПО)</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="bg-white divide-y divide-slate-200">
+                                        <tr>
+                                            <td class="px-4 py-3 font-bold text-slate-900">II</td>
+                                            <td class="px-4 py-3 text-slate-600">Электротехнический персонал (начальный уровень)</td>
+                                            <td class="px-4 py-3 text-slate-600">Не требуется (или 1 мес.)</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="px-4 py-3 font-bold text-slate-900">III</td>
+                                            <td class="px-4 py-3 text-slate-600">Оперативный персонал (до 1000В / выше 1000В)</td>
+                                            <td class="px-4 py-3 text-slate-600">2 мес. / 3 мес.</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="px-4 py-3 font-bold text-slate-900">IV</td>
+                                            <td class="px-4 py-3 text-slate-600">Оперативный, АТ персонал (ответственные)</td>
+                                            <td class="px-4 py-3 text-slate-600">3 мес. / 6 мес.</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="px-4 py-3 font-bold text-slate-900">V</td>
+                                            <td class="px-4 py-3 text-slate-600">АТ персонал (высшая ответственность)</td>
+                                            <td class="px-4 py-3 text-slate-600">24 мес. / 12 мес.</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Блок 4: Аттестация -->
+                    <section id="attestation" class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 anchor-offset scroll-mt-24">
+                        <div class="flex items-center space-x-3 mb-4">
+                            <div class="p-2 bg-red-100 rounded-lg">
+                                <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path></svg>
+                            </div>
+                            <h3 class="text-xl font-bold text-slate-900">Особенности аттестации</h3>
+                        </div>
+                        <div class="prose max-w-none">
+                            <p>
+                                Порядок проверки знаний регулируется <strong>Разделом II Приказа 903н</strong>.
+                            </p>
+                            <ul class="space-y-4 mt-4">
+                                <li class="flex items-start">
+                                    <svg class="w-5 h-5 text-green-500 mt-0.5 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                                    <div>
+                                        <strong>Внутренняя комиссия:</strong> Создается приказом руководителя. Обязательна для первичной проверки знаний персонала (группы II-IV). Для непромышленных потребителей часто достаточна для всех групп, кроме V.
+                                    </div>
+                                </li>
+                                <li class="flex items-start">
+                                    <svg class="w-5 h-5 text-yellow-500 mt-0.5 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                                    <div>
+                                        <strong>Комиссия Ростехнадзора:</strong> Обязательна для присвоения V группы. Также обязательна для персонала организаций, подконтрольных Ростехнадзору (субъекты энергетики, объекты с ОПО), где внутренняя комиссия не может быть сформирована без участия инспектора.
+                                    </div>
+                                </li>
+                                <li class="flex items-start">
+                                    <svg class="w-5 h-5 text-blue-500 mt-0.5 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                    <div>
+                                        <strong>Специальные работы:</strong> Работы под напряжением, верхолазные, с использованием испытательных установок требуют отдельной записи в удостоверении (п. 2.5 Приказа 903н).
+                                    </div>
+                                </li>
+                            </ul>
+                        </div>
+                    </section>
+
+                    <!-- Блок 5: Нормативная база -->
+                    <section id="norms" class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 anchor-offset scroll-mt-24">
+                        <div class="flex items-center space-x-3 mb-4">
+                            <div class="p-2 bg-slate-100 rounded-lg">
+                                <svg class="w-6 h-6 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
+                            </div>
+                            <h3 class="text-xl font-bold text-slate-900">Основные нормативные документы</h3>
+                        </div>
+                        <div class="prose max-w-none">
+                            <ul class="space-y-3">
+                                <li class="bg-slate-50 p-3 rounded border border-slate-200">
+                                    <strong>Приказ Минтруда № 903н</strong> (ПОТ ЭЭ).<br>
+                                    <span class="text-sm text-slate-600">Главный документ по охране труда. Регламентирует допуски, наряды, средства защиты.</span>
+                                </li>
+                                <li class="bg-slate-50 p-3 rounded border border-slate-200">
+                                    <strong>Приказ Минэнерго № 1070</strong> (ПТЭЭП).<br>
+                                    <span class="text-sm text-slate-600">Техническая эксплуатация. Требования к оборудованию, персоналу, документации.</span>
+                                </li>
+                                <li class="bg-slate-50 p-3 rounded border border-slate-200">
+                                    <strong>Приказ Минтруда № 924н</strong>.<br>
+                                    <span class="text-sm text-slate-600">Охрана труда при эксплуатации объектов теплоснабжения.</span>
+                                </li>
+                                <li class="bg-slate-50 p-3 rounded border border-slate-200">
+                                    <strong>Правила ТБ при эксплуатации тепломеханического оборудования</strong>.<br>
+                                    <span class="text-sm text-slate-600">Специфика работ в котлотурбинных цехах, на высотах, с химией.</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </section>
+
+                    <!-- Предупреждение -->
+                    <div class="rounded-lg bg-yellow-50 p-4 border border-yellow-200 flex gap-3">
+                        <svg class="w-6 h-6 text-yellow-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                        <div>
+                            <h4 class="font-bold text-yellow-800 text-sm">Важно!</h4>
+                            <p class="text-sm text-yellow-700 mt-1">
+                                Данный материал является вводным. Для успешной сдачи экзамена необходимо изучать полные тексты нормативных документов и актуальные вопросы тестов Ростехнадзора.
+                            </p>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </main>
+</body>
+</html>
