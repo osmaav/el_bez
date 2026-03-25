@@ -1,10 +1,11 @@
 /**
  * LearningProgressBar — компонент прогресс-бара обучения
- * 
+ *
  * @description Отображает статистику текущей сессии, глобальный прогресс
  * и элементы управления навигацией (страницы, сброс, фильтр).
  */
 
+import { useEffect } from 'react';
 import { ChevronLeft, ChevronRight, RotateCcw, Filter, Target, CheckCircle2, XCircle, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -74,43 +75,60 @@ export function LearningProgressBar({
   const startQuestion = ((currentPage - 1) * questionsPerSession) + 1;
   const endQuestion = Math.min(currentPage * questionsPerSession, activeQuestionsCount);
 
+  // Отладка размера экрана
+  useEffect(() => {
+    const checkScreenSize = () => {
+      const width = window.innerWidth;
+      const isMd = width >= 768;
+      console.log('📏 [LearningProgressBar] Размер экрана:', {
+        width,
+        breakpoint: isMd ? 'md+' : 'sm',
+        'надписи': isMd ? 'видны (hidden md:inline)' : 'скрыты',
+      });
+    };
+
+    checkScreenSize();
+    window.addEventListener('resize', checkScreenSize);
+    return () => window.removeEventListener('resize', checkScreenSize);
+  }, []);
+
   return (
-    <Card className="mb-2 sm:mb-4 sticky top-16 z-40 bg-white/95 backdrop-blur shadow-lg py-2 sm:py-4">
-      <CardContent className='px-1 sm:px-4 md:px-6'>
+    <Card className="mb-2 sm:mb-4 sticky top-16 z-40 bg-white/95 backdrop-blur shadow-lg py-2 py-0">
+      <CardContent className="px-1 sm:px-4 md:px-6 py-0">
         {/* Stats Row */}
-        <div className="flex items-center justify-between gap-0.5 mb-1 sm:mb-2 md:sm-3">
+        <div className="flex items-center justify-between gap-1 sm:gap-0.5 md:gap-0.5 mb-1 sm:mb-2">
           {/* Statistics */}
-          <div className="flex items-center gap-0.5 sm:gap-0.5 md:gap-2">
+          <div className="flex items-center gap-1 sm:gap-0.5 md:gap-0.5">
             {/* Total */}
-            <div className="flex items-center gap-0 sm:gap-0" data-testid="stat-total">
-              <Target className="w-5 h-5 sm:w-4 sm:h-4 text-blue-600" />
-              <span className="text-sm font-medium min-w-[70px] sm:min-w-[40px]">
-                <span className="hidden">Всего: </span>
+            <div className="flex items-center gap-0.5 sm:gap-0 md:gap-0.5" data-testid="stat-total">
+              <Target className="w-4 h-4 sm:w-4 sm:h-4 text-blue-600" />
+              <span className="text-xs sm:text-sm font-medium min-w-[30px] sm:min-w-[40px]">
+                {/* <span className="sr-only sm:sr-only md:not-sr-only">Всего: </span> */}
                 {questionsPerSession}
               </span>
             </div>
 
             {/* Correct */}
-            <div className="flex items-center gap-2" data-testid="stat-correct">
+            <div className="flex items-center gap-1 sm:gap-1.5 md:gap-1" data-testid="stat-correct">
               <CheckCircle2 className="w-4 h-4 sm:w-5 sm:h-5 text-green-600" />
-              <span className="text-sm font-medium text-green-600">{stats.correct}</span>
+              <span className="text-xs sm:text-sm font-medium text-green-600">{stats.correct}</span>
             </div>
 
             {/* Incorrect */}
-            <div className="flex items-center gap-2" data-testid="stat-incorrect">
+            <div className="flex items-center gap-1 sm:gap-1.5 md:gap-1" data-testid="stat-incorrect">
               <XCircle className="w-4 h-4 sm:w-5 sm:h-5 text-red-600" />
-              <span className="text-sm font-medium text-red-600">{stats.incorrect}</span>
+              <span className="text-xs sm:text-sm font-medium text-red-600">{stats.incorrect}</span>
             </div>
 
             {/* Remaining */}
-            <div className="flex items-center gap-1.5 sm:gap-2" data-testid="stat-remaining">
+            <div className="flex items-center gap-1 sm:gap-1.5 md:gap-1" data-testid="stat-remaining">
               <AlertCircle className="w-4 h-4 sm:w-5 sm:h-5 text-orange-600" />
-              <span className="text-sm font-medium text-orange-600">{stats.remaining}</span>
+              <span className="text-xs sm:text-sm font-medium text-orange-600">{stats.remaining}</span>
             </div>
           </div>
 
           {/* Controls */}
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-0.5">
             {/* Previous Page */}
             <Button
               variant="outline"
@@ -124,11 +142,11 @@ export function LearningProgressBar({
             </Button>
 
             {/* Page Indicator */}
-            <span className="text-xs font-medium text-center px-1" data-testid="page-indicator">
-              <span className="hidden sm:inline">стр. </span>
+            <span className="text-xs font-medium text-center px-0.5 whitespace-nowrap" data-testid="page-indicator">
+              <span className="sr-only sm:sr-only md:not-sr-only">стр. </span>
               {currentPage}
-              <span className="hidden sm:inline"> из </span>
-              <span className="hidden sm:inline">{totalPages}</span>
+              <span className="sr-only sm:sr-only md:not-sr-only"> из </span>
+              <span className="sr-only sm:sr-only md:not-sr-only">{totalPages}</span>
             </span>
 
             {/* Next Page */}
@@ -148,11 +166,11 @@ export function LearningProgressBar({
               variant="outline"
               size="sm"
               onClick={onReset}
-              className="text-red-600 hover:text-red-700 px-2"
+              className="text-red-600 hover:text-red-700 px-1.5 md:px-1"
               data-testid="btn-reset"
             >
               <RotateCcw className="w-4 h-4" />
-              <span className="hidden md:inline ml-1">Сброс</span>
+              <span className="sr-only sm:sr-only md:not-sr-only ml-1">Сброс</span>
             </Button>
 
             {/* Filter */}
@@ -172,7 +190,7 @@ export function LearningProgressBar({
                 data-testid="btn-filter"
               >
                 <Filter className="w-4 h-4" />
-                <span className="hidden md:inline ml-1">Фильтр</span>
+                <span className="sr-only sm:sr-only md:not-sr-only ml-1">Фильтр</span>
               </Button>
             </RichTooltip>
           </div>

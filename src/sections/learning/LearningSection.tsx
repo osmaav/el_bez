@@ -513,7 +513,7 @@ export function LearningSection() {
       <div className="min-h-screen bg-slate-50">
         <div className="max-w-6xl mx-auto px-4 py-8">
           <div className="text-center">
-            <h1 className="text-3xl font-bold text-slate-900 mb-2">Загрузка...</h1>
+            <h1 className="text-xl font-bold mb-2">Загрузка...</h1>
             <p className="text-slate-600">Загрузка вопросов для {currentSectionInfo?.name}</p>
           </div>
         </div>
@@ -526,16 +526,16 @@ export function LearningSection() {
       <div className="min-h-screen bg-slate-50">
         <div className="max-w-6xl mx-auto px-2 sm:px-2 sm:py-3">
           {/* Заголовок */}
-          <div className="mb-2 sm:mb-2">
-            <h1 className="text-2xl text-sm font-bold text-slate-900 mb-2">
+          <div className="mb-2 md:mb-2">
+            <h1 className="font-bold text-xl">
               Обучение
             </h1>
-            <p className="text-xs sm:text-sm text-slate-600">
+            <p className="text-xs sm:text-sm">
               {currentSectionInfo?.description}
 
             </p>
-            <p className="text-xs sm:text-sm text-slate-600">
-              Вопросов: {filteredQuestions.length} • страниц: {displayTotalPages}
+            <p className="text-xs sm:text-sm">
+              Вопросов:{filteredQuestions.length} • страниц:{displayTotalPages}
             </p>
           </div>
 

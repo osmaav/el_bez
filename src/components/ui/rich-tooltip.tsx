@@ -317,8 +317,8 @@ function TooltipArrow({
             align === 'start'
               ? 'left-3'
               : align === 'end'
-              ? 'right-3'
-              : 'left-1/2 -translate-x-1/2',
+                ? 'right-3'
+                : 'left-1/2 -translate-x-1/2',
           style: { bottom: `-${arrowSize}px` },
         };
       case 'bottom':
@@ -332,8 +332,8 @@ function TooltipArrow({
             align === 'start'
               ? 'left-3'
               : align === 'end'
-              ? 'right-3'
-              : 'left-1/2 -translate-x-1/2',
+                ? 'right-3'
+                : 'left-1/2 -translate-x-1/2',
           style: { top: `-${arrowSize}px` },
         };
       case 'left':
@@ -347,8 +347,8 @@ function TooltipArrow({
             align === 'start'
               ? 'top-3'
               : align === 'end'
-              ? 'bottom-3'
-              : 'top-1/2 -translate-y-1/2',
+                ? 'bottom-3'
+                : 'top-1/2 -translate-y-1/2',
           style: { right: `-${arrowSize}px` },
         };
       case 'right':
@@ -362,8 +362,8 @@ function TooltipArrow({
             align === 'start'
               ? 'top-3'
               : align === 'end'
-              ? 'bottom-3'
-              : 'top-1/2 -translate-y-1/2',
+                ? 'bottom-3'
+                : 'top-1/2 -translate-y-1/2',
           style: { left: `-${arrowSize}px` },
         };
     }

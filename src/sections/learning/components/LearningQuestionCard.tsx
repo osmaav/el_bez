@@ -103,10 +103,10 @@ export function LearningQuestionCard({
   );
 
   return (
-    <Card className="overflow-hidden py-2">
-      <CardHeader className="bg-slate-50 border-b">
+    <Card className="overflow-hidden gap-2 py-2">
+      <CardHeader className="px-2 sm:px-4 bg-slate-50 border-b">
         <div className="flex items-start justify-between">
-          <CardTitle className="font-medium">Вопрос {question.id}</CardTitle>
+          <CardTitle className="mt-0.5 font-medium">Вопрос {question.id}</CardTitle>
           <div className="flex items-center gap-2">
             <Badge variant="outline" className="border-0 whitespace-normal">
               Билет №{question.ticket}
@@ -120,9 +120,9 @@ export function LearningQuestionCard({
         </div>
       </CardHeader>
 
-      <CardContent className="pt-2">
+      <CardContent className="px-2 sm:px-4">
         {/* Текст вопроса */}
-        <p className="text-slate-800 mb-6 leading-relaxed">{question.question}</p>
+        <p className="text-slate-800 mb-2 leading-relaxed">{question.question}</p>
 
         {/* Варианты ответов */}
         <div className="space-y-3">
@@ -131,7 +131,7 @@ export function LearningQuestionCard({
               key={shuffledIdx}
               onClick={() => handleAnswerClick(shuffledIdx)}
               disabled={isAnswered}
-              className={`w-full p-4 rounded-xl border-2 text-left transition-all duration-200 ${getAnswerStyle(shuffledIdx)} hover:shadow-md disabled:cursor-default`}
+              className={`w-full p-2 sm:p-4 rounded-xl border-2 text-left transition-all duration-200 ${getAnswerStyle(shuffledIdx)} hover:shadow-md disabled:cursor-default`}
             >
               <div className="flex items-start gap-3">
                 <span className="flex-shrink-0 w-6 h-6 rounded-full bg-slate-200 flex items-center justify-center text-sm font-medium">

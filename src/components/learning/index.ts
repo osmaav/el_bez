@@ -3,6 +3,6 @@
  */
 
 export { LearningHeader } from './LearningHeader';
-export { LearningProgressBar } from './LearningProgressBar';
+// export { LearningProgressBar } from './LearningProgressBar';
 export { LearningQuestionCard } from './LearningQuestionCard';
 export { LearningResults } from './LearningResults';
