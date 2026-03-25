@@ -131,56 +131,56 @@ const SECTIONS: SectionInfo[] = [
   {
     id: '1494-2',
     name: 'ЭБ 1494.2',
-    description: 'II группа до 1000 В (непромышленный)',
+    description: 'II группа до 1000 В (непромышленные)',
     totalQuestions: 0,
     totalTickets: 0
   },
   {
     id: '1495-2',
     name: 'ЭБ 1495.2',
-    description: 'II группа до и выше 1000 В (непромышленный)',
+    description: 'II группа до и выше 1000 В (непромышленные)',
     totalQuestions: 60,
     totalTickets: 6
   },
   {
     id: '1496-2',
     name: 'ЭБ 1496.2',
-    description: 'III группа до 1000 В (непромышленный)',
+    description: 'III группа до 1000 В (непромышленные)',
     totalQuestions: 90,
     totalTickets: 9
   },
   {
     id: '1497-6',
     name: 'ЭБ 1497.6',
-    description: 'III группа до и выше 1000 В (непромышленный)',
+    description: 'III группа до и выше 1000 В (непромышленные)',
     totalQuestions: 80,
     totalTickets: 8
   },
   {
     id: '1498-6',
     name: 'ЭБ 1498.6',
-    description: 'IV группа до 1000 В (непромышленный)',
+    description: 'IV группа до 1000 В (непромышленные)',
     totalQuestions: 100,
     totalTickets: 10
   },
   {
     id: '1499-6',
     name: 'ЭБ 1499.6',
-    description: 'IV группа до и выше 1000 В (непромышленный)',
+    description: 'IV группа до и выше 1000 В (непромышленные)',
     totalQuestions: 100,
     totalTickets: 10
   },
   {
     id: '1500-6',
     name: 'ЭБ 1500.6',
-    description: 'V группа до 1000 В (непромышленный)',
+    description: 'V группа до 1000 В (непромышленные)',
     totalQuestions: 120,
     totalTickets: 12
   },
   {
     id: '1501-2',
     name: 'ЭБ 1501.2',
-    description: 'V группа до и выше 1000 В (непромышленный)',
+    description: 'V группа до и выше 1000 В (непромышленные)',
     totalQuestions: 120,
     totalTickets: 12
   },

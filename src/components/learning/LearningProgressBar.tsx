@@ -21,22 +21,22 @@ export interface LearningProgressBarProps {
   stats: LearningStats;
   globalProgress: GlobalProgress;
   progress: number;
-  
+
   // Navigation
   currentPage: number;
   totalPages: number;
   isFirstPage: boolean;
   isLastPage: boolean;
-  
+
   // Filter
   isFilterActive: boolean;
-  
+
   // Actions
   onPrevPage: () => void;
   onNextPage: () => void;
   onReset: () => void;
   onFilterClick: () => void;
-  
+
   // Config
   questionsPerSession: number;
   activeQuestionsCount: number;
@@ -51,22 +51,22 @@ export function LearningProgressBar({
   stats,
   globalProgress,
   progress,
-  
+
   // Navigation
   currentPage,
   totalPages,
   isFirstPage,
   isLastPage,
-  
+
   // Filter
   isFilterActive,
-  
+
   // Actions
   onPrevPage,
   onNextPage,
   onReset,
   onFilterClick,
-  
+
   // Config
   questionsPerSession,
   activeQuestionsCount,
@@ -78,14 +78,14 @@ export function LearningProgressBar({
     <Card className="mb-2 sm:mb-4 sticky top-16 z-40 bg-white/95 backdrop-blur shadow-lg py-2 sm:py-4">
       <CardContent className='px-1 sm:px-4 md:px-6'>
         {/* Stats Row */}
-        <div className="flex items-center justify-between gap-0.5 sm:gap-2 md:gap-4 mb-1 sm:mb-2 md:sm-3">
+        <div className="flex items-center justify-between gap-0.5 mb-1 sm:mb-2 md:sm-3">
           {/* Statistics */}
-          <div className="flex items-center gap-0.5 sm:gap-2 md:gap-4">
+          <div className="flex items-center gap-0.5 sm:gap-0.5 md:gap-2">
             {/* Total */}
-            <div className="flex items-center gap-0.5 sm:gap-2" data-testid="stat-total">
-              <Target className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600" />
-              <span className="text-sm font-medium min-w-[40px] sm:min-w-[70px]">
-                <span className="hidden sm:inline">Всего: </span>
+            <div className="flex items-center gap-0 sm:gap-0" data-testid="stat-total">
+              <Target className="w-5 h-5 sm:w-4 sm:h-4 text-blue-600" />
+              <span className="text-sm font-medium min-w-[70px] sm:min-w-[40px]">
+                <span className="hidden">Всего: </span>
                 {questionsPerSession}
               </span>
             </div>
@@ -125,10 +125,10 @@ export function LearningProgressBar({
 
             {/* Page Indicator */}
             <span className="text-xs font-medium text-center px-1" data-testid="page-indicator">
-              <span className="hidden md:inline">стр. </span>
+              <span className="hidden sm:inline">стр. </span>
               {currentPage}
-              <span className="hidden md:inline"> из </span>
-              <span className="hidden md:inline">{totalPages}</span>
+              <span className="hidden sm:inline"> из </span>
+              <span className="hidden sm:inline">{totalPages}</span>
             </span>
 
             {/* Next Page */}
@@ -189,7 +189,7 @@ export function LearningProgressBar({
 
         {/* Current Session Progress */}
         <Progress value={progress} className="h-2" />
-        
+
         {/* Progress Info */}
         <p className="text-xs text-slate-500 mt-2 text-right">
           {startQuestion}-{endQuestion} из {activeQuestionsCount} • {Math.round(progress)}%

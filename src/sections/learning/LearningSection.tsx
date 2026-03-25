@@ -57,7 +57,7 @@ export function LearningSection() {
   const sessionTrackerRef = useRef<SessionTracker | null>(null);
 
   // === ХУКИ ===
-  
+
   // Хук прогресса обучения
   const {
     savedStates,
@@ -180,7 +180,7 @@ export function LearningSection() {
       answerIndex,
       hasTracker: !!sessionTrackerRef.current,
     });
-    
+
     if (sessionTrackerRef.current && question) {
       // Для множественного выбора записываем ответ когда выбраны все варианты
       const correctAns = question.correct;
@@ -203,9 +203,9 @@ export function LearningSection() {
         // Получаем оригинальные индексы ответов
         const shuffledIndices: number[] = Array.isArray(answerIndex)
           ? answerIndex.flatMap(idx => {
-              const val = shuffledArr[idx];
-              return val != null ? [val] : [];
-            })
+            const val = shuffledArr[idx];
+            return val != null ? [val] : [];
+          })
           : [shuffledArr[answerIndex as number]].flatMap(val => val != null ? [val] : []);
 
         console.log('📝 [LearningSection] Запись ответа:', {
@@ -229,14 +229,14 @@ export function LearningSection() {
       const allAnswered = newUserAnswers.every((a) =>
         a !== null && (Array.isArray(a) ? a.length > 0 : true)
       );
-      
+
       if (allAnswered && sessionTrackerRef.current) {
         console.log('✅ [LearningSection] Все вопросы отвечены, запись незаписанных ответов...');
-        
+
         // Сначала записываем все незаписанные ответы (вопросы с множественным выбором)
         newUserAnswers.forEach((userAnswer, idx) => {
           if (userAnswer === null) return;
-          
+
           const q = quizState.currentQuestions[idx];
           if (!q) return;
 
@@ -262,7 +262,7 @@ export function LearningSection() {
             sessionTrackerRef.current?.recordAnswer(q.id, q.ticket, shuffledIdx, correctAns, 0);
           }
         });
-        
+
         // Теперь завершаем сессию
         console.log('✅ [LearningSection] Завершение сессии');
         sessionTrackerRef.current.finish();
@@ -334,12 +334,12 @@ export function LearningSection() {
     clearProgress();
     resetPage();
     resetQuiz();
-    
+
     if (sessionTrackerRef.current) {
       sessionTrackerRef.current.cancel();
       sessionTrackerRef.current = null;
     }
-    
+
     success('Прогресс сброшен', 'Все ответы очищены');
   }, [clearProgress, resetPage, resetQuiz, success]);
 
@@ -524,14 +524,18 @@ export function LearningSection() {
   return (
     <>
       <div className="min-h-screen bg-slate-50">
-        <div className="max-w-6xl mx-auto px-4 py-3">
+        <div className="max-w-6xl mx-auto px-2 sm:px-2 sm:py-3">
           {/* Заголовок */}
-          <div className="mb-6 sm:mb-8">
-            <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 mb-2">
+          <div className="mb-2 sm:mb-2">
+            <h1 className="text-2xl text-sm font-bold text-slate-900 mb-2">
               Обучение
             </h1>
             <p className="text-xs sm:text-sm text-slate-600">
-              {currentSectionInfo?.description} • {filteredQuestions.length} вопросов • {displayTotalPages} страниц
+              {currentSectionInfo?.description}
+
+            </p>
+            <p className="text-xs sm:text-sm text-slate-600">
+              Вопросов: {filteredQuestions.length} • страниц: {displayTotalPages}
             </p>
           </div>
 

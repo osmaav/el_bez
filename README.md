@@ -2,7 +2,7 @@
 
 **el-bez** — современное веб-приложение для подготовки к сдаче экзаменов по электробезопасности (все группы допуска до и выше 1000 В).
 
-[![Version](https://img.shields.io/badge/version-2026.03.23.00-green.svg)](RELEASE_2026.03.23.md)
+[![Version](https://img.shields.io/badge/version-2026.03.25.00-green.svg)](RELEASE_2026.03.25.md)
 [![Tests](https://img.shields.io/badge/tests-566_(100%25)-brightgreen.svg)](TESTING.md)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
@@ -229,6 +229,7 @@ el-bez/
 
 | Версия | Дата | Описание |
 |--------|------|----------|
+| [2026.03.25.00](RELEASE_2026.03.25.md) | 25.03.2026 | Mobile UX Improvement (удаление use-mobile.ts, CSS-брейкпоинты) |
 | [2026.03.23.00](RELEASE_2026.03.23.md) | 23.03.2026 | Theory Section Redesign (новый дизайн страницы Теория) |
 | [2026.03.20.00](RELEASE_2026.03.20.md) | 20.03.2026 | Production Release (2612 вопросов, 9 разделов) |
 | [2026.03.12.02](RELEASE_2026.03.12.00.md) | 12.03.2026 | Удаление несуществующих контактов |
@@ -363,6 +364,6 @@ MIT License — см. файл [LICENSE](LICENSE) для деталей.
 
 ---
 
-**Версия:** 2026.03.23.00
-**Дата обновления:** 23 марта 2026
-**Последний релиз:** [2026.03.23.00 — Theory Section Redesign](RELEASE_2026.03.23.md)
+**Версия:** 2026.03.25.00  
+**Дата обновления:** 25 марта 2026  
+**Последний релиз:** [2026.03.25.00 — Mobile UX Improvement](RELEASE_2026.03.25.md)

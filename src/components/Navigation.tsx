@@ -348,7 +348,7 @@ export function Navigation() {
                         `}
                       >
                         <Icon className="w-4 h-4 sm:w-5 sm:h-5" />
-                        <span className="hidden [@media(min-width:960px)]:inline text-xs sm:text-sm">{item.label}</span>
+                        <span className="hidden lg:inline text-xs sm:text-sm">{item.label}</span>
                       </button>
                     ) : (
                       <RichTooltip
@@ -368,7 +368,7 @@ export function Navigation() {
                           `}
                         >
                           <Icon className="w-4 h-4 sm:w-5 sm:h-5" />
-                          <span className="hidden [@media(min-width:960px)]:inline text-xs sm:text-sm">{item.label}</span>
+                          <span className="hidden lg:inline text-xs sm:text-sm">{item.label}</span>
                         </button>
                       </RichTooltip>
                     )}
@@ -388,7 +388,7 @@ export function Navigation() {
                     className="text-slate-300 hover:text-white hover:bg-slate-800 ml-2"
                   >
                     <LogIn className="w-4 h-4" />
-                    <span className="ml-1 text-sm hidden [@media(min-width:930px)]:inline">Войти</span>
+                    <span className="ml-1 text-sm hidden md:inline">Войти</span>
                   </Button>
                 ) : (
                   <RichTooltip
@@ -404,7 +404,7 @@ export function Navigation() {
                       className="text-slate-300 hover:text-white hover:bg-slate-800 ml-2"
                     >
                       <LogIn className="w-4 h-4" />
-                      <span className="ml-1 text-sm hidden [@media(min-width:930px)]:inline">Войти</span>
+                      <span className="ml-1 text-md">Войти</span>
                     </Button>
                   </RichTooltip>
                 )}
