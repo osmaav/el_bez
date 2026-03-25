@@ -157,7 +157,7 @@ export function LearningQuestionCard({
           </Button>
           {showSources && (
             <Badge className="animate-in fade-in border-0 bg-transparent text-slate-600 max-w-full break-words text-left font-normal whitespace-normal rounded">
-              {question.link}
+              {question.link || 'Источник не указан'}
             </Badge>
           )}
         </div>
