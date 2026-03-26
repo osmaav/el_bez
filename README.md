@@ -2,8 +2,8 @@
 
 **el-bez** — современное веб-приложение для подготовки к сдаче экзаменов по электробезопасности (все группы допуска до и выше 1000 В).
 
-[![Version](https://img.shields.io/badge/version-2026.03.25.00-green.svg)](RELEASE_2026.03.26.md)
-[![Tests](https://img.shields.io/badge/tests-527_(100%25)-brightgreen.svg)](src/tests/README.md)
+[![Version](https://img.shields.io/badge/version-2026.03.26.00-green.svg)](RELEASE_2026.03.26.md)
+[![Tests](https://img.shields.io/badge/tests-550_(100%25)-brightgreen.svg)](src/tests/README.md)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
 ---
@@ -235,6 +235,7 @@ el-bez/app/
 
 | Версия | Дата | Описание |
 |--------|------|----------|
+| [2026.03.26.00](RELEASE_2026.03.26.md) | 26.03.2026 | Exam Timer (таймер на 30 минут, TDD) |
 | [2026.03.26.00](CHANGELOG.md) | 26.03.2026 | Нормативные ссылки для всех вопросов |
 | [2026.03.25.00](RELEASE_2026.03.25.md) | 25.03.2026 | Mobile UX Improvement (CSS-брейкпоинты) |
 | [2026.03.23.00](CHANGELOG.md) | 23.03.2026 | Theory Section Redesign |

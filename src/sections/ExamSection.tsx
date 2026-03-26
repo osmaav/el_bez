@@ -20,6 +20,8 @@ import {
   RotateCcw,
   Download,
 } from 'lucide-react';
+import { useExamTimer } from './exam/hooks/useExamTimer';
+import { ExamTimer } from './exam/components/ExamTimer';
 
 export function ExamSection() {
   const {
@@ -40,6 +42,24 @@ export function ExamSection() {
 
   const { user } = useAuth();
   const { success, loading, updateToast } = useToast();
+
+  // Таймер экзамена (30 минут)
+  const {
+    timeLeft,
+    formattedTime,
+    isActive: isTimerActive,
+    isFinished: isTimerFinished,
+    start: startTimer,
+    stop: stopTimer,
+    reset: resetTimer,
+  } = useExamTimer({
+    onStopListening: () => {
+      // Время вышло - автоматически завершаем экзамен
+      if (!isExamFinished) {
+        finishExam();
+      }
+    },
+  });
 
   const currentSectionInfo = sections.find(s => s.id === currentSection);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -75,6 +95,8 @@ export function ExamSection() {
 
     setTimeout(() => {
       startExam(ticketId);
+      resetTimer(); // Сбрасываем таймер
+      startTimer(); // Запускаем таймер
       setLoadingModal(prev => ({
         ...prev,
         status: 'success',
@@ -90,6 +112,7 @@ export function ExamSection() {
 
   const confirmResetExam = () => {
     resetExam();
+    resetTimer(); // Сбрасываем таймер
     success('Экзамен сброшен', 'Все ответы очищены');
   };
 
@@ -459,6 +482,22 @@ export function ExamSection() {
   return (
     <>
       <div className="max-w-7xl mx-auto px-4 py-8">
+        {/* Таймер экзамена */}
+        {tickets.length > 0 && currentTicketId !== null && !isExamFinished && (
+          <div className="mb-6">
+            <ExamTimer
+              timeLeft={timeLeft}
+              formattedTime={formattedTime}
+              isActive={isTimerActive}
+              isFinished={isTimerFinished}
+              onStart={startTimer}
+              onStop={stopTimer}
+              onReset={resetTimer}
+              disabled={false}
+            />
+          </div>
+        )}
+
         {/* Шапка */}
         <div className="flex items-center justify-between mb-6">
           <div>
