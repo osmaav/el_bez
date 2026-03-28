@@ -119,11 +119,7 @@ export function ExamSection() {
       startExam(ticketId);
       resetTimer();
       startTimer();
-      setLoadingModal((prev): typeof prev => ({
-        ...prev,
-        status: 'success',
-        progress: 100
-      }));
+      setLoadingModal(prev => Object.assign({}, prev, { status: 'success' as const, progress: 100 }));
       updateToast(loadingId, { type: 'success', title: 'Экзамен начат' });
 
       setTimeout(() => {

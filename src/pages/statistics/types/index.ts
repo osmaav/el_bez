@@ -2,7 +2,7 @@
  * Statistics Types - Типы для секции статистики
  */
 
-import type { SectionStats, UserStatistics } from '@/types';
+import type { SectionStats, UserStatistics, SectionType } from '@/types';
 
 /**
  * Пропсы для StatisticsOverviewTab
