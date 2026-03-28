@@ -66,7 +66,7 @@ export function NavItems({ currentPage, onPageChange, isTouchDevice }: NavItemsP
             title={item.label}
             content={tooltips[item.id]}
             position="bottom"
-            align="center"
+            align="end"
             maxWidth={280}
           >
             {button}
