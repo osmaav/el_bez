@@ -12,6 +12,7 @@ import type { PageType, SectionType } from '@/types';
 import { ChevronDown, LogOut } from 'lucide-react';
 import { useState, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
+import { RichTooltip } from '@/components/ui/rich-tooltip';
 import { LoginModal } from '@/components/LoginModal';
 import { RegisterModal } from '@/components/RegisterModal';
 import { EditProfileModal } from '@/components/EditProfileModal';
@@ -93,15 +94,34 @@ export function Navigation() {
                   onEditProfile={() => setShowEditProfileModal(true)}
                   isTouchDevice={isTouchDevice}
                 />
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={handleLogout}
-                  className="text-slate-300 hover:text-white hover:bg-slate-800 h-8 w-8 p-0"
-                  title="Выход из системы"
-                >
-                  <LogOut className="w-4 h-4" />
-                </Button>
+                {isTouchDevice ? (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleLogout}
+                    className="text-slate-300 hover:text-white hover:bg-slate-800 h-8 w-8 p-0"
+                  >
+                    <LogOut className="w-4 h-4" />
+                  </Button>
+                ) : (
+                  <RichTooltip
+                    type="info"
+                    title="Выход из системы"
+                    content="Нажмите для выхода из вашей учётной записи"
+                    position="bottom"
+                    align="start"
+                    maxWidth={280}
+                  >
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={handleLogout}
+                      className="text-slate-300 hover:text-white hover:bg-slate-800 h-8 w-8 p-0"
+                    >
+                      <LogOut className="w-4 h-4" />
+                    </Button>
+                  </RichTooltip>
+                )}
               </div>
             )}
           </div>
