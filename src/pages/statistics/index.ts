@@ -18,10 +18,4 @@ export type {
   StatisticsSectionTabProps,
 } from './types';
 
-export {
-  formatTime,
-  calculateAccuracy,
-  isExcellentResult,
-  groupSessionsBySection,
-  getBestScore,
-} from './utils';
+export { getActiveSections } from './utils';
