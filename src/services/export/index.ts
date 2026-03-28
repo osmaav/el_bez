@@ -1,6 +1,7 @@
 /**
  * Export Service - Экспорт результатов в PDF
- * 
+ *
+ * @deprecated Используйте новый сервис из @/services/pdfExport
  * Модульная структура:
  * - types.ts — типы данных
  * - utils.ts — общие утилиты
@@ -9,9 +10,12 @@
  * - examExport.ts — экспорт экзамена
  */
 
-export { exportLearningToPDF } from './learningExport';
-export { exportTrainerToPDF } from './trainerExport';
-export { exportExamToPDF } from './examExport';
+// Ре-экспорт из нового сервиса для обратной совместимости
+export {
+  exportExamToPDF,
+  exportTrainerToPDF,
+  exportLearningToPDF,
+} from '@/services/pdfExport';
 
 export type {
   LearningExportData,
