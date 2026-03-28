@@ -25,8 +25,6 @@ interface UseTrainerAutoAnswerOptions {
 }
 
 interface UseTrainerAutoAnswerReturn {
-  /** Флаг активного автоответа */
-  isAutoAnswering: boolean;
   /** Запуск автоответа */
   startAutoAnswer: () => void;
   /** Остановка автоответа */

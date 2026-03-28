@@ -262,8 +262,6 @@ export function TrainerSection() {
       <>
         <TrainerResults
           stats={{ ...trainerStats, percentage: trainerStats.total > 0 ? Math.round((trainerStats.correct / trainerStats.total) * 100) : 0 }}
-          questions={trainerQuestions}
-          answers={trainerAnswers}
           onReset={handleResetTrainer}
           onExport={handleExport}
         />
