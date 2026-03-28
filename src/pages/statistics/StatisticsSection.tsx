@@ -3,19 +3,22 @@
  *
  * @description Отображение статистики и прогресса пользователя
  * @author el-bez Team
- * @version 2.0.0 (Декомпозированная версия)
+ * @version 3.0.0 (Динамические вкладки)
  */
 
 import React from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertCircle } from 'lucide-react';
+import type { SectionType } from '@/types';
 
 import { useStatistics } from './hooks';
 import { useTicketFilter } from '@/hooks/useTicketFilter';
 import { StatisticsHeader, StatisticsControls } from './components';
 import { StatisticsOverviewTab } from './components/StatisticsOverviewTab';
 import { StatisticsSectionTab } from './components/StatisticsSectionTab';
+import { getActiveSections } from './utils/getActiveSections';
+import { SECTIONS } from '@/constants/sections';
 
 export const StatisticsSection: React.FC = () => {
   const {
@@ -28,6 +31,12 @@ export const StatisticsSection: React.FC = () => {
   } = useStatistics();
 
   const { filterByTickets, resetTicketFilter, isFilterActive, activeTickets } = useTicketFilter();
+
+  // Получаем активные разделы (со статистикой)
+  const activeSectionIds = React.useMemo(
+    () => getActiveSections(statistics),
+    [statistics]
+  );
 
   // Обновляем статистику при монтировании
   React.useEffect(() => {
@@ -50,9 +59,6 @@ export const StatisticsSection: React.FC = () => {
     );
   }
 
-  const section1256Stats = statistics.sections['1256-19'];
-  const section1258Stats = statistics.sections['1258-20'];
-
   const handleFilterByTicket = (ticket: number) => {
     if (activeTickets.includes(ticket)) {
       const newTickets = activeTickets.filter(t => t !== ticket);
@@ -65,6 +71,10 @@ export const StatisticsSection: React.FC = () => {
       filterByTickets([...activeTickets, ticket]);
     }
   };
+
+  // Вычисляем количество колонок для TabsList
+  const totalTabs = 1 + activeSectionIds.length; // overview + активные разделы
+  const gridColsClass = `grid-cols-${totalTabs}`;
 
   return (
     <div className="space-y-6">
@@ -89,11 +99,14 @@ export const StatisticsSection: React.FC = () => {
       )}
 
       {/* Вкладки по разделам */}
-      <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as typeof activeTab)}>
-        <TabsList className="grid w-full grid-cols-3">
+      <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as SectionType | 'overview')}>
+        <TabsList className={`grid w-full ${gridColsClass}`}>
           <TabsTrigger value="overview">Обзор</TabsTrigger>
-          <TabsTrigger value="1256-19">ЭБ 1256.19</TabsTrigger>
-          <TabsTrigger value="1258-20">ЭБ 1258.20</TabsTrigger>
+          {activeSectionIds.map((sectionId) => (
+            <TabsTrigger key={sectionId} value={sectionId}>
+              {SECTIONS.find(s => s.id === sectionId)?.name || sectionId}
+            </TabsTrigger>
+          ))}
         </TabsList>
 
         {/* Общий обзор */}
@@ -107,31 +120,24 @@ export const StatisticsSection: React.FC = () => {
           />
         </TabsContent>
 
-        {/* Раздел 1256-19 */}
-        <TabsContent value="1256-19" className="space-y-6">
-          <StatisticsSectionTab
-            section="1256-19"
-            sectionStats={section1256Stats}
-            statistics={statistics}
-            activeTickets={activeTickets}
-            isFilterActive={isFilterActive}
-            onFilterByTicket={handleFilterByTicket}
-            onResetFilter={resetTicketFilter}
-          />
-        </TabsContent>
+        {/* Разделы */}
+        {activeSectionIds.map((sectionId) => {
+          const sectionStats = statistics.sections[sectionId];
 
-        {/* Раздел 1258-20 */}
-        <TabsContent value="1258-20" className="space-y-6">
-          <StatisticsSectionTab
-            section="1258-20"
-            sectionStats={section1258Stats}
-            statistics={statistics}
-            activeTickets={activeTickets}
-            isFilterActive={isFilterActive}
-            onFilterByTicket={handleFilterByTicket}
-            onResetFilter={resetTicketFilter}
-          />
-        </TabsContent>
+          return (
+            <TabsContent key={sectionId} value={sectionId} className="space-y-6">
+              <StatisticsSectionTab
+                section={sectionId}
+                sectionStats={sectionStats}
+                statistics={statistics}
+                activeTickets={activeTickets}
+                isFilterActive={isFilterActive}
+                onFilterByTicket={handleFilterByTicket}
+                onResetFilter={resetTicketFilter}
+              />
+            </TabsContent>
+          );
+        })}
       </Tabs>
     </div>
   );
