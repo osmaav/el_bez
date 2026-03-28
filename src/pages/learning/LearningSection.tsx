@@ -212,6 +212,7 @@ export function LearningSection() {
   useLearningAutoAnswer({
     currentQuestions: quizState.currentQuestions,
     userAnswers: quizState.userAnswers,
+    shuffledAnswers: quizState.shuffledAnswers,
     currentSection,
     sessionTrackerRef,
     onAnswer: handleAnswerWithTracking,

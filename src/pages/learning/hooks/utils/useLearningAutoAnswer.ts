@@ -28,8 +28,6 @@ interface UseLearningAutoAnswerOptions {
 }
 
 interface UseLearningAutoAnswerReturn {
-  /** Флаг активного автоответа */
-  isAutoAnswering: boolean;
   /** Запуск автоответа */
   startAutoAnswer: () => Promise<void>;
   /** Остановка автоответа */

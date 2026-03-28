@@ -7,12 +7,12 @@
  */
 
 import { useRef, useEffect, useCallback } from 'react';
-import type { Question } from '@/types';
+import type { Question, SectionType } from '@/types';
 import { SessionTracker } from '@/services/statisticsService';
 
 interface UseSessionTrackerOptions {
   /** Текущий раздел */
-  currentSection: string;
+  currentSection: SectionType;
   /** Вопросы текущей страницы */
   currentQuestions: Question[];
   /** Ответы пользователя */

@@ -5,7 +5,6 @@
 export { StatisticsSection } from './StatisticsSection';
 
 export { useStatistics } from './hooks';
-export type { StatisticsTab } from './hooks/useStatistics';
 
 export {
   StatisticsHeader,

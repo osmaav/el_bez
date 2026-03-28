@@ -25,8 +25,6 @@ interface UseExamAutoAnswerOptions {
 }
 
 interface UseExamAutoAnswerReturn {
-  /** Флаг активного автоответа */
-  isAutoAnswering: boolean;
   /** Запуск автоответа */
   startAutoAnswer: () => void;
   /** Остановка автоответа */

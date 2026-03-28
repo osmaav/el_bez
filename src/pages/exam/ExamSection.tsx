@@ -121,7 +121,7 @@ export function ExamSection() {
       startTimer();
       setLoadingModal(prev => ({
         ...prev,
-        status: 'success' as const,
+        status: 'success' as 'loading' | 'success' | 'error',
         progress: 100
       }));
       updateToast(loadingId, { type: 'success', title: 'Экзамен начат' });

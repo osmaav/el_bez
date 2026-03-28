@@ -216,11 +216,13 @@ export const exportLearningToPDF = async (data: LearningExportData): Promise<voi
       2: { cellWidth: 60 },
       3: { cellWidth: 60 },
     },
-    didParseCell: (cellData: { section: string; row: { index: number }; column: { index: number }; cell: { styles: { textColor?: [number, number, number] } } }) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    didParseCell: (cellData: any) => {
       if (cellData.section === 'head') return;
       const row = tableData[cellData.row.index];
       if (cellData.column.index === 2 && !row.isCorrect) {
-        cellData.cell.styles.textColor = COLORS.error as unknown as [number, number, number];
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        cellData.cell.styles.textColor = COLORS.error as any;
       }
     },
     willDrawCell: () => {

@@ -46,7 +46,7 @@ export function useLearningProgressSave({
   saveProgress,
   questionsPerPage,
 }: UseLearningProgressSaveOptions): void {
-  const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const prevAnswersRef = useRef<string>('');
 
   // Мемоизация ответов для сравнения
