@@ -119,14 +119,11 @@ export function ExamSection() {
       startExam(ticketId);
       resetTimer();
       startTimer();
-      setLoadingModal(prev => {
-        const newState = {
-          ...prev,
-          status: 'success' as const,
-          progress: 100
-        };
-        return newState;
-      });
+      setLoadingModal((prev): typeof prev => ({
+        ...prev,
+        status: 'success',
+        progress: 100
+      }));
       updateToast(loadingId, { type: 'success', title: 'Экзамен начат' });
 
       setTimeout(() => {

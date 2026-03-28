@@ -81,7 +81,7 @@ export function LearningQuestionCard({
         />
 
         <QuestionSource
-          sourceText={question.link ?? ''}
+          sourceText={question.link || ''}
           isExpanded={showSources}
           isAnswered={isAnswered}
           onToggle={() => onToggleSource(questionIndex)}

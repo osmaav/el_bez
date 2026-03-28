@@ -24,6 +24,8 @@ export interface StatisticsOverviewTabProps {
  * Пропсы для StatisticsSectionTab
  */
 export interface StatisticsSectionTabProps {
+  /** Раздел */
+  section: SectionType;
   /** Статистика раздела */
   sectionStats: SectionStats | undefined;
   /** Общая статистика пользователя */

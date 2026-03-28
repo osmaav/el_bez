@@ -39,7 +39,7 @@ export function LearningQuestionsList({
             shuffledAnswers={quizState.shuffledAnswers[qIdx]}
             userAnswer={userAnswer}
             isAnswered={isAnswered}
-            showSources={showSources}
+            showSources={showSources[qIdx] ?? false}
             onAnswerSelect={onAnswerSelect}
             onToggleSource={onToggleSource}
           />

@@ -110,6 +110,7 @@ export const StatisticsSection: React.FC = () => {
         {/* Раздел 1256-19 */}
         <TabsContent value="1256-19" className="space-y-6">
           <StatisticsSectionTab
+            section="1256-19"
             sectionStats={section1256Stats}
             statistics={statistics}
             activeTickets={activeTickets}
@@ -122,6 +123,7 @@ export const StatisticsSection: React.FC = () => {
         {/* Раздел 1258-20 */}
         <TabsContent value="1258-20" className="space-y-6">
           <StatisticsSectionTab
+            section="1258-20"
             sectionStats={section1258Stats}
             statistics={statistics}
             activeTickets={activeTickets}

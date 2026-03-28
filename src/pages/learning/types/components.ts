@@ -43,7 +43,7 @@ export interface LearningQuestionCardProps {
  */
 export interface LearningQuestionsListProps {
   quizState: QuizState;
-  showSources: boolean;
+  showSources: Record<number, boolean>;
   onAnswerSelect: (questionIndex: number, answerIndex: number | number[]) => void;
   onToggleSource: (questionIndex: number) => void;
 }
