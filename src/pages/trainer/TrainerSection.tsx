@@ -160,11 +160,14 @@ export function TrainerSection() {
     setTimeout(() => {
       clearInterval(progressInterval);
       startTrainer(actualCount, filteredQuestions);
-      setLoadingModal(prev => ({
-        ...prev,
-        status: 'success' as 'loading' | 'success' | 'error',
-        progress: 100
-      }));
+      setLoadingModal(prev => {
+        const newState = {
+          ...prev,
+          status: 'success' as const,
+          progress: 100
+        };
+        return newState;
+      });
       updateToast(loadingId, { type: 'success', title: 'Тренажёр запущен' });
 
       setTimeout(() => {

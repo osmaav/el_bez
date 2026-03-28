@@ -16,8 +16,6 @@ export function LearningQuestionsList({
   onAnswerSelect,
   onToggleSource,
 }: LearningQuestionsListProps) {
-  const showSourcesRecord = showSources as unknown as Record<number, boolean>;
-
   return (
     <div className="space-y-6">
       {quizState.currentQuestions.map((question: Question, qIdx: number) => {
@@ -41,7 +39,7 @@ export function LearningQuestionsList({
             shuffledAnswers={quizState.shuffledAnswers[qIdx]}
             userAnswer={userAnswer}
             isAnswered={isAnswered}
-            showSources={!!showSourcesRecord[qIdx]}
+            showSources={showSources}
             onAnswerSelect={onAnswerSelect}
             onToggleSource={onToggleSource}
           />
