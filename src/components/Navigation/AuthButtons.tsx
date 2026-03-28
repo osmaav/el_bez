@@ -1,13 +1,14 @@
 /**
  * AuthButtons - Кнопки аутентификации
- * 
+ *
  * @description Кнопки входа для неавторизованных пользователей
  * @author el-bez Team
- * @version 1.0.0
+ * @version 2.0.0 (с RichTooltip)
  */
 
 import { LogIn } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { RichTooltip } from '@/components/ui/rich-tooltip';
 
 interface AuthButtonsProps {
   onLogin: () => void;
@@ -17,17 +18,33 @@ interface AuthButtonsProps {
 export function AuthButtons({ onLogin, isTouchDevice }: AuthButtonsProps) {
   const tooltip = 'Войдите для сохранения статистики и прогресса обучения';
 
-  return (
+  const button = (
     <Button
       onClick={onLogin}
       variant="ghost"
       size="sm"
       className="text-slate-300 hover:text-white hover:bg-slate-800 ml-2"
-      title={isTouchDevice ? undefined : tooltip}
     >
       <LogIn className="w-4 h-4" />
       <span className="ml-1 text-md">Войти</span>
     </Button>
+  );
+
+  if (isTouchDevice) {
+    return button;
+  }
+
+  return (
+    <RichTooltip
+      type="info"
+      title="Вход в систему"
+      content={tooltip}
+      position="bottom"
+      align="end"
+      maxWidth={280}
+    >
+      {button}
+    </RichTooltip>
   );
 }
 
