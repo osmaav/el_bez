@@ -139,5 +139,3 @@ export function useExamAutoAnswer({
     stopAutoAnswer,
   };
 }
-
-export default useExamAutoAnswer;

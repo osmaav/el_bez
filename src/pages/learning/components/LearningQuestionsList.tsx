@@ -16,7 +16,7 @@ export function LearningQuestionsList({
   onAnswerSelect,
   onToggleSource,
 }: LearningQuestionsListProps) {
-  const showSourcesRecord = showSources as Record<number, boolean>;
+  const showSourcesRecord = showSources as unknown as Record<number, boolean>;
 
   return (
     <div className="space-y-6">

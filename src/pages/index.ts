@@ -2,8 +2,8 @@
  * Pages Barrel Export
  */
 
-export { LearningSection } from './learning/LearningSection';
+export { LearningSection } from './learning';
 export { TheorySection } from './theory';
 export { TrainerSection } from './trainer';
-export { ExamSection } from './exam/ExamSection';
+export { ExamSection } from './exam';
 export { StatisticsSection } from './statistics';

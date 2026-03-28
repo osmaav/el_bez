@@ -7,7 +7,7 @@
  */
 
 import { useCallback, useEffect, useRef } from 'react';
-import type { Question } from '@/types';
+import type { Question, SectionType } from '@/types';
 import { SessionTracker } from '@/services/statisticsService';
 
 interface UseLearningAutoAnswerOptions {
@@ -18,7 +18,7 @@ interface UseLearningAutoAnswerOptions {
   /** Перемешанные ответы */
   shuffledAnswers: number[][];
   /** Текущий раздел */
-  currentSection: string;
+  currentSection: SectionType;
   /** SessionTracker ref */
   sessionTrackerRef: React.MutableRefObject<SessionTracker | null>;
   /** Функция записи ответа */
@@ -143,5 +143,3 @@ export function useLearningAutoAnswer({
     stopAutoAnswer,
   };
 }
-
-export default useLearningAutoAnswer;

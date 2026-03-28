@@ -89,7 +89,7 @@ export function ExamSection() {
     questions: ticket?.questions || [],
     answers: examAnswers,
     results: examResults,
-    stats: getExamStats(),
+    stats: { ...getExamStats(), passed: getExamStats().percentage >= 80 },
     userName: user?.name,
     userPatronymic: user?.patronymic,
     userWorkplace: user?.workplace,
@@ -121,7 +121,7 @@ export function ExamSection() {
       startTimer();
       setLoadingModal(prev => ({
         ...prev,
-        status: 'success',
+        status: 'success' as const,
         progress: 100
       }));
       updateToast(loadingId, { type: 'success', title: 'Экзамен начат' });
@@ -203,7 +203,7 @@ export function ExamSection() {
     return (
       <>
         <ExamResults
-          stats={getExamStats()}
+          stats={{ ...getExamStats(), passed: getExamStats().percentage >= 80 }}
           ticket={ticket!}
           answers={examAnswers}
           results={examResults}
