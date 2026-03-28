@@ -220,6 +220,7 @@ export function TrainerSection() {
           availableQuestions={questions.length}
           onStart={handleStartTrainer}
           hasFilters={hasActiveFilters}
+          onFilterClick={() => setIsFilterModalOpen(true)}
         />
 
         <FilterModal

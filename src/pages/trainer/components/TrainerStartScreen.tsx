@@ -1,27 +1,46 @@
 /**
  * TrainerStartScreen - Экран запуска тренажёра
- * 
+ *
  * @description Выбор количества вопросов для тренировки
  * @author el-bez Team
- * @version 1.0.0
+ * @version 2.0.0 (Добавлена кнопка фильтра)
  */
 
-import { GraduationCap, AlertCircle } from 'lucide-react';
+import { GraduationCap, AlertCircle, Filter } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import type { TrainerStartScreenProps } from '../types';
+
+export interface TrainerStartScreenWithFilterProps extends TrainerStartScreenProps {
+  onFilterClick?: () => void;
+}
 
 export function TrainerStartScreen({
   availableQuestions,
   onStart,
   hasFilters,
-}: TrainerStartScreenProps) {
+  onFilterClick,
+}: TrainerStartScreenWithFilterProps) {
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">
-      <div className="mb-6">
-        <h2 className="text-3xl font-bold text-slate-900">Тренажёр</h2>
-        <p className="text-slate-600 mt-2">
-          Тренировка со случайной выборкой вопросов
-        </p>
+      <div className="mb-6 flex items-center justify-between">
+        <div>
+          <h2 className="text-3xl font-bold text-slate-900">Тренажёр</h2>
+          <p className="text-slate-600 mt-2">
+            Тренировка со случайной выборкой вопросов
+          </p>
+        </div>
+        {onFilterClick && (
+          <Button
+            variant={hasFilters ? 'default' : 'outline'}
+            size="sm"
+            onClick={onFilterClick}
+            className={hasFilters ? 'bg-blue-100 hover:bg-blue-200 text-blue-700 border-blue-300' : ''}
+          >
+            <Filter className="w-4 h-4 mr-2" />
+            Настроить фильтр
+          </Button>
+        )}
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

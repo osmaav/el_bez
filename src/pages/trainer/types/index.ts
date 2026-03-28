@@ -121,6 +121,8 @@ export interface TrainerStartScreenProps {
   onStart: (count: number) => void;
   /** Есть ли активные фильтры */
   hasFilters: boolean;
+  /** Обработчик клика по фильтру */
+  onFilterClick?: () => void;
 }
 
 /**
