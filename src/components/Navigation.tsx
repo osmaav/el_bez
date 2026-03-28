@@ -112,6 +112,7 @@ export function Navigation() {
             <NavItems
               currentPage={currentPage}
               onPageChange={handlePageChange}
+              isTouchDevice={isTouchDevice}
             />
 
             {/* Кнопка входа для неавторизованных пользователей */}
