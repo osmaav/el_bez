@@ -34,7 +34,7 @@ export const StatisticsSection: React.FC = () => {
 
   // Получаем активные разделы (со статистикой)
   const activeSectionIds = React.useMemo(
-    () => getActiveSections(statistics),
+    () => statistics ? getActiveSections(statistics) : [],
     [statistics]
   );
 
