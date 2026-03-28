@@ -61,7 +61,7 @@ export function Navigation() {
 
             {/* Выбор раздела */}
             <div className="relative">
-              <div className="relative">
+              {isTouchDevice ? (
                 <button
                   onClick={() => setShowSectionMenu(!showSectionMenu)}
                   className="flex items-center space-x-1 px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg bg-slate-800 hover:bg-slate-700 transition-all text-xs sm:text-sm"
@@ -69,21 +69,38 @@ export function Navigation() {
                   <span className="font-medium">ЭБ {currentSection.split('-')[0]}</span>
                   <ChevronDown className="w-3 h-3 sm:w-4 sm:h-4" />
                 </button>
+              ) : (
+                <RichTooltip
+                  type="info"
+                  title="Выбор раздела"
+                  content={`Текущий раздел: ${currentSection}. \nНажмите для выбора другого раздела.`}
+                  position="bottom"
+                  align="start"
+                  maxWidth={320}
+                >
+                  <button
+                    onClick={() => setShowSectionMenu(!showSectionMenu)}
+                    className="flex items-center space-x-1 px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg bg-slate-800 hover:bg-slate-700 transition-all text-xs sm:text-sm"
+                  >
+                    <span className="font-medium">ЭБ {currentSection.split('-')[0]}</span>
+                    <ChevronDown className="w-3 h-3 sm:w-4 sm:h-4" />
+                  </button>
+                </RichTooltip>
+              )}
 
-                {showSectionMenu && (
-                  <>
-                    <SectionMenu
-                      currentSection={currentSection}
-                      onSectionChange={handleSectionChange}
-                      onClose={() => setShowSectionMenu(false)}
-                    />
-                    <div
-                      className="fixed inset-0 z-40"
-                      onClick={() => setShowSectionMenu(false)}
-                    />
-                  </>
-                )}
-              </div>
+              {showSectionMenu && (
+                <>
+                  <SectionMenu
+                    currentSection={currentSection}
+                    onSectionChange={handleSectionChange}
+                    onClose={() => setShowSectionMenu(false)}
+                  />
+                  <div
+                    className="fixed inset-0 z-40"
+                    onClick={() => setShowSectionMenu(false)}
+                  />
+                </>
+              )}
             </div>
 
             {/* Информация о пользователе и кнопка выхода */}
