@@ -69,7 +69,7 @@ export function LearningQuestionCard({
       />
 
       <CardContent className="px-2 sm:px-4">
-        <QuestionText text={question.question} />
+        <QuestionText text={question.question ?? question.text} />
 
         <AnswerOptions
           shuffledAnswers={shuffledAnswers}
