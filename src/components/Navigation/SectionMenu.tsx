@@ -74,24 +74,9 @@ export function SectionMenu({ currentSection, onSectionChange, onClose }: Sectio
     onClose();
   };
 
-  const getShortSectionName = (sectionId: SectionType) => {
-    const group = sectionId.split('-')[0];
-    return `ЭБ ${group}`;
-  };
-
   return (
-    <>
-      <div className="relative">
-        <button
-          onClick={() => {}}
-          className="flex items-center space-x-1 px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg bg-slate-800 hover:bg-slate-700 transition-all text-xs sm:text-sm"
-        >
-          <span className="font-medium">{getShortSectionName(currentSection)}</span>
-          <span className="text-xs">▼</span>
-        </button>
-
-        <div className="absolute left-0 mt-1 w-80 bg-white rounded-xl shadow-2xl overflow-hidden z-50 border border-slate-200">
-          <div className="max-h-[80vh] overflow-y-auto">
+    <div className="absolute left-0 mt-1 w-80 bg-white rounded-xl shadow-2xl overflow-hidden z-50 border border-slate-200">
+      <div className="max-h-[80vh] overflow-y-auto">
             {SECTION_GROUPS.map((group, groupIndex) => (
               <div key={group.title} className={groupIndex > 0 ? 'border-t border-slate-100' : ''}>
                 {/* Заголовок группы */}
@@ -151,8 +136,6 @@ export function SectionMenu({ currentSection, onSectionChange, onClose }: Sectio
             ))}
           </div>
         </div>
-      </div>
-    </>
   );
 }
 
