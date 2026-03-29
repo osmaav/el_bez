@@ -1,7 +1,11 @@
 // Типы для вопросов и тестов
 // Типы для аутентификации: см. auth.ts
+// Типы для разделов: см. sections.ts
+// Общие типы компонентов: см. components.ts
 
 export * from './auth';
+export * from './sections';
+export * from './components';
 
 export interface Question {
   id: number;
@@ -34,34 +38,7 @@ export interface Ticket {
 
 export type PageType = 'learning' | 'theory' | 'trainer' | 'exam' | 'statistics';
 
-export type SectionType =
-  | '1254-19'
-  | '1255-19'
-  | '1256-19'
-  | '1257-20'
-  | '1258-20'
-  | '1259-21'
-  | '1547-6'
-  | '1260-23'
-  | '1364-9'
-  | '1365-11'
-  | '1366-15'
-  | '1494-2'
-  | '1495-2'
-  | '1496-2'
-  | '1497-6'
-  | '1498-6'
-  | '1499-6'
-  | '1500-6'
-  | '1501-2';
-
-export interface SectionInfo {
-  id: SectionType;
-  name: string;
-  description: string;
-  totalQuestions: number;
-  totalTickets: number;
-}
+// SectionType и SectionInfo теперь в types/sections.ts
 
 export interface TrainerState {
   questions: QuestionWithAnswer[];
@@ -105,17 +82,7 @@ export interface SessionStats {
   questions: QuestionAttempt[];
 }
 
-export interface SectionStats {
-  section: SectionType;
-  totalAttempts: number;
-  correctAnswers: number;
-  incorrectAnswers: number;
-  accuracy: number;
-  lastAttempt?: number;
-  bestScore?: number;
-  totalTimeSpent: number;
-  weakTopics: number[]; // ticket IDs с низкой точностью
-}
+// SectionStats теперь в types/sections.ts
 
 export interface UserStatistics {
   userId: string;

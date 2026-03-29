@@ -8,8 +8,7 @@ export {
   NON_INDUSTRIAL_SECTIONS,
   LABORATORY_SECTIONS,
   SECTION_GROUPS,
-  getSectionInfo,
-  getShortSectionName,
-  sectionExists,
-  getActiveSections,
 } from './sections';
+
+// Утилиты перемещены в @/lib/sections
+// export { getSectionInfo, getShortSectionName, sectionExists, getActiveSections } from './sections';

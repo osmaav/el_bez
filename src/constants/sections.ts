@@ -1,14 +1,13 @@
 /**
  * Константы разделов обучения
- * 
+ *
  * @description Единый источник истины для всех разделов электробезопасности
  * @author el-bez Team
- * @version 1.0.0
+ * @version 2.0.0 (использует типы из @/types)
  */
 
-import type { SectionInfo, SectionType } from '@/types';
+import type { SectionInfo, SectionType, SectionGroup } from '@/types';
 import { User, Factory, Gauge } from 'lucide-react';
-import type { ComponentType } from 'react';
 
 // ==================== Промышленные разделы ====================
 export const INDUSTRIAL_SECTIONS: SectionInfo[] = [
@@ -163,12 +162,6 @@ export const SECTIONS: SectionInfo[] = [
 ];
 
 // ==================== Группы разделов ====================
-interface SectionGroup {
-  title: string;
-  icon: ComponentType<{ className?: string }>;
-  sections: SectionInfo[];
-}
-
 export const SECTION_GROUPS: SectionGroup[] = [
   {
     title: 'Непромышленные',
