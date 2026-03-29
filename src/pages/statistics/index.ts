@@ -17,5 +17,3 @@ export type {
   StatisticsOverviewTabProps,
   StatisticsSectionTabProps,
 } from './types';
-
-export { getActiveSections } from './utils';

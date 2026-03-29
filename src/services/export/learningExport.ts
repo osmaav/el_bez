@@ -8,6 +8,9 @@ import { loadCyrillicFont } from '@/lib/pdfCyrillicFont';
 import type { LearningExportData } from './types';
 import { COLORS, formatDate, getAnswerText, truncateText } from './utils';
 
+// Экспортируем тип для использования в хуках
+export type { LearningExportData };
+
 // Расширяем тип jsPDF для поддержки autoTable
 declare module 'jspdf' {
   interface jsPDF {

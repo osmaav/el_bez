@@ -33,3 +33,6 @@ export type {
   UserStatistics,
   DailyActivity,
 } from '@/entities/statistics/types';
+
+// PageType для обратной совместимости
+export type { PageType } from '@/entities/pages';
