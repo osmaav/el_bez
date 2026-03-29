@@ -33,7 +33,3 @@ export type {
   UserStatistics,
   DailyActivity,
 } from '@/entities/statistics/types';
-
-// Оставляем только локальные типы
-export type { PageType } from './pages';
-export * from './components';

@@ -17,7 +17,7 @@ import { useTicketFilter } from '@/hooks/useTicketFilter';
 import { StatisticsHeader, StatisticsControls } from './components';
 import { StatisticsOverviewTab } from './components/StatisticsOverviewTab';
 import { StatisticsSectionTab } from './components/StatisticsSectionTab';
-import { getActiveSections } from './utils/getActiveSections';
+import { getActiveSections } from '@/shared/lib/sections';
 import { SECTIONS } from '@/constants/sections';
 
 export const StatisticsSection: React.FC = () => {

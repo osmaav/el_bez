@@ -8,7 +8,7 @@
 
 import { useCallback, useState } from 'react';
 import { useToast } from '@/hooks/useToast';
-import { exportLearningToPDF, type LearningExportData } from '../../utils/pdfExporter';
+import { exportLearningToPDF, type LearningExportData } from '@/services/export/learningExport';
 
 interface UseLearningExportReturn {
   handleExport: (data: LearningExportData) => Promise<void>;
