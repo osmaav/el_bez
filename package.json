@@ -1,7 +1,7 @@
 {
   "name": "el_bez",
   "private": true,
-  "version": "2026.03.26.00",
+  "version": "2026.03.29.00",
   "type": "module",
   "scripts": {
     "dev": "vite",
