@@ -73,7 +73,7 @@ export function Navigation() {
                 <RichTooltip
                   type="info"
                   title="Выбор раздела"
-                  content={`Текущий раздел: ${currentSection}. \nНажмите для выбора другого раздела.`}
+                  content={`Текущий раздел: ${currentSection}. Нажмите для выбора другого раздела.`}
                   position="bottom"
                   align="start"
                   maxWidth={320}

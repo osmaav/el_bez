@@ -3,13 +3,12 @@
  *
  * @description Выпадающее меню с группами разделов
  * @author el-bez Team
- * @version 2.0.0 (с RichTooltip)
+ * @version 1.0.0
  */
 
 import type { SectionType } from '@/types';
 import { User, Factory, Gauge } from 'lucide-react';
 import { SECTIONS } from '@/constants/sections';
-import { RichTooltip } from '@/components/ui/rich-tooltip';
 
 interface SectionInfoWithActive {
   id: SectionType;
@@ -109,7 +108,7 @@ export function SectionMenu({ currentSection, onSectionChange, onClose }: Sectio
                     const isSelected = currentSection === section.id;
                     const isInactive = !section.isActive;
 
-                    const button = (
+                    return (
                       <button
                         key={section.id}
                         onClick={() => !isInactive && handleSectionChange(section.id)}
@@ -145,24 +144,6 @@ export function SectionMenu({ currentSection, onSectionChange, onClose }: Sectio
                           </div>
                         )}
                       </button>
-                    );
-
-                    if (isInactive) {
-                      return button;
-                    }
-
-                    return (
-                      <RichTooltip
-                        key={section.id}
-                        type="info"
-                        title={section.name}
-                        content={`${section.description} • ${section.totalQuestions} вопросов • ${section.totalTickets} билетов`}
-                        position="right"
-                        align="start"
-                        maxWidth={320}
-                      >
-                        {button}
-                      </RichTooltip>
                     );
                   })}
                 </div>
