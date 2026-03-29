@@ -3,11 +3,11 @@
  *
  * @description Возвращает разделы в которых есть статистика (totalAttempts > 0)
  * @author el-bez Team
- * @version 2.0.0 (использует @/lib/sections)
+ * @version 3.0.0 (использует @/shared/lib)
  */
 
-import type { UserStatistics, SectionType } from '@/types';
-import { getActiveSections as getActiveSectionsLib } from '@/lib/sections';
+import type { UserStatistics, SectionType } from '@/entities';
+import { getActiveSections as getActiveSectionsLib } from '@/shared/lib/sections';
 
 /**
  * Получает активные разделы статистики пользователя

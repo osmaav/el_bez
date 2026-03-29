@@ -3,7 +3,7 @@
  *
  * @description Переиспользуемые функции для работы с разделами электробезопасности
  * @author el-bez Team
- * @version 2.0.0 (использует @/entities)
+ * @version 1.0.0
  */
 
 import type { SectionType, SectionInfo, SectionGroup, UserStatistics } from '@/entities';
