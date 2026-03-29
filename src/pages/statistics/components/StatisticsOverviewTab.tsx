@@ -26,10 +26,8 @@ export function StatisticsOverviewTab({
   onFilterByTicket,
   onResetFilter,
 }: StatisticsOverviewTabProps) {
-  const section1256Stats = statistics.sections['1256-19'];
-  const section1258Stats = statistics.sections['1258-20'];
-
-  const totalTimeSpent = (section1256Stats?.totalTimeSpent || 0) + (section1258Stats?.totalTimeSpent || 0);
+  const totalTimeSpent = Object.values(statistics.sections)
+    .reduce((sum, section) => sum + (section?.totalTimeSpent || 0), 0);
   const totalMinutes = Math.round(totalTimeSpent / 60);
   const totalHours = Math.round(totalTimeSpent / 3600);
 
@@ -81,10 +79,7 @@ export function StatisticsOverviewTab({
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">
-        <SectionProgress
-          stats1256={section1256Stats}
-          stats1258={section1258Stats}
-        />
+        <SectionProgress statistics={statistics} />
         <WeakTopicsDetail
           weakTopics={statisticsService.getWeakTopicsStats()}
           activeTickets={activeTickets}

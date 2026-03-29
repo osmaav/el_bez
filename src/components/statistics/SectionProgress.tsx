@@ -1,42 +1,60 @@
 /**
  * SectionProgress - Прогресс по разделам
- * 
+ *
  * @description Отображение статистики по каждому разделу
  * @author el-bez Team
- * @version 1.0.0
+ * @version 1.2.0 - Динамическая поддержка всех разделов
  */
 
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import type { SectionStats, SectionType } from '@/types';
+import type { SectionType, UserStatistics } from '@/types';
+import { SECTIONS } from '@/constants/sections';
 
 export interface SectionProgressProps {
-  stats1256: SectionStats | undefined;
-  stats1258: SectionStats | undefined;
+  statistics: UserStatistics;
 }
 
-export const SectionProgress: React.FC<SectionProgressProps> = ({
-  stats1256,
-  stats1258,
-}) => {
-  const sections = [
-    {
-      id: '1256-19' as SectionType,
-      name: 'ЭБ 1256.19',
-      description: '3 группа до 1000 В',
-      stats: stats1256,
-      color: 'bg-blue-500',
-    },
-    {
-      id: '1258-20' as SectionType,
-      name: 'ЭБ 1258.20',
-      description: '4 группа до 1000 В',
-      stats: stats1258,
-      color: 'bg-purple-500',
-    },
-  ];
+export const SectionProgress: React.FC<SectionProgressProps> = ({ statistics }) => {
+  // Получаем все разделы из статистики
+  const sectionIds = Object.keys(statistics.sections) as SectionType[];
+
+  // Фильтруем только разделы, по которым есть результаты (totalAttempts > 0)
+  const sectionsWithStats = sectionIds
+    .map((sectionId) => {
+      const stats = statistics.sections[sectionId];
+      const sectionInfo = SECTIONS.find((s) => s.id === sectionId);
+      return {
+        id: sectionId,
+        name: sectionInfo?.name || sectionId,
+        description: sectionInfo?.description || '',
+        stats,
+      };
+    })
+    .filter(
+      (section) => section.stats !== undefined && section.stats.totalAttempts > 0
+    );
+
+  // Если нет ни одной секции со статистикой
+  if (sectionsWithStats.length === 0) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Прогресс по разделам</CardTitle>
+          <CardDescription>
+            Статистика по каждому разделу подготовки
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="text-center text-muted-foreground py-8">
+            Пока нет результатов по разделам
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card>
@@ -48,7 +66,7 @@ export const SectionProgress: React.FC<SectionProgressProps> = ({
       </CardHeader>
       <CardContent>
         <div className="space-y-6">
-          {sections.map((section) => (
+          {sectionsWithStats.map((section) => (
             <div key={section.id} className="space-y-2">
               <div className="flex items-center justify-between">
                 <div>

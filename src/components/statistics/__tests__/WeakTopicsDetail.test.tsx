@@ -104,20 +104,26 @@ describe('WeakTopicsDetail', () => {
     it('должен показывать номер билета', () => {
       const weakTopics = [createWeakTopic(5, 50)];
       render(<WeakTopicsDetail weakTopics={weakTopics} />);
-      
-      expect(screen.getByText('Билет №5')).toBeInTheDocument();
+
+      expect(screen.getByText('ЭБ 1256.19 Билет №5')).toBeInTheDocument();
     });
 
-    it('должен показывать группу (III гр. или IV гр.)', () => {
+    it('должен показывать группу (описание раздела)', () => {
       const weakTopics1256 = [createWeakTopic(1, 50, '1256-19')];
       const { rerender } = render(<WeakTopicsDetail weakTopics={weakTopics1256} />);
-      
-      expect(screen.getByText('III гр.')).toBeInTheDocument();
-      
+
+      expect(screen.getByText('III группа до 1000 В')).toBeInTheDocument();
+
       const weakTopics1258 = [createWeakTopic(1, 50, '1258-20')];
       rerender(<WeakTopicsDetail weakTopics={weakTopics1258} />);
+
+      expect(screen.getByText('IV группа до 1000 В')).toBeInTheDocument();
       
-      expect(screen.getByText('IV гр.')).toBeInTheDocument();
+      // Проверка для непромышленного раздела
+      const weakTopics1498 = [createWeakTopic(1, 50, '1498-6')];
+      rerender(<WeakTopicsDetail weakTopics={weakTopics1498} />);
+      
+      expect(screen.getByText('IV группа до 1000 В (непромышленные)')).toBeInTheDocument();
     });
 
     it('должен показывать точность в процентах', () => {

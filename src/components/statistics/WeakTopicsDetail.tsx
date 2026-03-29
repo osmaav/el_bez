@@ -13,6 +13,7 @@ import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
 import { AlertCircle, TrendingUp, Target, BookOpen, Eye, EyeOff } from 'lucide-react';
 import type { SectionType } from '@/types';
+import { SECTIONS } from '@/constants/sections';
 
 interface WeakTopic {
   ticket: number;
@@ -82,7 +83,7 @@ export const WeakTopicsDetail: React.FC<WeakTopicsDetailProps> = ({
           const severity = topic.accuracy < 50 ? 'critical' : topic.accuracy < 70 ? 'warning' : 'low';
           const borderColor = severity === 'critical' ? 'border-rose-500' : severity === 'warning' ? 'border-orange-500' : 'border-yellow-500';
           const bgColor = severity === 'critical' ? 'bg-rose-50 dark:bg-rose-950/20' : severity === 'warning' ? 'bg-orange-50 dark:bg-orange-950/20' : 'bg-yellow-50 dark:bg-yellow-950/20';
-          
+
           return (
             <div
               key={`${topic.section}-${topic.ticket}`}
@@ -91,25 +92,25 @@ export const WeakTopicsDetail: React.FC<WeakTopicsDetailProps> = ({
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2">
                   <BookOpen className="w-4 h-4 text-muted-foreground" />
-                  <span className="font-semibold text-sm">
-                    Билет №{topic.ticket}
-                  </span>
                   <Badge variant={severity === 'critical' ? 'destructive' : 'secondary'} className="text-xs">
-                    {topic.section === '1256-19' ? 'III гр.' : 'IV гр.'}
+                    Билет №{topic.ticket}
                   </Badge>
+
+                  <span className="font-semibold text-sm">
+                    {SECTIONS.find(s => s.id === topic.section)?.name || topic.section} {("(" + SECTIONS.find(s => s.id === topic.section)?.description + ")") || ''}
+                  </span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Target className="w-4 h-4 text-muted-foreground" />
-                  <span className={`text-sm font-bold ${
-                    severity === 'critical' ? 'text-rose-600' : severity === 'warning' ? 'text-orange-600' : 'text-yellow-600'
-                  }`}>
+                  <span className={`text-sm font-bold ${severity === 'critical' ? 'text-rose-600' : severity === 'warning' ? 'text-orange-600' : 'text-yellow-600'
+                    }`}>
                     {topic.accuracy}%
                   </span>
                 </div>
               </div>
-              
+
               <Progress value={topic.accuracy} className="h-2 mb-2" />
-              
+
               <div className="flex items-center justify-between text-xs text-muted-foreground">
                 <span>
                   Попыток: {topic.attempts}
@@ -122,11 +123,10 @@ export const WeakTopicsDetail: React.FC<WeakTopicsDetailProps> = ({
                     variant="ghost"
                     size="sm"
                     onClick={() => onFilterByTicket(topic.ticket)}
-                    className={`h-6 text-xs hover:bg-blue-50 dark:hover:bg-blue-950/20 ${
-                      activeTickets.includes(topic.ticket)
-                        ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300'
-                        : ''
-                    }`}
+                    className={`h-6 text-xs hover:bg-blue-50 dark:hover:bg-blue-950/20 ${activeTickets.includes(topic.ticket)
+                      ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300'
+                      : ''
+                      }`}
                   >
                     <span className={activeTickets.includes(topic.ticket) ? 'line-through' : ''}>
                       Включить в фильтре
@@ -142,14 +142,14 @@ export const WeakTopicsDetail: React.FC<WeakTopicsDetailProps> = ({
             </div>
           );
         })}
-        
+
         <div className="mt-4 p-3 rounded-lg bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800">
           <div className="flex items-start gap-2">
             <Target className="w-4 h-4 text-blue-600 mt-0.5" />
             <div className="text-xs text-blue-700 dark:text-blue-300">
               <p className="font-semibold mb-1">Рекомендация:</p>
               <p>
-                Сосредоточьтесь на билетах с критической точностью (&lt;50%). 
+                Сосредоточьтесь на билетах с критической точностью (&lt;50%).
                 Рекомендуется прорешать их в режиме обучения {sortedTopics.filter(t => t.accuracy < 50).length} раз(а).
               </p>
             </div>
