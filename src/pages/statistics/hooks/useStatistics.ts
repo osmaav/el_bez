@@ -9,10 +9,10 @@
 import { useState, useCallback } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { statisticsService } from '@/services/statisticsService';
-import type { UserStatistics } from '@/types';
+import type { UserStatistics, SectionType } from '@/types';
 import { toast as sonnerToast } from 'sonner';
 
-type StatisticsTab = 'overview' | 'progress' | 'activity' | 'weak-topics' | 'sessions';
+export type StatisticsTab = 'overview' | SectionType;
 
 interface UseStatisticsReturn {
   statistics: UserStatistics | null;

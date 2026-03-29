@@ -43,18 +43,13 @@ export interface UserProfile {
   workplace: string;
   position: string;
   photoURL?: string;
-  provider: 'local' | OAuthProvider;
+  provider: 'local';
   providerId?: string;
   emailVerified: boolean;
   createdAt: string; // ISO timestamp
   updatedAt: string; // ISO timestamp
   lastLoginAt?: string; // ISO timestamp
 }
-
-/**
- * Провайдеры OAuth
- */
-export type OAuthProvider = 'apple' | 'yandex' | 'telegram' | 'max';
 
 /**
  * Результат аутентификации

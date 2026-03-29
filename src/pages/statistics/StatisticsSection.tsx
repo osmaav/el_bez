@@ -10,9 +10,9 @@ import React from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertCircle } from 'lucide-react';
-import type { SectionType } from '@/types';
 
 import { useStatistics } from './hooks';
+import type { StatisticsTab } from './hooks';
 import { useTicketFilter } from '@/hooks/useTicketFilter';
 import { StatisticsHeader, StatisticsControls } from './components';
 import { StatisticsOverviewTab } from './components/StatisticsOverviewTab';
@@ -99,7 +99,7 @@ export const StatisticsSection: React.FC = () => {
       )}
 
       {/* Вкладки по разделам */}
-      <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as SectionType | 'overview')}>
+      <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as StatisticsTab)}>
         <TabsList className={`grid w-full ${gridColsClass}`}>
           <TabsTrigger value="overview">Обзор</TabsTrigger>
           {activeSectionIds.map((sectionId) => (
